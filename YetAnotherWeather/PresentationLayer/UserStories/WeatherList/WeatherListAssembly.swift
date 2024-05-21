@@ -9,8 +9,14 @@ import UIKit
 
 class WeatherListAssembly {
     
+    let coordinator: ICoordinator
+    
+    init(coordinator: ICoordinator) {
+        self.coordinator = coordinator
+    }
+    
     func assemble() -> UIViewController {
-        let presenter = WeatherListPresenter()
+        let presenter = WeatherListPresenter(coordinator: coordinator)
         let viewController = WeatherListViewController(presenter: presenter)
         
         presenter.view = viewController

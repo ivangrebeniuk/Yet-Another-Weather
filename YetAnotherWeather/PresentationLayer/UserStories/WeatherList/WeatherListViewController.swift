@@ -30,8 +30,10 @@ class WeatherListViewController: UIViewController {
     // MARK: - Lifecicle
     
     override func viewDidLoad() {
-        view.backgroundColor = .systemYellow
+        view.backgroundColor = .systemBackground
         presenter.viewDidLoad()
+        navigationItem.title = "Weather"
+        navigationController?.navigationBar.prefersLargeTitles = true
     }
     
     // MARK: - Private
