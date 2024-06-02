@@ -1,5 +1,5 @@
 //
-//  WeatherListCoordinator.swift
+//  CurrentWeatherListCoordinator.swift
 //  YetAnotherWeather
 //
 //  Created by Иван Гребенюк on 19.05.2024.
@@ -21,7 +21,7 @@ final class WeatherListCoordinator: IWeathreListCoordinator {
     }
     
     func start() {
-        let assembly = WeatherListAssembly(coordinator: self)
+        let assembly = CurrentWeatherListAssembly(coordinator: self)
         let viewController = assembly.assemble()
         
         navigationController.pushViewController(viewController, animated: true)

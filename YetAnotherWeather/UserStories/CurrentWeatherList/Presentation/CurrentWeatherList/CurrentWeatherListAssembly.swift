@@ -1,5 +1,5 @@
 //
-//  WeatherListAssembly.swift
+//  CurrentWeatherListAssembly.swift
 //  YetAnotherWeather
 //
 //  Created by Ivan Grebenyuk on 13.05.2024.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-class WeatherListAssembly {
+class CurrentWeatherListAssembly {
     
     let coordinator: ICoordinator
     
@@ -16,8 +16,8 @@ class WeatherListAssembly {
     }
     
     func assemble() -> UIViewController {
-        let presenter = WeatherListPresenter(coordinator: coordinator)
-        let viewController = WeatherListViewController(presenter: presenter)
+        let presenter = CurrentWeatherListPresenter(coordinator: coordinator)
+        let viewController = CurrentWeatherListViewController(presenter: presenter)
         
         presenter.view = viewController
         return viewController
