@@ -7,6 +7,7 @@ target 'YetAnotherWeather' do
 
   # Pods for YetAnotherWeather
   pod 'SnapKit'
+  pod 'SwiftyJSON', '5.0.0'
 
 
 end

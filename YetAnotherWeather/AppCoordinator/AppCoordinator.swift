@@ -10,6 +10,8 @@ import UIKit
 
 final class AppCoordinator: ICoordinator {
     
+    let serviceAssembly = ServiceAssembly()
+    
     var childrenCoordinators = [ICoordinator]()
     
     var window: UIWindow
@@ -24,7 +26,10 @@ final class AppCoordinator: ICoordinator {
         window.rootViewController = navigationController
         window.makeKeyAndVisible()
         
-        let coordinator = WeatherListCoordinator(navigationController: navigationController)
+        let coordinator = WeatherListCoordinator(
+            navigationController: navigationController,
+            serviceAssembly: serviceAssembly
+        )
         coordinator.start()
     }
 }

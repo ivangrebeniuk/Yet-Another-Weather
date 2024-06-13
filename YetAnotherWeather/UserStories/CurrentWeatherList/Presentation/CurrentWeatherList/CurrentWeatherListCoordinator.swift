@@ -16,12 +16,21 @@ final class WeatherListCoordinator: IWeathreListCoordinator {
     
     let navigationController: UINavigationController
     
-    init(navigationController: UINavigationController) {
+    let serviceAssembly: ServiceAssembly
+    
+    init(
+        navigationController: UINavigationController,
+         serviceAssembly: ServiceAssembly
+    ) {
         self.navigationController = navigationController
+        self.serviceAssembly = serviceAssembly
     }
     
     func start() {
-        let assembly = CurrentWeatherListAssembly(coordinator: self)
+        let assembly = CurrentWeatherListAssembly(
+            coordinator: self,
+            serviceAssembly: serviceAssembly
+        )
         let viewController = assembly.assemble()
         
         navigationController.pushViewController(viewController, animated: true)
