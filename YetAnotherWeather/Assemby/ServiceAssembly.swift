@@ -14,9 +14,11 @@ final class ServiceAssembly {
     
     private let urlRequestsFactory = URLRequestFactory()
     private let networkService = NetworkService(session: URLSession.shared)
+    private let networkQueue = DispatchQueue(label: "ru.i.grebeniuk.serialNetworkQueue")
     
     func makeWeatherNetworkService() -> IWeatherNetworkService {
         return WeatherNetworkService(
+            networkQueue: networkQueue,
             networkService: networkService,
             requestsFactory: urlRequestsFactory
         )

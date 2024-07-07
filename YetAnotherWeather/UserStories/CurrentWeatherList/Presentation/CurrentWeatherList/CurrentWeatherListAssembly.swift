@@ -12,12 +12,15 @@ class CurrentWeatherListAssembly {
     // Dependencies
     let coordinator: ICoordinator
     let serviceAssembly: ServiceAssembly
+    let searchViewController: UIViewController
     
     init(coordinator: ICoordinator,
-         serviceAssembly: ServiceAssembly
+         serviceAssembly: ServiceAssembly,
+         searchViewController: UIViewController
     ) {
         self.coordinator = coordinator
         self.serviceAssembly = serviceAssembly
+        self.searchViewController = searchViewController
     }
     
     func assemble() -> UIViewController {
@@ -25,7 +28,9 @@ class CurrentWeatherListAssembly {
             coordinator: coordinator,
             weatherNetworkService: serviceAssembly.makeWeatherNetworkService()
         )
-        let viewController = CurrentWeatherListViewController(presenter: presenter)
+        let viewController = CurrentWeatherListViewController(
+            presenter: presenter
+        )
         
         presenter.view = viewController
         return viewController

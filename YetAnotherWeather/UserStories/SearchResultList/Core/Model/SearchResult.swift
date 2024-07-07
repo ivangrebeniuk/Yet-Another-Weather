@@ -7,6 +7,9 @@
 
 import Foundation
 
-struct SearchResult {
-    
+struct SearchResult: Codable {
+    let id: Int
+    let name: String
+    let region: String
+    let country: String
 }

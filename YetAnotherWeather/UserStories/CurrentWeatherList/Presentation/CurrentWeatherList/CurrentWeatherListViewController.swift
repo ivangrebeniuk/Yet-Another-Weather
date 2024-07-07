@@ -19,15 +19,30 @@ protocol ICurrentWeatherListView: AnyObject {
 
 class CurrentWeatherListViewController: UIViewController {
     
+    // Dependencies
     var presenter: ICurrentWeatherListPresenter
     
     // MARK: - UI
     
+    private lazy var button: UIButton = {
+        let button = UIButton()
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setTitle("Кнопка", for: .normal)
+        
+        button.layer.cornerRadius = 18
+        button.backgroundColor = .systemBlue
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 24, weight: .medium)
+        
+        button.addTarget(self, action:#selector(buttonTapped), for: .touchUpInside)
+        return button
+    }()
     
     
     // MARK: - Init
     
-    init(presenter: ICurrentWeatherListPresenter) {
+    init(
+        presenter: ICurrentWeatherListPresenter
+    ) {
         self.presenter = presenter
         super.init(nibName: nil, bundle: nil)
     }
@@ -41,8 +56,7 @@ class CurrentWeatherListViewController: UIViewController {
     override func viewDidLoad() {
         view.backgroundColor = .systemBackground
         setUpNavigationBar()
-        presenter.viewDidLoad()
-        
+        setUpConstraints()
     }
     
     // MARK: - Private
@@ -53,9 +67,23 @@ class CurrentWeatherListViewController: UIViewController {
         
         let searchController = UISearchController(searchResultsController: nil)
         searchController.searchResultsUpdater = self
-        searchController.obscuresBackgroundDuringPresentation = false
+        searchController.obscuresBackgroundDuringPresentation = true
         searchController.searchBar.placeholder = .searchFielPlaceholderText
         navigationItem.searchController = searchController
+    }
+    
+    private func setUpConstraints() {
+        view.addSubview(button)
+        
+        button.snp.makeConstraints {
+            $0.center.equalToSuperview()
+            $0.width.equalTo(200)
+        }
+    }
+    
+    @IBAction private func buttonTapped(_ sender: UIButton) {
+        // presenter.getOrderedWeatherItems()
+        presenter.getOrderedWeatherItems()
     }
 }
 
@@ -68,7 +96,6 @@ extension CurrentWeatherListViewController: ICurrentWeatherListView {
 // MARK: - UISearchResultsUpdating
 extension CurrentWeatherListViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
-        guard let text = searchController.searchBar.text else { return }
-        
+        guard let text = searchController.searchBar.text, text.count > 2 else { return }
     }
 }

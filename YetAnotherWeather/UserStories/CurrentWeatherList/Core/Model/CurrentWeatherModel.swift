@@ -13,7 +13,7 @@ struct CurrentWeatherModel: Codable {
         let name: String
         let region: String
         let country: String
-        let localTime: String
+        let localTime: Int
     }
     
     let location: Location

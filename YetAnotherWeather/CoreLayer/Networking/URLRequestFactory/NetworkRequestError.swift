@@ -10,6 +10,7 @@ import Foundation
 enum NetworkRequestError: LocalizedError {
     case invalidURL
     case endpointError
+    case modelParsingError
     
     var errorDescription: String {
         switch self {
@@ -17,6 +18,8 @@ enum NetworkRequestError: LocalizedError {
             "Не удалось преобразовать String в URL"
         case .endpointError:
             "Не удалось создать URL"
+        case .modelParsingError:
+            "Не удалось распарсить данные"
         }
     }
 }
