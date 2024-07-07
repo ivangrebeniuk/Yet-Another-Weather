@@ -27,11 +27,9 @@ final class WeatherListCoordinator: IWeathreListCoordinator {
     }
     
     func start() {
-        let searchResultListViewController = SearchResultListAssembly(serviceAssembly: serviceAssembly).assemble()
         let assembly = CurrentWeatherListAssembly(
             coordinator: self,
-            serviceAssembly: serviceAssembly,
-            searchViewController: searchResultListViewController
+            serviceAssembly: serviceAssembly
         )
         let viewController = assembly.assemble()
         
