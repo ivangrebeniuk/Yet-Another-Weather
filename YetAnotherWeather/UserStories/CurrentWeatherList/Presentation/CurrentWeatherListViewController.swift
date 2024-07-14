@@ -10,7 +10,7 @@ import SnapKit
 
 private extension String {
     static let weatherHeaderText = "Weather"
-    static let searchFielPlaceholderText = "Type city or country to search"
+    static let searchFielPlaceholderText = "Type city to search"
 }
 
 protocol ICurrentWeatherListView: AnyObject {
@@ -20,6 +20,7 @@ protocol ICurrentWeatherListView: AnyObject {
 class CurrentWeatherListViewController: UIViewController {
     
     // Dependencies
+    let resultsViewController: UIViewController
     var presenter: ICurrentWeatherListPresenter
     
     // MARK: - UI
@@ -41,8 +42,10 @@ class CurrentWeatherListViewController: UIViewController {
     // MARK: - Init
     
     init(
+        resultsViewController: UIViewController,
         presenter: ICurrentWeatherListPresenter
     ) {
+        self.resultsViewController = resultsViewController
         self.presenter = presenter
         super.init(nibName: nil, bundle: nil)
     }
@@ -65,11 +68,14 @@ class CurrentWeatherListViewController: UIViewController {
         navigationItem.title = .weatherHeaderText
         navigationController?.navigationBar.prefersLargeTitles = true
         
-        let searchController = UISearchController(searchResultsController: nil)
+        let searchController = UISearchController(searchResultsController: resultsViewController)
         searchController.searchResultsUpdater = self
-        searchController.obscuresBackgroundDuringPresentation = true
+        searchController.obscuresBackgroundDuringPresentation = false
+        
         searchController.searchBar.placeholder = .searchFielPlaceholderText
+        
         navigationItem.searchController = searchController
+        definesPresentationContext = true
     }
     
     private func setUpConstraints() {
@@ -82,20 +88,29 @@ class CurrentWeatherListViewController: UIViewController {
     }
     
     @IBAction private func buttonTapped(_ sender: UIButton) {
-        // presenter.getOrderedWeatherItems()
+        print("YO!")
         presenter.getOrderedWeatherItems()
+    }
+}
+
+// MARK: - UISearchResultsUpdating
+
+extension CurrentWeatherListViewController: UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        guard let resultsVC = resultsViewController as? SearchResultsViewController else { return }
+        
+        guard let searchQuerry = searchController.searchBar.text, searchQuerry.count > 2 else {
+            resultsVC.updateResults([])
+            return
+        }
+        
+        let searchResults = presenter.updateSearchResults(for: searchQuerry)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            resultsVC.updateResults(searchResults)
+        }
     }
 }
 
 // MARK: - IWeatherListView
 
-extension CurrentWeatherListViewController: ICurrentWeatherListView {
-    
-}
-
-// MARK: - UISearchResultsUpdating
-extension CurrentWeatherListViewController: UISearchResultsUpdating {
-    func updateSearchResults(for searchController: UISearchController) {
-        guard let text = searchController.searchBar.text, text.count > 2 else { return }
-    }
-}
+extension CurrentWeatherListViewController: ICurrentWeatherListView {}

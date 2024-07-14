@@ -29,6 +29,11 @@ protocol IWeatherNetworkService {
         for locations: [String],
         completion: @escaping (Result<[CurrentWeatherModel], Error>) -> Void
     )
+    
+//    func getOrderedCurrentWeatherAndCancelIfError(
+//        for locations: [String],
+//        completion: @escaping (Result<[CurrentWeatherModel], Error>) -> Void
+//    )
 }
 
 final class WeatherNetworkService {
@@ -69,6 +74,17 @@ final class WeatherNetworkService {
         } catch {
             completion(.failure(error))
         }
+    }
+    
+    private func sortLocations(from dict: [Int: CurrentWeatherModel]) -> [CurrentWeatherModel] {
+        var locations = [CurrentWeatherModel]()
+        
+        for key in 0..<dict.count {
+            guard let element = dict[key] else { return [] }
+            locations.append(element)
+        }
+        
+        return locations
     }
 }
 
@@ -126,26 +142,27 @@ extension WeatherNetworkService: IWeatherNetworkService {
         for locations: [String],
         completion: @escaping (Result<[CurrentWeatherModel], Error>) -> Void
     ) {
-        var locationsWeather = [CurrentWeatherModel]()
+        var locationsWeather = [Int: CurrentWeatherModel]()
         let group = DispatchGroup()
         
-        locations.forEach { [weak self] location in
+        locations.enumerated().forEach { [weak self] (index, location) in
             group.enter()
             self?.networkQueue.async {
                 self?.getCurrentWeather(for: location) { result in
                     switch result {
                     case .success(let currentWeather):
-                        locationsWeather.append(currentWeather)
+                        locationsWeather[index] = currentWeather
                     case .failure:
-                        print("Something went wrong")
+                        print("Не могу загрузить погоду для \(location)")
                     }
                     group.leave()
                 }
             }
-            
-            group.notify(queue: .main) {
-                completion(.success(locationsWeather))
-            }
+        }
+        group.notify(queue: .main) { [weak self] in
+            guard let self else { return }
+            let sortedLocations = self.sortLocations(from: locationsWeather)
+            completion(.success(sortedLocations))
         }
     }
     
@@ -155,12 +172,12 @@ extension WeatherNetworkService: IWeatherNetworkService {
     ) {
         var locationsWeather = [CurrentWeatherModel]()
         let group = DispatchGroup()
-        let semapthore = DispatchSemaphore(value: 1)
+        let semaphore = DispatchSemaphore(value: 1)
 
         for location in locations {
             group.enter()
             networkQueue.async {
-                semapthore.wait()
+                semaphore.wait()
                 self.getCurrentWeather(for: location) { result in
                     switch result {
                     case .success(let currentWeather):
@@ -168,7 +185,7 @@ extension WeatherNetworkService: IWeatherNetworkService {
                     case .failure:
                         print("Something went wrong")
                     }
-                    semapthore.signal()
+                    semaphore.signal()
                     group.leave()
                 }
             }
@@ -178,5 +195,44 @@ extension WeatherNetworkService: IWeatherNetworkService {
             completion(.success(locationsWeather))
         }
     }
+    
+    // Это не работает! данные продолжают загружаться
+    // Попробовать обойтись БЕЗ DispatchGroup
+//    func getOrderedCurrentWeatherAndCancelIfError(
+//        for locations: [String],
+//        completion: @escaping (Result<[CurrentWeatherModel], Error>) -> Void
+//    ) {
+//        var locationsWeather = [CurrentWeatherModel]()
+//        let group = DispatchGroup()
+//        let semaphore = DispatchSemaphore(value: 1)
+//        
+//        // Добавляем ворк айтем
+//        let resultWorkItem = DispatchWorkItem {
+//            completion(.success(locationsWeather))
+//        }
+//        
+//        for location in locations {
+//            group.enter()
+//            networkQueue.async {
+//                semaphore.wait()
+//                print("Начинаем грузить данные для \(location)")
+//                self.getCurrentWeather(for: location) { result in
+//                    switch result {
+//                    case .success(let currentWeather):
+//                        print("Заканчиваем грузить данные для \(location)")
+//                        locationsWeather.append(currentWeather)
+//                    case .failure:
+//                        // Если ошибка - то отменяем выполнение задачи
+//                        resultWorkItem.cancel()
+//                        print("Something went wrong")
+//                    }
+//                    semaphore.signal()
+//                    group.leave()
+//                }
+//            }
+//        }
+//        // Вместо комплишена передаем сюда ворк айтем с комплешеном внутри
+//        group.notify(queue: .main, work: resultWorkItem)
+//    }
 }
 

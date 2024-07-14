@@ -21,11 +21,16 @@ class CurrentWeatherListAssembly {
     }
     
     func assemble() -> UIViewController {
+        
+        let searchViewController = SearchResultsAssembly(serviceAssembly: serviceAssembly)
+        
         let presenter = CurrentWeatherListPresenter(
             coordinator: coordinator,
             weatherNetworkService: serviceAssembly.makeWeatherNetworkService()
         )
+        
         let viewController = CurrentWeatherListViewController(
+            resultsViewController: searchViewController.assemble(),
             presenter: presenter
         )
         
