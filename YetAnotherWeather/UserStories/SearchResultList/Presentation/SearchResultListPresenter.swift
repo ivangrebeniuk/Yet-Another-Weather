@@ -33,7 +33,7 @@ final class SearchResultsPresenter {
     // MARK: - Private
     
     private func makeViewModels() {
-        
+        print("hello")
     }
 }
 
