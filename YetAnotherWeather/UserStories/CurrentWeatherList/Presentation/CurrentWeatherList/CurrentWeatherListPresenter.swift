@@ -9,8 +9,8 @@ import Foundation
 
 protocol ICurrentWeatherListPresenter {
     
-    func updateSearchResults(for searchQuerry: String) -> [SearchResult]
-    
+    func getSearchResults()
+
     func makeSearchRequestAndGetCurrentWeather()
     
     func getUnorderedWeatherItems()
@@ -28,7 +28,7 @@ class CurrentWeatherListPresenter {
     
     // Models
     private var weatherToShow: [CurrentWeatherModel] = []
-    private var searchResults = [SearchResult]()
+    
     
     init(
         coordinator: ICoordinator,
@@ -40,29 +40,11 @@ class CurrentWeatherListPresenter {
     
     // MARK: - Private
     
-    func searchLocations(text: String) {
-        weatherNetworkService.getSearchResults(for: text) { result in
-            switch result {
-            case .success(let results):
-                DispatchQueue.main.async { [weak self] in
-                    self?.searchResults = results
-                }
-            case .failure(let error):
-                print(error.localizedDescription)
-                self.searchResults = []
-            }
-        }
-    }
 }
 
 // MARK: - ICurrentWeatherListPresenter
 
 extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
-    
-    func updateSearchResults(for searchQuerry: String) -> [SearchResult] {
-        searchLocations(text: searchQuerry)
-        return searchResults
-    }
     
     func getSearchResults() {
         weatherNetworkService.getSearchResults(for: "Сан") { result in
@@ -79,7 +61,7 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
     
     func getUnorderedWeatherItems() {
         weatherNetworkService.getUnorderedCurrentWeatherItems(
-            for: ["Ижевск", "Глазго", "Лондон", "Лас Вегас", "Берлин", "Сан Хосе"]
+            for: ["Ижевск", "Глазго", "Лондон", "Токио", "Берлин"]
         ) { result in
             DispatchQueue.main.async { [weak self] in
                 switch result {
@@ -87,6 +69,7 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
                     self?.weatherToShow = results
                     self?.weatherToShow.forEach {
                         print("!!!", $0.location.name)
+                        print("!!!", $0.condtions)
                         print("!!!", $0.tempreture)
                     }
                 case .failure(let error):
@@ -98,7 +81,7 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
     
     func getOrderedWeatherItems() {
         weatherNetworkService.getOrderedCurrentWeatherItems(
-            for: ["Глазго", "Oakland"]
+            for: ["Ижевск", "Глазго", "Лондон", "Токио", "Берлин"]
         ) { result in
             DispatchQueue.main.async { [weak self] in
                 switch result {

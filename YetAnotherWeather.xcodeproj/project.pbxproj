@@ -34,10 +34,6 @@
 		E2ADA3302C1A253D0038F6FC /* SearchResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2ADA32F2C1A253D0038F6FC /* SearchResult.swift */; };
 		E2ADA3322C1A25510038F6FC /* SerachResult+JSONParsable.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2ADA3312C1A25510038F6FC /* SerachResult+JSONParsable.swift */; };
 		E2ADD4AC2C1777480038F6FC /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2ADD4AB2C1777480038F6FC /* NetworkService.swift */; };
-		E2DEBDF52C3B063700A7ABC1 /* SearchResultCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2DEBDF42C3B063700A7ABC1 /* SearchResultCellView.swift */; };
-		E2DEBDF72C3B064900A7ABC1 /* SearchResultListAssembly.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2DEBDF62C3B064900A7ABC1 /* SearchResultListAssembly.swift */; };
-		E2DEBDF92C3B066900A7ABC1 /* SearchResultListPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2DEBDF82C3B066900A7ABC1 /* SearchResultListPresenter.swift */; };
-		E2DEBDFB2C3B068400A7ABC1 /* SearchResultsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2DEBDFA2C3B068400A7ABC1 /* SearchResultsViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -72,10 +68,6 @@
 		E2ADA32F2C1A253D0038F6FC /* SearchResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResult.swift; sourceTree = "<group>"; };
 		E2ADA3312C1A25510038F6FC /* SerachResult+JSONParsable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SerachResult+JSONParsable.swift"; sourceTree = "<group>"; };
 		E2ADD4AB2C1777480038F6FC /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
-		E2DEBDF42C3B063700A7ABC1 /* SearchResultCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultCellView.swift; sourceTree = "<group>"; };
-		E2DEBDF62C3B064900A7ABC1 /* SearchResultListAssembly.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultListAssembly.swift; sourceTree = "<group>"; };
-		E2DEBDF82C3B066900A7ABC1 /* SearchResultListPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultListPresenter.swift; sourceTree = "<group>"; };
-		E2DEBDFA2C3B068400A7ABC1 /* SearchResultsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultsViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -153,11 +145,7 @@
 		E2419D1C2C0B73C200342DA8 /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
-				E26CA8962BF2953000F01EC9 /* CurrentWeatherListAssembly.swift */,
-				E26CA8932BF2950100F01EC9 /* CurrentWeatherListPresenter.swift */,
-				E26CA8902BF2948A00F01EC9 /* CurrentWeatherListViewController.swift */,
-				48C9DBB72BFA7BF900001A57 /* CurrentWeatherListCoordinator.swift */,
-				E2419D232C0B76FB00342DA8 /* Views */,
+				E2419D2A2C0B9F8B00342DA8 /* CurrentWeatherList */,
 			);
 			path = Presentation;
 			sourceTree = "<group>";
@@ -197,10 +185,21 @@
 			path = Protocols;
 			sourceTree = "<group>";
 		};
+		E2419D2A2C0B9F8B00342DA8 /* CurrentWeatherList */ = {
+			isa = PBXGroup;
+			children = (
+				E26CA8902BF2948A00F01EC9 /* CurrentWeatherListViewController.swift */,
+				E26CA8932BF2950100F01EC9 /* CurrentWeatherListPresenter.swift */,
+				E26CA8962BF2953000F01EC9 /* CurrentWeatherListAssembly.swift */,
+				48C9DBB72BFA7BF900001A57 /* CurrentWeatherListCoordinator.swift */,
+				E2419D232C0B76FB00342DA8 /* Views */,
+			);
+			path = CurrentWeatherList;
+			sourceTree = "<group>";
+		};
 		E2419D2B2C0BA04200342DA8 /* SearchResultList */ = {
 			isa = PBXGroup;
 			children = (
-				E2DEBDF32C3B061500A7ABC1 /* Presentation */,
 				E2ADA32B2C1A24A20038F6FC /* Core */,
 			);
 			path = SearchResultList;
@@ -302,17 +301,6 @@
 				E2ADD4AB2C1777480038F6FC /* NetworkService.swift */,
 			);
 			path = NetworkService;
-			sourceTree = "<group>";
-		};
-		E2DEBDF32C3B061500A7ABC1 /* Presentation */ = {
-			isa = PBXGroup;
-			children = (
-				E2DEBDF62C3B064900A7ABC1 /* SearchResultListAssembly.swift */,
-				E2DEBDF82C3B066900A7ABC1 /* SearchResultListPresenter.swift */,
-				E2DEBDFA2C3B068400A7ABC1 /* SearchResultsViewController.swift */,
-				E2DEBDF42C3B063700A7ABC1 /* SearchResultCellView.swift */,
-			);
-			path = Presentation;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -432,18 +420,15 @@
 				E2419D222C0B744700342DA8 /* WeatherNetworkService.swift in Sources */,
 				48C9DBBB2BFA7C1900001A57 /* AppCoordinator.swift in Sources */,
 				E2ADA3302C1A253D0038F6FC /* SearchResult.swift in Sources */,
-				E2DEBDFB2C3B068400A7ABC1 /* SearchResultsViewController.swift in Sources */,
 				E26CA8912BF2948A00F01EC9 /* CurrentWeatherListViewController.swift in Sources */,
 				E2AD195B2C19A93C0038F6FC /* CurrentWeatherModel+JSONParsable.swift in Sources */,
 				E280DAFF2C31760600D683CD /* SearchResultParser.swift in Sources */,
 				E2419D252C0B772E00342DA8 /* CurrentWeatherCellView.swift in Sources */,
 				E2ADA3292C19B5320038F6FC /* ServiceAssembly.swift in Sources */,
-				E2DEBDF72C3B064900A7ABC1 /* SearchResultListAssembly.swift in Sources */,
 				48C9DBB82BFA7BF900001A57 /* CurrentWeatherListCoordinator.swift in Sources */,
 				E2ADA3262C19AF140038F6FC /* JSONParsable.swift in Sources */,
 				E26CA8942BF2950100F01EC9 /* CurrentWeatherListPresenter.swift in Sources */,
 				E280DAFB2C31740F00D683CD /* IJSONParser.swift in Sources */,
-				E2DEBDF92C3B066900A7ABC1 /* SearchResultListPresenter.swift in Sources */,
 				E280DAFD2C31750F00D683CD /* CurrentWeatherParser.swift in Sources */,
 				E2AD19592C19A7E20038F6FC /* CurrentWeatherModel.swift in Sources */,
 				E2419D282C0B77B100342DA8 /* ConfigurableView.swift in Sources */,
@@ -454,7 +439,6 @@
 				4813DE1A2BF2802300800CCD /* AppDelegate.swift in Sources */,
 				E2AD339E2C1479DD0038F6FC /* URLRequestFactory.swift in Sources */,
 				48C9DBBD2BFA7C2C00001A57 /* ICoordinator.swift in Sources */,
-				E2DEBDF52C3B063700A7ABC1 /* SearchResultCellView.swift in Sources */,
 				E2AD33A02C1479F00038F6FC /* IURLRequestFactory.swift in Sources */,
 				E2AD33A62C1622DF0038F6FC /* NetworkRequestError.swift in Sources */,
 			);
