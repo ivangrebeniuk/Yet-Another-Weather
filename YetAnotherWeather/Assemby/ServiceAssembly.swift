@@ -23,4 +23,11 @@ final class ServiceAssembly {
             requestsFactory: urlRequestsFactory
         )
     }
+    
+    func makeSearchLocationsService() -> ISearchLocationsService {
+        return SearchLocationsService(
+            networkService: networkService,
+            requestsFactory: urlRequestsFactory
+        )
+    }
 }

@@ -36,5 +36,3 @@ extension SearchResult: JSONParsable {
         return results
     }
 }
-
-

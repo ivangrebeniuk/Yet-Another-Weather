@@ -10,7 +10,7 @@ import SnapKit
 
 private extension String {
     static let weatherHeaderText = "Weather"
-    static let searchFielPlaceholderText = "Type city or country to search"
+    static let searchFielPlaceholderText = "Type city to search"
 }
 
 protocol ICurrentWeatherListView: AnyObject {
@@ -20,6 +20,7 @@ protocol ICurrentWeatherListView: AnyObject {
 class CurrentWeatherListViewController: UIViewController {
     
     // Dependencies
+    let resultsViewController: UIViewController
     var presenter: ICurrentWeatherListPresenter
     
     // MARK: - UI
@@ -33,7 +34,8 @@ class CurrentWeatherListViewController: UIViewController {
         button.backgroundColor = .systemBlue
         button.titleLabel?.font = UIFont.systemFont(ofSize: 24, weight: .medium)
         
-        button.addTarget(self, action:#selector(buttonTapped), for: .touchUpInside)
+        // button.addTarget(self, action:#selector(buttonTapped), for: .touchUpInside)
+        button.addAction(.init(handler: { [weak self] _ in self?.buttonTapped() }), for: .touchUpInside)
         return button
     }()
     
@@ -41,8 +43,10 @@ class CurrentWeatherListViewController: UIViewController {
     // MARK: - Init
     
     init(
+        resultsViewController: UIViewController,
         presenter: ICurrentWeatherListPresenter
     ) {
+        self.resultsViewController = resultsViewController
         self.presenter = presenter
         super.init(nibName: nil, bundle: nil)
     }
@@ -65,11 +69,14 @@ class CurrentWeatherListViewController: UIViewController {
         navigationItem.title = .weatherHeaderText
         navigationController?.navigationBar.prefersLargeTitles = true
         
-        let searchController = UISearchController(searchResultsController: nil)
-        searchController.searchResultsUpdater = self
-        searchController.obscuresBackgroundDuringPresentation = true
+        let searchController = UISearchController(searchResultsController: resultsViewController)
+        searchController.searchResultsUpdater = resultsViewController as? UISearchResultsUpdating
+        searchController.obscuresBackgroundDuringPresentation = false
+        
         searchController.searchBar.placeholder = .searchFielPlaceholderText
+        
         navigationItem.searchController = searchController
+        definesPresentationContext = true
     }
     
     private func setUpConstraints() {
@@ -81,21 +88,12 @@ class CurrentWeatherListViewController: UIViewController {
         }
     }
     
-    @IBAction private func buttonTapped(_ sender: UIButton) {
-        // presenter.getOrderedWeatherItems()
-        presenter.getOrderedWeatherItems()
+    private func buttonTapped() {
+        print("YO!")
+        presenter.getUnorderedWeatherItems()
     }
 }
 
 // MARK: - IWeatherListView
 
-extension CurrentWeatherListViewController: ICurrentWeatherListView {
-    
-}
-
-// MARK: - UISearchResultsUpdating
-extension CurrentWeatherListViewController: UISearchResultsUpdating {
-    func updateSearchResults(for searchController: UISearchController) {
-        guard let text = searchController.searchBar.text, text.count > 2 else { return }
-    }
-}
+extension CurrentWeatherListViewController: ICurrentWeatherListView {}

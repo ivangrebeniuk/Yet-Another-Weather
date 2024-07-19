@@ -10,20 +10,10 @@ import SwiftyJSON
 
 protocol IWeatherNetworkService {
     
-    func getSearchResults(
-        for location: String,
-        completion: @escaping (Result<[SearchResult], Error>) -> Void
-    )
-    
-    func searchAndGetCurrentWeather(
-        for location: String,
-        completion: @escaping (Result<CurrentWeatherModel, Error>) -> Void
-    )
-    
     func getUnorderedCurrentWeatherItems(
         for locations: [String],
         completion: @escaping (Result<[CurrentWeatherModel], Error>) -> Void
-    ) 
+    )
     
     func getOrderedCurrentWeatherItems(
         for locations: [String],
@@ -70,82 +60,48 @@ final class WeatherNetworkService {
             completion(.failure(error))
         }
     }
+    
+    private func makeResultsArray(from dict: [Int: CurrentWeatherModel]) -> [CurrentWeatherModel] {
+        var locations = [CurrentWeatherModel]()
+        
+        for key in 0..<dict.count {
+            guard let element = dict[key] else { return [] }
+            locations.append(element)
+        }
+        
+        return locations
+    }
 }
 
 // MARK: - IWeatherNetworkService
 
 extension WeatherNetworkService: IWeatherNetworkService {
     
-    func getSearchResults(
-        for location: String,
-        completion: @escaping (Result<[SearchResult], Error>) -> Void
-    ) {
-        do {
-            let request = try requestsFactory.makeSearchRequest(for: location)
-                self.networkService.loadModels(
-                    request: request
-                ) { (result: Result<([SearchResult]), Error>) in
-                switch result {
-                case.success(let models):
-                    completion(.success(models))
-                case .failure(let error):
-                    completion(.failure(error))
-                }
-            }
-        } catch {
-            completion(.failure(error))
-        }
-    }
-    
-    func searchAndGetCurrentWeather(
-        for location: String,
-        completion: @escaping (Result<CurrentWeatherModel, Error>) -> Void
-    ) {
-        getSearchResults(for: location) { [weak self] result in
-            switch result {
-            case .success(let searchResults):
-                guard !searchResults.isEmpty else { return }
-                let city = searchResults[0].name
-                print("Запрашиваем погоду для города, который искали: \(city)")
-                self?.getCurrentWeather(for: city) { result in
-                    switch result {
-                    case .success(let result):
-                        completion(.success(result))
-                    case .failure(let error):
-                        print("Error: \(error.localizedDescription)")
-                    }
-                }
-            case .failure(let error):
-                print("Error: \(error.localizedDescription)")
-                completion(.failure(error))
-            }
-        }
-    }
-    
     func getUnorderedCurrentWeatherItems(
         for locations: [String],
         completion: @escaping (Result<[CurrentWeatherModel], Error>) -> Void
     ) {
-        var locationsWeather = [CurrentWeatherModel]()
+        var locationsWeather = [Int: CurrentWeatherModel]()
         let group = DispatchGroup()
         
-        locations.forEach { [weak self] location in
+        locations.enumerated().forEach { [weak self] (index, location) in
             group.enter()
             self?.networkQueue.async {
                 self?.getCurrentWeather(for: location) { result in
                     switch result {
                     case .success(let currentWeather):
-                        locationsWeather.append(currentWeather)
+                        locationsWeather[index] = currentWeather
                     case .failure:
-                        print("Something went wrong")
+                        print("Не могу загрузить погоду для \(location)")
                     }
                     group.leave()
                 }
             }
-            
-            group.notify(queue: .main) {
-                completion(.success(locationsWeather))
-            }
+        }
+        group.notify(queue: .main) { [weak self] in
+            guard let self else { return }
+            let sortedLocations = self.makeResultsArray(from: locationsWeather)
+            completion(.success(sortedLocations))
         }
     }
     
@@ -155,12 +111,12 @@ extension WeatherNetworkService: IWeatherNetworkService {
     ) {
         var locationsWeather = [CurrentWeatherModel]()
         let group = DispatchGroup()
-        let semapthore = DispatchSemaphore(value: 1)
+        let semaphore = DispatchSemaphore(value: 1)
 
         for location in locations {
             group.enter()
             networkQueue.async {
-                semapthore.wait()
+                semaphore.wait()
                 self.getCurrentWeather(for: location) { result in
                     switch result {
                     case .success(let currentWeather):
@@ -168,7 +124,7 @@ extension WeatherNetworkService: IWeatherNetworkService {
                     case .failure:
                         print("Something went wrong")
                     }
-                    semapthore.signal()
+                    semaphore.signal()
                     group.leave()
                 }
             }
@@ -179,4 +135,3 @@ extension WeatherNetworkService: IWeatherNetworkService {
         }
     }
 }
-
