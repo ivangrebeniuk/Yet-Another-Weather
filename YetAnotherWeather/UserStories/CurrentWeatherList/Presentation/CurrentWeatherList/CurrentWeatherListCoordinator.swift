@@ -8,31 +8,42 @@
 import Foundation
 import UIKit
 
-protocol IWeathreListCoordinator: ICoordinator {}
 
-final class WeatherListCoordinator: IWeathreListCoordinator {
+final class CurrentWeatherListCoordinator {
     
-    var childrenCoordinators = [ICoordinator]()
-    
-    let navigationController: UINavigationController
-    
-    let serviceAssembly: ServiceAssembly
-    
+    private let currentWeatherListAssembly: CurrentWeatherListAssembly
+    private let weatherDetailsAssembly: WeatherDetailsAssembly
+    private weak var navigationController: UIViewController?
+        
     init(
-        navigationController: UINavigationController,
-         serviceAssembly: ServiceAssembly
+        currentWeatherListAssembly: CurrentWeatherListAssembly,
+        weatherDetailsAssembly: WeatherDetailsAssembly
     ) {
-        self.navigationController = navigationController
-        self.serviceAssembly = serviceAssembly
+        self.currentWeatherListAssembly = currentWeatherListAssembly
+        self.weatherDetailsAssembly = weatherDetailsAssembly
     }
     
-    func start() {
-        let assembly = CurrentWeatherListAssembly(
-            coordinator: self,
-            serviceAssembly: serviceAssembly
-        )
-        let viewController = assembly.assemble()
+    func start(with navigationController: UINavigationController) {
+        let viewController = currentWeatherListAssembly.assemble(output: self)
         
+        self.navigationController = navigationController
         navigationController.pushViewController(viewController, animated: true)
+    }
+    
+    // MARK: - Private
+    
+    private func openWeatherDetails(for location: String) {
+        let weatherDetailsViewController = weatherDetailsAssembly.assemble(location: location)
+        navigationController?.present(weatherDetailsViewController, animated: true)
+    }
+}
+
+// MARK: - CurrentWeatherListOutput
+
+extension CurrentWeatherListCoordinator: CurrentWeatherListOutput {
+    
+    func didSelectFuckingLocation(_ location: String) {
+        print("Did select fucking location output")
+        openWeatherDetails(for: location)
     }
 }

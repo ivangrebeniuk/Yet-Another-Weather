@@ -20,16 +20,16 @@ final class SearchLocationsService {
     
     // Dependencies
     let networkService: INetworkService
-    let requestsFactory: IURLRequestFactory
+    let urlRequestsFactory: IURLRequestFactory
     
     // MARK: - Init
     
     init(
         networkService: INetworkService,
-        requestsFactory: URLRequestFactory
+        urlRequestsFactory: URLRequestFactory
     ) {
         self.networkService = networkService
-        self.requestsFactory = requestsFactory
+        self.urlRequestsFactory = urlRequestsFactory
     }
 }
 
@@ -42,7 +42,7 @@ extension SearchLocationsService: ISearchLocationsService {
         completion: @escaping (Result<[SearchResult], Error>) -> Void
     ) {
         do {
-            let request = try requestsFactory.makeSearchRequest(for: location)
+            let request = try urlRequestsFactory.makeSearchRequest(for: location)
             networkService.loadModels(
                 request: request
             ) { (result: Result<([SearchResult]), Error>) in
