@@ -7,6 +7,11 @@
 
 import Foundation
 
+protocol CurrentWeatherListOutput: AnyObject {
+    
+    func didSelectFuckingLocation(_ location: String)
+}
+
 protocol ICurrentWeatherListPresenter {
             
     func getUnorderedWeatherItems()
@@ -17,9 +22,8 @@ protocol ICurrentWeatherListPresenter {
 class CurrentWeatherListPresenter {
     
     // Dependencies
-    private let coordinator: ICoordinator
     private let weatherNetworkService: IWeatherNetworkService
-    
+    weak var output: CurrentWeatherListOutput?
     weak var view: ICurrentWeatherListView?
     
     // Models
@@ -29,11 +33,11 @@ class CurrentWeatherListPresenter {
     // MARK: - Init
     
     init(
-        coordinator: ICoordinator,
-        weatherNetworkService: IWeatherNetworkService
+        weatherNetworkService: IWeatherNetworkService,
+        output: CurrentWeatherListOutput?
     ) {
-        self.coordinator = coordinator
         self.weatherNetworkService = weatherNetworkService
+        self.output = output
     }
 }
 
@@ -77,5 +81,14 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
                 }
             }
         }
+    }
+}
+
+// MARK: - SearchResultsOutput
+
+extension CurrentWeatherListPresenter: SearchResultsOutput {
+    func didSelectLocation(_ location: String) {
+        print("Current weather list output сработал")
+        output?.didSelectFuckingLocation(location)
     }
 }

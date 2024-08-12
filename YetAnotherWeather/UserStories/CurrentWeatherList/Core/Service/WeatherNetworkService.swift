@@ -26,18 +26,18 @@ final class WeatherNetworkService {
     // Dependencies
     let networkQueue: DispatchQueue
     let networkService: INetworkService
-    let requestsFactory: IURLRequestFactory
+    let urlRequestsFactory: IURLRequestFactory
     
     // MARK: - Init
     
     init(
         networkQueue: DispatchQueue,
         networkService: INetworkService,
-        requestsFactory: URLRequestFactory
+        urlRequestsFactory: URLRequestFactory
     ) {
         self.networkQueue = networkQueue
         self.networkService = networkService
-        self.requestsFactory = requestsFactory
+        self.urlRequestsFactory = urlRequestsFactory
     }
     
     // MARK: - Private
@@ -47,7 +47,7 @@ final class WeatherNetworkService {
         completion: @escaping (Result<CurrentWeatherModel, Error>) -> Void
     ) {
         do {
-            let request = try requestsFactory.makeCurrentWeatherRequest(for: location)
+            let request = try urlRequestsFactory.makeCurrentWeatherRequest(for: location)
             self.networkService.load(request: request, parser: CurrentWeatherParser()) { (result: Result<CurrentWeatherModel, Error>) in
                 switch result {
                 case .success(let model):

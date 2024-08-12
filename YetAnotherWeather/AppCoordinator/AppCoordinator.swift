@@ -8,12 +8,11 @@
 import Foundation
 import UIKit
 
-final class AppCoordinator: ICoordinator {
+final class AppCoordinator {
     
-    let serviceAssembly = ServiceAssembly()
-    
-    var childrenCoordinators = [ICoordinator]()
-    
+    private let appAssembly = AppAssembly()
+    private lazy var weatherListFlowCoordinator = appAssembly.currentWeatherListFlowCoordinator
+        
     var window: UIWindow
     
     init(window: UIWindow) {
@@ -26,10 +25,6 @@ final class AppCoordinator: ICoordinator {
         window.rootViewController = navigationController
         window.makeKeyAndVisible()
         
-        let coordinator = WeatherListCoordinator(
-            navigationController: navigationController,
-            serviceAssembly: serviceAssembly
-        )
-        coordinator.start()
+        weatherListFlowCoordinator.start(with: navigationController)
     }
 }

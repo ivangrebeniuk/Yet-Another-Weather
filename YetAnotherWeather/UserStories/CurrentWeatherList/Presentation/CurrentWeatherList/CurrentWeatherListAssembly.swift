@@ -10,27 +10,25 @@ import UIKit
 class CurrentWeatherListAssembly {
     
     // Dependencies
-    let coordinator: ICoordinator
-    let serviceAssembly: ServiceAssembly
+    let weatherNetworkService: IWeatherNetworkService
+    let searchResultAssembly: SearchResultsAssembly
     
-    init(coordinator: ICoordinator,
-         serviceAssembly: ServiceAssembly
-    ) {
-        self.coordinator = coordinator
-        self.serviceAssembly = serviceAssembly
+    init(weatherNetworkService: IWeatherNetworkService, searchResultAssembly: SearchResultsAssembly) {
+        self.weatherNetworkService = weatherNetworkService
+        self.searchResultAssembly = searchResultAssembly
     }
     
-    func assemble() -> UIViewController {
-        
-        let searchViewController = SearchResultsAssembly(serviceAssembly: serviceAssembly)
+    func assemble(output: CurrentWeatherListOutput?) -> UIViewController {
         
         let presenter = CurrentWeatherListPresenter(
-            coordinator: coordinator,
-            weatherNetworkService: serviceAssembly.makeWeatherNetworkService()
+            weatherNetworkService: weatherNetworkService,
+            output: output
         )
         
+        let searchResultsViewController = searchResultAssembly.assemble(output: presenter)
+        
         let viewController = CurrentWeatherListViewController(
-            resultsViewController: searchViewController.assemble(),
+            resultsViewController: searchResultsViewController,
             presenter: presenter
         )
         

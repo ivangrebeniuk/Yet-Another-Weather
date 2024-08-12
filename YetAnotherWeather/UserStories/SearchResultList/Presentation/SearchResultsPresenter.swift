@@ -7,36 +7,39 @@
 
 import Foundation
 
+protocol SearchResultsOutput: AnyObject {
+    
+    func didSelectLocation(_ location: String)
+}
+
 protocol ISearchResultsPresenter: AnyObject {
     
     var searchResultViewModels: [SearchResultCellView.Model] { get }
-    
-//    func updateSearchResults(for searchQuerry: String?)
-    
+        
     func viewDidLoad()
+    
+    func didTapLocation(_ location: String)
 }
 
 final class SearchResultsPresenter {
     
     // Dependencies
-    // private let coordinator: ICoordinator
     private let searchLocationsService: ISearchLocationsService
+    private weak var output: SearchResultsOutput?
     
     weak var view: ISearchResultsView?
-    
-    // Models
-    
+        
     // ISearchResultsPresenter
     private(set) var searchResultViewModels = [SearchResultCellView.Model]()
     
     // MARK: - Init
     
     init(
-        // coordinator: ICoordinator,
-        searchLocationsService: ISearchLocationsService
+        searchLocationsService: ISearchLocationsService,
+        output: SearchResultsOutput?
     ) {
-        // self.coordinator = coordinator
         self.searchLocationsService = searchLocationsService
+        self.output = output
     }
     
     // MARK: - Private
@@ -48,6 +51,7 @@ final class SearchResultsPresenter {
             case .success(let results):
                 DispatchQueue.main.async {
                     self.searchResultViewModels = self.makeViewModels(from: results)
+                    self.view?.updateTableView()
                 }
             case .failure(let error):
                 print(error.localizedDescription)
@@ -66,13 +70,11 @@ final class SearchResultsPresenter {
     private func updateSearchResults(for searchQuerry: String?) {
         guard let searchQuerry = searchQuerry, searchQuerry.count > 2 else {
             searchResultViewModels = []
-//            view?.updateTableView()
             return
         }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
             self?.searchLocations(text: searchQuerry)
-//            self?.view?.updateTableView()
         }
     }
 }
@@ -84,6 +86,10 @@ extension SearchResultsPresenter: ISearchResultsPresenter {
     
     func viewDidLoad() {
         updateSearchResults(for: view?.searchQuerry)
-        view?.updateTableView()
+    }
+    
+    func didTapLocation(_ location: String) {
+        output?.didSelectLocation(location)
+        print("didSelectLocation \(location)")
     }
 }

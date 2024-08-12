@@ -11,19 +11,27 @@ import UIKit
 final class SearchResultsAssembly {
     
     // Dependencies
-    let serviceAssembly: ServiceAssembly
+    let searchLocationsService: ISearchLocationsService
+    let forecastService: IWeatherForecastService
     
-    init(serviceAssembly: ServiceAssembly) {
-        self.serviceAssembly = serviceAssembly
+    init(
+        searchLocationsService: ISearchLocationsService,
+        forecastService: IWeatherForecastService
+    ) {
+        self.searchLocationsService = searchLocationsService
+        self.forecastService = forecastService
     }
     
-    func assemble() -> UIViewController {
+    func assemble(output: SearchResultsOutput?) -> UIViewController {
         
         let presenter = SearchResultsPresenter(
-            searchLocationsService: serviceAssembly.makeSearchLocationsService()
+            searchLocationsService: searchLocationsService,
+            output: output
         )
         
-        let viewController = SearchResultsViewController(presenter: presenter)
+        let viewController = SearchResultsViewController(
+            presenter: presenter
+        )
 
         presenter.view = viewController
         

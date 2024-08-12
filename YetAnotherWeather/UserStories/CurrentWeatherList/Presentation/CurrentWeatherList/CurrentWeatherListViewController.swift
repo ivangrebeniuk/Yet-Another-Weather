@@ -21,7 +21,7 @@ class CurrentWeatherListViewController: UIViewController {
     
     // Dependencies
     let resultsViewController: UIViewController
-    var presenter: ICurrentWeatherListPresenter
+    let presenter: ICurrentWeatherListPresenter
     
     // MARK: - UI
     
