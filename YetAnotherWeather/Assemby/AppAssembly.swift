@@ -28,12 +28,12 @@ final class AppAssembly {
     var searchResultsAssembly: SearchResultsAssembly {
         SearchResultsAssembly(
             searchLocationsService: searchLocationsService,
-            forecastService: weatherForecastService
+            forecastService: forecastService
         )
     }
     
     var weatherDetailsAssembly: WeatherDetailsAssembly {
-        WeatherDetailsAssembly(weatherForecastService: weatherForecastService)
+        WeatherDetailsAssembly(weatherForecastService: forecastService)
     }
     
     // MARK: - FlowCoordinators
@@ -62,8 +62,8 @@ final class AppAssembly {
         )
     }
     
-    private var weatherForecastService: IWeatherForecastService {
-        return WeatherForecastService(
+    private var forecastService: IForecastService {
+        return ForecastService(
             networkService: networkService,
             urlRequestsFactory: urlRequestsFactory
         )

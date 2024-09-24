@@ -1,5 +1,5 @@
 //
-//  WeatherForecastService.swift
+//  ForecastService.swift
 //  YetAnotherWeather
 //
 //  Created by Ivan Grebenyuk on 30.07.2024.
@@ -7,11 +7,11 @@
 
 import Foundation
 
-protocol IWeatherForecastService {
+protocol IForecastService {
     
 }
 
-final class WeatherForecastService {
+final class ForecastService {
     
     // Dependencies
     
@@ -28,6 +28,6 @@ final class WeatherForecastService {
 
 // MARK: - IWeatherForecastService
 
-extension WeatherForecastService: IWeatherForecastService {
+extension ForecastService: IForecastService {
     
 }

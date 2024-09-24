@@ -15,20 +15,19 @@ final class WeatherDetailsPresenter {
     
     // Dependencies
     
-    private let weatherForecastService: IWeatherForecastService
+    private let forecastService: IForecastService
     private let viewModelFactory: IWeatherDetailsViewModelFactory
     private let location: String
-    
     weak var view: IWeatherDetailsView?
     
     // MARK: - Init
     
     init(
-        weatherForecastService: IWeatherForecastService,
+        weatherForecastService: IForecastService,
         viewModelFactory: IWeatherDetailsViewModelFactory,
         location: String
     ) {
-        self.weatherForecastService = weatherForecastService
+        self.forecastService = weatherForecastService
         self.viewModelFactory = viewModelFactory
         self.location = location
     }

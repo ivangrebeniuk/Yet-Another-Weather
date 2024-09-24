@@ -19,20 +19,16 @@ extension CurrentWeatherModel: JSONParsable {
         guard let name = json["location"]["name"].string,
               let region = json["location"]["region"].string,
               let country = json["location"]["country"].string,
-              let tempreture = json["current"]["temp_c"].double,
-              let conditions = json["current"]["condition"]["text"].string,
-              let localTime = json["location"]["localtime_epoch"].int
+              let temperature = json["current"]["temp_c"].double,
+              let localTime = json["location"]["localtime_epoch"].int,
+              let icon = json["current"]["condition"]["icon"].string,
+              let text = json["current"]["condition"]["text"].string
         else { return nil }
         
         return CurrentWeatherModel(
-            location: .init(
-                name: name,
-                region: region,
-                country: country,
-                localTime: localTime
-            ),
-            tempreture: tempreture,
-            condtions: conditions
+            temperature: temperature,
+            location: .init(name: name, region: region, country: country, localTime: localTime),
+            condition: .init(text: text, icon: icon)
         )
     }
 }

@@ -11,11 +11,11 @@ import UIKit
 final class WeatherDetailsAssembly {
     
     // Dependenciec
-    let weatherForecastService: IWeatherForecastService
+    let weatherForecastService: IForecastService
     
     // MARK: - Init
     
-    init(weatherForecastService: IWeatherForecastService) {
+    init(weatherForecastService: IForecastService) {
         self.weatherForecastService = weatherForecastService
     }
     

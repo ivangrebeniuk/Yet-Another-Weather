@@ -90,7 +90,7 @@ class CurrentWeatherListViewController: UIViewController {
     
     private func buttonTapped() {
         print("YO!")
-        presenter.getUnorderedWeatherItems()
+        presenter.getOrderedWeatherItems()
     }
 }
 

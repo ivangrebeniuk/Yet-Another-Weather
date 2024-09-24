@@ -12,11 +12,11 @@ final class SearchResultsAssembly {
     
     // Dependencies
     let searchLocationsService: ISearchLocationsService
-    let forecastService: IWeatherForecastService
+    let forecastService: IForecastService
     
     init(
         searchLocationsService: ISearchLocationsService,
-        forecastService: IWeatherForecastService
+        forecastService: IForecastService
     ) {
         self.searchLocationsService = searchLocationsService
         self.forecastService = forecastService
