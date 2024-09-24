@@ -14,24 +14,26 @@ final class SearchResultParser: IJSONParser {
         
         var results = [SearchResult]()
         
-        try rawResults.forEach { result in
-            guard
-                let id = result["id"].int,
-                let name = result["name"].string,
-                let region = result["region"].string,
-                let country = result["country"].string
-            else {
-                throw NetworkRequestError.modelParsingError
+        do {
+            try rawResults.forEach { result in
+                guard
+                    let id = result["id"].int,
+                    let name = result["name"].string,
+                    let region = result["region"].string,
+                    let country = result["country"].string
+                else {
+                    throw NetworkRequestError.modelParsingError
+                }
+                
+                let searchResult = SearchResult(
+                    id: id,
+                    name: name,
+                    region: region,
+                    country: country
+                )
+                
+                results.append(searchResult)
             }
-            
-            let model = SearchResult(
-                id: id,
-                name: name,
-                region: region,
-                country: country
-            )
-            
-            results.append(model)
         }
         
         return results

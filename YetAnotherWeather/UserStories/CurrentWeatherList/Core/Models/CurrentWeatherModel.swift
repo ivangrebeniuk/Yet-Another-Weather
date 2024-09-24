@@ -16,8 +16,8 @@ struct CurrentWeatherModel: Codable {
         let localTime: Int
     }
     
+    let temperature: Double
     let location: Location
-    let tempreture: Double
-    let condtions: String
+    let condition: Condition
 }
 

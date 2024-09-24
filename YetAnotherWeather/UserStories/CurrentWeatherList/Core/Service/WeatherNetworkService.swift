@@ -10,7 +10,7 @@ import SwiftyJSON
 
 protocol IWeatherNetworkService {
     
-    func getUnorderedCurrentWeatherItems(
+    func getSortedCurrentWeatherItems(
         for locations: [String],
         completion: @escaping (Result<[CurrentWeatherModel], Error>) -> Void
     )
@@ -77,11 +77,12 @@ final class WeatherNetworkService {
 
 extension WeatherNetworkService: IWeatherNetworkService {
     
-    func getUnorderedCurrentWeatherItems(
+    func getSortedCurrentWeatherItems(
         for locations: [String],
         completion: @escaping (Result<[CurrentWeatherModel], Error>) -> Void
     ) {
         var locationsWeather = [Int: CurrentWeatherModel]()
+        var errors = [Error]()
         let group = DispatchGroup()
         
         locations.enumerated().forEach { [weak self] (index, location) in
@@ -91,14 +92,20 @@ extension WeatherNetworkService: IWeatherNetworkService {
                     switch result {
                     case .success(let currentWeather):
                         locationsWeather[index] = currentWeather
-                    case .failure:
-                        print("Не могу загрузить погоду для \(location)")
+                    case .failure(let error):
+                        errors.append(error)
                     }
                     group.leave()
                 }
             }
         }
         group.notify(queue: .main) { [weak self] in
+            guard locations.count != errors.count else {
+                if let error = errors.first {
+                    completion(.failure(error))
+                }
+                return
+            }
             guard let self else { return }
             let sortedLocations = self.makeResultsArray(from: locationsWeather)
             completion(.success(sortedLocations))
@@ -110,6 +117,7 @@ extension WeatherNetworkService: IWeatherNetworkService {
         completion: @escaping (Result<[CurrentWeatherModel], Error>) -> Void
     ) {
         var locationsWeather = [CurrentWeatherModel]()
+        var errors = [Error]()
         let group = DispatchGroup()
         let semaphore = DispatchSemaphore(value: 1)
 
@@ -121,8 +129,8 @@ extension WeatherNetworkService: IWeatherNetworkService {
                     switch result {
                     case .success(let currentWeather):
                         locationsWeather.append(currentWeather)
-                    case .failure:
-                        print("Something went wrong")
+                    case .failure(let error):
+                        errors.append(error)
                     }
                     semaphore.signal()
                     group.leave()
@@ -131,6 +139,12 @@ extension WeatherNetworkService: IWeatherNetworkService {
         }
 
         group.notify(queue: .main) {
+            guard locations.count != errors.count else {
+                if let error = errors.first {
+                    completion(.failure(error))
+                }
+                return
+            }
             completion(.success(locationsWeather))
         }
     }

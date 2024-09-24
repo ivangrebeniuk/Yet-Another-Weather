@@ -14,7 +14,7 @@ protocol CurrentWeatherListOutput: AnyObject {
 
 protocol ICurrentWeatherListPresenter {
             
-    func getUnorderedWeatherItems()
+    func getSortedCurrentWeatherItems()
     
     func getOrderedWeatherItems()
 }
@@ -45,8 +45,8 @@ class CurrentWeatherListPresenter {
 
 extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
     
-    func getUnorderedWeatherItems() {
-        weatherNetworkService.getUnorderedCurrentWeatherItems(
+    func getSortedCurrentWeatherItems() {
+        weatherNetworkService.getSortedCurrentWeatherItems(
             for: ["Ижевск", "Глазго", "Лондон", "Лас Вегас", "Берлин", "Сан Хосе"]
         ) { result in
             DispatchQueue.main.async { [weak self] in
@@ -55,7 +55,7 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
                     self?.weatherToShow = results
                     self?.weatherToShow.forEach {
                         print("!!!", $0.location.name)
-                        print("!!!", $0.tempreture)
+                        print("!!!", $0.temperature)
                     }
                 case .failure(let error):
                     print("Ошибочка: \(error.localizedDescription)")
