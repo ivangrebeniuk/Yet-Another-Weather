@@ -20,7 +20,7 @@ final class AppAssembly {
     
     var currentWeatherListAssembly: CurrentWeatherListAssembly {
         return CurrentWeatherListAssembly(
-            weatherNetworkService: weatherNetworkService,
+            weatherNetworkService: currentWeatherService,
             searchResultAssembly: searchResultsAssembly
         )
     }
@@ -47,8 +47,8 @@ final class AppAssembly {
     
     // MARK: - Private
     
-    private var weatherNetworkService: IWeatherNetworkService {
-        return WeatherNetworkService(
+    private var currentWeatherService: ICurrentWeatherService {
+        return CurrentWeatherService(
             networkQueue: networkQueue,
             networkService: networkService,
             urlRequestsFactory: urlRequestsFactory

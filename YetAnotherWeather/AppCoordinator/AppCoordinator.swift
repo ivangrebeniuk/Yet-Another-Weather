@@ -11,7 +11,7 @@ import UIKit
 final class AppCoordinator {
     
     private let appAssembly = AppAssembly()
-    private lazy var weatherListFlowCoordinator = appAssembly.currentWeatherListFlowCoordinator
+    private lazy var currentWeatherListFlowCoordinator = appAssembly.currentWeatherListFlowCoordinator
         
     var window: UIWindow
     
@@ -25,6 +25,6 @@ final class AppCoordinator {
         window.rootViewController = navigationController
         window.makeKeyAndVisible()
         
-        weatherListFlowCoordinator.start(with: navigationController)
+        currentWeatherListFlowCoordinator.start(with: navigationController)
     }
 }
