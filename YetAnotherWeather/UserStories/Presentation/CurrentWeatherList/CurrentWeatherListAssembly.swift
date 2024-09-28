@@ -21,7 +21,7 @@ class CurrentWeatherListAssembly {
         self.searchResultAssembly = searchResultAssembly
     }
     
-    func assemble(output: CurrentWeatherListOutput?) -> UIViewController {
+    func assemble(output: CurrentWeatherListOutput?) -> Module<CurrentWeatherListInput> {
         
         let presenter = CurrentWeatherListPresenter(
             currentWeatherService: currentWeatherService,
@@ -38,7 +38,7 @@ class CurrentWeatherListAssembly {
         )
         
         presenter.view = viewController
-        return viewController
+        return Module(viewController: viewController, moduleInput: presenter)
     }
 }
 

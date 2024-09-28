@@ -71,7 +71,6 @@ class CurrentWeatherListViewController: UIViewController {
         navigationItem.title = .weatherHeaderText
         navigationController?.navigationBar.prefersLargeTitles = true
         
-//        let searchController = UISearchController(searchResultsController: resultsViewController)
         searchController.searchResultsUpdater = resultsViewController as? UISearchResultsUpdating
         searchController.obscuresBackgroundDuringPresentation = false
         

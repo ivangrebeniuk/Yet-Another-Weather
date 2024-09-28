@@ -56,12 +56,11 @@ final class WeatherDetailsViewController: UIViewController {
     }
     
     @objc private func cancelButtonTapped() {
-        dismiss(animated: true)
+        presenter.didRequestToDismiss()
     }
     
     @objc private func addButtonTapped() {
         presenter.didTapAddButton()
-        dismiss(animated: true)
     }
 }
 

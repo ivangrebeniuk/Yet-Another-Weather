@@ -19,7 +19,7 @@ final class WeatherDetailsAssembly {
         self.forecastService = weatherForecastService
     }
     
-    func assemble(location: String, output: IWeatherDetailsOutput) -> UIViewController {
+    func assemble(location: String, output: WeatherDetailsOutput) -> UIViewController {
         
         let viewModelFactory = WeatherDetailsViewModelFactory()
         

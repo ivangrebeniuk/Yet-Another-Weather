@@ -7,24 +7,24 @@
 
 import Foundation
 
-protocol IWeatherDetailsOutput: AnyObject {
+protocol WeatherDetailsOutput: AnyObject {
     func didAddLocationToFavourites(location: String?)
+    func didRequestToDismiss()
 }
 
 protocol IWeatherDetailsPresenter {
     func viewDidLoad()
-
     func didTapAddButton()
+    func didRequestToDismiss()
 }
 
 final class WeatherDetailsPresenter {
     
     // Dependencies
-    
     private let forecastService: IForecastService
     private let viewModelFactory: IWeatherDetailsViewModelFactory
     private let location: String
-    private weak var output: IWeatherDetailsOutput?
+    private weak var output: WeatherDetailsOutput?
 
     weak var view: IWeatherDetailsView?
     
@@ -34,7 +34,7 @@ final class WeatherDetailsPresenter {
         forecastService: IForecastService,
         viewModelFactory: IWeatherDetailsViewModelFactory,
         location: String,
-        output: IWeatherDetailsOutput
+        output: WeatherDetailsOutput
     ) {
         self.forecastService = forecastService
         self.viewModelFactory = viewModelFactory
@@ -53,5 +53,9 @@ extension WeatherDetailsPresenter: IWeatherDetailsPresenter {
 
     func didTapAddButton() {
         output?.didAddLocationToFavourites(location: location)
+    }
+    
+    func didRequestToDismiss() {
+        output?.didRequestToDismiss()
     }
 }

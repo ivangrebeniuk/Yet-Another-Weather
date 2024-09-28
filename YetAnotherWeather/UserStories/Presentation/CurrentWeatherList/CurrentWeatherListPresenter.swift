@@ -7,9 +7,13 @@
 
 import Foundation
 
+protocol CurrentWeatherListInput: AnyObject {
+    func addToFavourites(location: String)
+}
+
 protocol CurrentWeatherListOutput: AnyObject {
     
-    func didSelectLocation(_ location: String, output: IWeatherDetailsOutput)
+    func didSelectLocation(_ location: String)
 }
 
 protocol ICurrentWeatherListPresenter {
@@ -90,17 +94,20 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
 extension CurrentWeatherListPresenter: SearchResultsOutput {
     func didSelectLocation(_ location: String) {
         print("Search Results output сработал")
-        output?.didSelectLocation(location, output: self)
+        output?.didSelectLocation(location)
     }
 }
 
-// MARK: - IWeatherDetailsOutput
+// MARK: - CurrentWeatherListInput
 
-extension CurrentWeatherListPresenter: IWeatherDetailsOutput {
-    func didAddLocationToFavourites(location: String?) {
-        if let location {
-            favouriteLocations.append(location)
-        }
+extension CurrentWeatherListPresenter: CurrentWeatherListInput {
+    
+    func addToFavourites(location: String) {
         view?.hideSearchResults()
+        favouriteLocations.append(location)
+        print("!!! Локация \(location) была добавлена в массив")
+        favouriteLocations.forEach {
+            print("!!!", $0)
+        }
     }
 }

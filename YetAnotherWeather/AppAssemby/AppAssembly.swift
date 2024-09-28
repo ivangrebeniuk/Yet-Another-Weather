@@ -18,30 +18,35 @@ final class AppAssembly {
     
     // MARK: - Presentation Assemblies
     
-    var currentWeatherListAssembly: CurrentWeatherListAssembly {
+    private var currentWeatherListAssembly: CurrentWeatherListAssembly {
         return CurrentWeatherListAssembly(
             weatherNetworkService: currentWeatherService,
             searchResultAssembly: searchResultsAssembly
         )
     }
     
-    var searchResultsAssembly: SearchResultsAssembly {
+    private var searchResultsAssembly: SearchResultsAssembly {
         SearchResultsAssembly(
             searchLocationsService: searchLocationsService,
             forecastService: forecastService
         )
     }
     
-    var weatherDetailsAssembly: WeatherDetailsAssembly {
+    private var weatherDetailsAssembly: WeatherDetailsAssembly {
         WeatherDetailsAssembly(weatherForecastService: forecastService)
+    }
+    
+    private var weatherDeatailsFlowCoordinator: WeatherDetailsFlowCoordinator {
+        WeatherDetailsFlowCoordinator(weatherDetailsAssembly: weatherDetailsAssembly)
     }
     
     // MARK: - FlowCoordinators
     
-    var currentWeatherListFlowCoordinator: CurrentWeatherListCoordinator {
-        return CurrentWeatherListCoordinator(
+    var currentWeatherListFlowCoordinator: CurrentWeatherListFlowCoordinator {
+        return CurrentWeatherListFlowCoordinator(
             currentWeatherListAssembly: currentWeatherListAssembly,
-            weatherDetailsAssembly: weatherDetailsAssembly
+            weatherDetailsAssembly: weatherDetailsAssembly,
+            weatherDetailsFlowCoordinator: weatherDeatailsFlowCoordinator
         )
     }
     
