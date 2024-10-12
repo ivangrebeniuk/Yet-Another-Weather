@@ -18,7 +18,7 @@ protocol ISearchResultsPresenter: AnyObject {
         
     func viewDidLoad()
     
-    func didTapLocation(_ location: String)
+    func didTapCell(atIndex index: IndexPath)
 }
 
 final class SearchResultsPresenter {
@@ -26,11 +26,13 @@ final class SearchResultsPresenter {
     // Dependencies
     private let searchLocationsService: ISearchLocationsService
     private weak var output: SearchResultsOutput?
-    
     weak var view: ISearchResultsView?
         
     // ISearchResultsPresenter
     private(set) var searchResultViewModels = [SearchResultCellView.Model]()
+    
+    // Models
+    private var searchResults = [SearchResultModel]()
     
     // MARK: - Init
     
@@ -45,11 +47,12 @@ final class SearchResultsPresenter {
     // MARK: - Private
     
     private func searchLocations(text: String) {
-        searchLocationsService.getSearchResults(for: text) { [weak self] result in
-            guard let self else { return }
+        searchLocationsService.getSearchResults(for: text) { result in
             switch result {
             case .success(let results):
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self else { return }
+                    self.searchResults = results
                     self.searchResultViewModels = self.makeViewModels(from: results)
                     self.view?.updateTableView()
                 }
@@ -68,7 +71,10 @@ final class SearchResultsPresenter {
     }
     
     private func updateSearchResults(for searchQuerry: String?) {
-        guard let searchQuerry = searchQuerry, searchQuerry.count > 2 else {
+        guard
+            let searchQuerry = searchQuerry,
+            searchQuerry.count > 2
+        else {
             searchResultViewModels = []
             return
         }
@@ -83,12 +89,12 @@ final class SearchResultsPresenter {
 
 extension SearchResultsPresenter: ISearchResultsPresenter {
     
-    
     func viewDidLoad() {
         updateSearchResults(for: view?.searchQuerry)
     }
     
-    func didTapLocation(_ location: String) {
-        output?.didSelectLocation(location)
+    func didTapCell(atIndex index: IndexPath) {
+        let locationId = String(searchResults[index.row].id)
+        output?.didSelectLocation(locationId)
     }
 }

@@ -98,9 +98,7 @@ extension SearchResultsViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        print("Тапнули на ячейку. Город \(presenter.searchResultViewModels[indexPath.row])")
-        let location = presenter.searchResultViewModels[indexPath.row].title
-        presenter.didTapLocation(location)
+        presenter.didTapCell(atIndex: indexPath)
     }
 }
 

@@ -52,7 +52,7 @@ extension URLRequestFactory: IURLRequestFactory {
 
     func makeCurrentWeatherRequest(for location: String) throws -> URLRequest {
         let querryItems = [
-            URLQueryItem(name: APIConstants.location, value: location)
+            URLQueryItem(name: APIConstants.location, value: "id:\(location)")
         ]
         guard let url = Endpoint(path: APIConstants.currentPath, querryItems: querryItems).url else {
             throw NetworkRequestError.endpointError
@@ -62,7 +62,8 @@ extension URLRequestFactory: IURLRequestFactory {
     
     func makeForecastRequest(for location: String) throws -> URLRequest {
         let querryItems = [
-            URLQueryItem(name: APIConstants.location, value: location)
+            URLQueryItem(name: APIConstants.location, value: "id:\(location)"),
+            URLQueryItem(name: APIConstants.daysParameter, value: "7")
         ]
         guard let url = Endpoint(
             path: APIConstants.forecastPath,

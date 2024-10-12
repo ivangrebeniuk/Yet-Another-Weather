@@ -8,7 +8,7 @@
 import Foundation
 import SwiftyJSON
 
-final class ForecastParser {
+final class ForecastParser: IJSONParser {
     
     func parse(_ json: JSON) throws -> ForecastModel {
         let currentWeatherParser = CurrentWeatherParser()

@@ -48,7 +48,8 @@ final class CurrentWeatherService {
     ) {
         do {
             let request = try urlRequestsFactory.makeCurrentWeatherRequest(for: location)
-            self.networkService.load(request: request, parser: CurrentWeatherParser()) { (result: Result<CurrentWeatherModel, Error>) in
+            let parser = CurrentWeatherParser()
+            networkService.load(request: request, parser: parser) { (result: Result<CurrentWeatherModel, Error>) in
                 switch result {
                 case .success(let model):
                     completion(.success(model))

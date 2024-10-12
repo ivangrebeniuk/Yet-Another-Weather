@@ -13,4 +13,5 @@ enum APIConstants {
     static let currentPath = "/v1/current.json"
     static let forecastPath = "/v1/forecast.json"
     static let searchPath = "/v1/search.json"
+    static let daysParameter = "days"
 }

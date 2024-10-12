@@ -32,6 +32,7 @@ final class WeatherDetailsViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        presenter.viewDidLoad()
         setUpNavigationBar()
         view.backgroundColor = .systemMint
         

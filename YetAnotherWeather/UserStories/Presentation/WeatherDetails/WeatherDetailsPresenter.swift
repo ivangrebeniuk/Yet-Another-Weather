@@ -28,6 +28,9 @@ final class WeatherDetailsPresenter {
 
     weak var view: IWeatherDetailsView?
     
+    // Models
+    var forecastData: ForecastModel?
+    
     // MARK: - Init
     
     init(
@@ -41,6 +44,26 @@ final class WeatherDetailsPresenter {
         self.location = location
         self.output = output
     }
+    
+    // MARK: - Private
+    
+    func getWeatherForecast() {
+        forecastService.getWeatherForecast(for: location) { result in
+            switch result {
+            case .success(let result):
+                DispatchQueue.main.async { [weak self] in
+                    self?.forecastData = result
+                    print("!!! \(result.currentWeather.location.name), \(result.currentWeather.location.country)")
+                    print("!!! \(result.currentWeather.condition.text)")
+                    result.forecastDays.forEach {
+                        print("!!! Date \($0.date): Average Temp \($0.avgTemp)")
+                    }
+                }
+            case .failure(let error):
+                print("Ошибочка: \(error.localizedDescription)")
+            }
+        }
+    }
 }
 
 // MARK: - IWeatherDetailsPresenter
@@ -49,6 +72,7 @@ extension WeatherDetailsPresenter: IWeatherDetailsPresenter {
     
     func viewDidLoad() {
         print("Открыли Детали погоды для \(location)")
+        getWeatherForecast()
     }
 
     func didTapAddButton() {
