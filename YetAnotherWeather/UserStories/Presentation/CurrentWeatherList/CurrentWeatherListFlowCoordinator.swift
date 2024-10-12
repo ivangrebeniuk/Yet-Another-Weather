@@ -41,10 +41,10 @@ final class CurrentWeatherListFlowCoordinator {
     
     // MARK: - Private
     
-    private func openWeatherDetails(for location: String) {
+    private func openWeatherDetails(for locationId: String) {
         weatherDetailsFlowCoordinator.start(
             from: navigationController,
-            location: location,
+            location: locationId,
             output: self
         )
     }

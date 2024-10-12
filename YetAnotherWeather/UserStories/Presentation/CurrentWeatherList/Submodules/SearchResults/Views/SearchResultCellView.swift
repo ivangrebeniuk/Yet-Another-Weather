@@ -60,7 +60,7 @@ final class SearchResultCellView: UITableViewCell {
     }
 }
 
-// MARK: ConfigurableView
+// MARK: - ConfigurableView
 
 extension SearchResultCellView: ConfigurableView {
     
