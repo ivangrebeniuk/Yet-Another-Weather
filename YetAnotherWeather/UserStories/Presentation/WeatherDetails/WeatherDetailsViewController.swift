@@ -11,13 +11,16 @@ import SnapKit
 
 protocol IWeatherDetailsView: AnyObject {
     
+    func updateView(wit model: WeatherDetailsViewModel)
 }
 
 final class WeatherDetailsViewController: UIViewController {
     
     // Dependencies
-    
     private let presenter: IWeatherDetailsPresenter
+    
+    // UI
+    let currentWeatherView = CurrentWeatherView()
     
     // MARK: - Init
     
@@ -34,8 +37,8 @@ final class WeatherDetailsViewController: UIViewController {
         super.viewDidLoad()
         presenter.viewDidLoad()
         setUpNavigationBar()
-        view.backgroundColor = .systemMint
-        
+        view.backgroundColor = .systemGray6
+        setUpUI()
     }
     
     // MARK: - Private
@@ -56,6 +59,16 @@ final class WeatherDetailsViewController: UIViewController {
         )
     }
     
+    private func setUpUI() {
+        view.addSubview(currentWeatherView)
+        
+        currentWeatherView.snp.makeConstraints {
+            $0.top.equalToSuperview().offset(78)
+            $0.leading.trailing.equalToSuperview()
+            $0.height.equalTo(200)
+        }
+    }
+    
     @objc private func cancelButtonTapped() {
         presenter.didRequestToDismiss()
     }
@@ -69,4 +82,7 @@ final class WeatherDetailsViewController: UIViewController {
 
 extension WeatherDetailsViewController: IWeatherDetailsView {
     
+    func updateView(wit model: WeatherDetailsViewModel) {
+        currentWeatherView.configure(with: model.currentWeatherViewModel)
+    }
 }
