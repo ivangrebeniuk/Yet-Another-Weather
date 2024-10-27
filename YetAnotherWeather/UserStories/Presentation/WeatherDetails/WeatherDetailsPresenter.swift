@@ -48,20 +48,23 @@ final class WeatherDetailsPresenter {
     // MARK: - Private
     
     func getWeatherForecast() {
-        forecastService.getWeatherForecast(for: location) { result in
+        forecastService.getWeatherForecast(for: location) { [weak self] result in
             switch result {
             case .success(let result):
-                DispatchQueue.main.async { [weak self] in
-                    self?.forecastData = result
-                    print("!!! \(result.currentWeather.location.name), \(result.currentWeather.location.country)")
-                    print("!!! \(result.currentWeather.condition.text)")
-                    result.forecastDays.forEach {
-                        print("!!! Date \($0.date): Average Temp \($0.avgTemp)")
-                    }
-                }
+                self?.handleSuccessResult(result)
             case .failure(let error):
                 print("Ошибочка: \(error.localizedDescription)")
             }
+        }
+    }
+    
+    private func handleSuccessResult(_ result: ForecastModel) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.forecastData = result
+            guard let forecastData = self.forecastData else { return }
+            let viewModel = self.viewModelFactory.makeCurrentWeatherViewModel(model: forecastData)
+            self.view?.updateView(wit: viewModel)
         }
     }
 }
@@ -71,7 +74,6 @@ final class WeatherDetailsPresenter {
 extension WeatherDetailsPresenter: IWeatherDetailsPresenter {
     
     func viewDidLoad() {
-        print("Открыли Детали погоды для \(location)")
         getWeatherForecast()
     }
 
