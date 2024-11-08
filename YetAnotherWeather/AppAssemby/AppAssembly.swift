@@ -15,6 +15,7 @@ final class AppAssembly {
     private let urlRequestsFactory = URLRequestFactory()
     private let networkService = NetworkService(session: URLSession.shared)
     private let networkQueue = DispatchQueue(label: "ru.i.grebeniuk.serialNetworkQueue")
+    private let backgroundImageResolver = BackgroundImageResolver()
     
     // MARK: - Presentation Assemblies
     
@@ -33,7 +34,9 @@ final class AppAssembly {
     }
     
     private var weatherDetailsAssembly: WeatherDetailsAssembly {
-        WeatherDetailsAssembly(weatherForecastService: forecastService)
+        WeatherDetailsAssembly(
+            weatherForecastService: forecastService,
+            backgroundImageResolver: backgroundImageResolver)
     }
     
     private var weatherDeatailsFlowCoordinator: WeatherDetailsFlowCoordinator {

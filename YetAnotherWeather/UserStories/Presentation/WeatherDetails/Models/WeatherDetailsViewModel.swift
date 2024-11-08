@@ -9,17 +9,16 @@ import Foundation
 
 struct WeatherDetailsViewModel {
     
-    struct CurrentWeatherViewModel {
-        let location: String
-        let currentTemp: String
-        let conditions: String
-        let minTemp: String
-        let maxTemp: String
-    }
+    typealias CurrentWeatherViewModel = CurrentWeatherView.Model
     
     let currentWeatherViewModel: CurrentWeatherViewModel
+    let backgroundImageTitle: String
     
-    init(currentWeatherViewModel: CurrentWeatherViewModel) {
+    init(
+        currentWeatherViewModel: CurrentWeatherViewModel,
+        backgroundImageTitle: String
+    ) {
         self.currentWeatherViewModel = currentWeatherViewModel
+        self.backgroundImageTitle = backgroundImageTitle
     }
 }

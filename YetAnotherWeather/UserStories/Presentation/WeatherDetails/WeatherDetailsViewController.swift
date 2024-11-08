@@ -9,9 +9,27 @@ import Foundation
 import UIKit
 import SnapKit
 
+private extension String {
+    
+    static let alertTitle = "Something went wrong"
+    static let alertMessage = "Try again later"
+    static let alertButtonText = "OK"
+}
+
 protocol IWeatherDetailsView: AnyObject {
     
+    /// Update UI
+    ///  paramters: - `model`
     func updateView(wit model: WeatherDetailsViewModel)
+    
+    /// Show activity indicator
+    func startLoader()
+    
+    /// Hide activity indicator
+    func stopLoader()
+    
+    /// Show error alert message
+    func showAlert()
 }
 
 final class WeatherDetailsViewController: UIViewController {
@@ -20,11 +38,25 @@ final class WeatherDetailsViewController: UIViewController {
     private let presenter: IWeatherDetailsPresenter
     
     // UI
-    let currentWeatherView = CurrentWeatherView()
+    private let currentWeatherView = CurrentWeatherView()
+    private let backgroundImageView = UIImageView()
+    private let loader = UIActivityIndicatorView(style: .large)
+    
+    private lazy var alertController = configureAlertMessage(
+        with: .alertTitle,
+        message: .alertMessage,
+        firstButtonText: .alertButtonText,
+        firstButtonStyle: .cancel,
+        actionHandler: { [weak self] in
+            self?.presenter.didRequestToDismiss()
+        }
+    )
     
     // MARK: - Init
     
-    init(presenter: IWeatherDetailsPresenter) {
+    init(
+        presenter: IWeatherDetailsPresenter
+    ) {
         self.presenter = presenter
         super.init(nibName: nil, bundle: nil)
     }
@@ -36,9 +68,9 @@ final class WeatherDetailsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         presenter.viewDidLoad()
-        setUpNavigationBar()
-        view.backgroundColor = .systemGray6
         setUpUI()
+        setUpConstraints()
+        view.backgroundColor = .systemBackground
     }
     
     // MARK: - Private
@@ -46,26 +78,49 @@ final class WeatherDetailsViewController: UIViewController {
     private func setUpNavigationBar() {
         navigationItem.leftBarButtonItem = UIBarButtonItem(
             title: "Cancel",
-            style: .done,
+            style: .plain,
             target: self,
             action: #selector(cancelButtonTapped)
         )
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             title: "Add",
-            style: .plain,
+            style: .done,
             target: self,
             action: #selector(addButtonTapped)
         )
+        navigationController?.navigationBar.tintColor = .white
+        navigationController?.navigationBar.isTranslucent = true
+        navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
+        navigationController?.navigationBar.shadowImage = UIImage()
     }
     
     private func setUpUI() {
+        view.addSubview(backgroundImageView)
+        view.addSubview(loader)
         view.addSubview(currentWeatherView)
+        
+        setUpNavigationBar()
+    }
+    
+    private func setUpBackground(withImage imageTitle: String) {
+        let image = UIImage(named: imageTitle)
+        backgroundImageView.image = image
+        backgroundImageView.contentMode = .scaleAspectFill
+    }
+    
+    private func setUpConstraints() {
+        backgroundImageView.snp.makeConstraints {
+            $0.top.bottom.leading.trailing.equalToSuperview()
+        }
         
         currentWeatherView.snp.makeConstraints {
             $0.top.equalToSuperview().offset(78)
             $0.leading.trailing.equalToSuperview()
-            $0.height.equalTo(200)
+        }
+        
+        loader.snp.makeConstraints {
+            $0.centerX.centerY.equalToSuperview()
         }
     }
     
@@ -84,5 +139,21 @@ extension WeatherDetailsViewController: IWeatherDetailsView {
     
     func updateView(wit model: WeatherDetailsViewModel) {
         currentWeatherView.configure(with: model.currentWeatherViewModel)
+        setUpBackground(withImage: model.backgroundImageTitle)
+    }
+    
+    func startLoader() {
+        loader.color = .white
+        loader.startAnimating()
+        currentWeatherView.isHidden = true
+    }
+    
+    func stopLoader() {
+        loader.stopAnimating()
+        currentWeatherView.isHidden = false
+    }
+    
+    func showAlert() {
+        showAlert(alertController)
     }
 }

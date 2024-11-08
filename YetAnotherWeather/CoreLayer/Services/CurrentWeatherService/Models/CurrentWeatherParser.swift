@@ -18,14 +18,15 @@ final class CurrentWeatherParser: IJSONParser {
               let temperature = json["current"]["temp_c"].double,
               let localTime = json["location"]["localtime_epoch"].int,
               let icon = json["current"]["condition"]["icon"].string,
-              let text = json["current"]["condition"]["text"].string
-                
+              let text = json["current"]["condition"]["text"].string,
+              let isDay = json["current"]["is_day"].int
         else { throw NetworkRequestError.modelParsingError }
         
         return CurrentWeatherModel(
             temperature: temperature,
             location: .init(name: name, region: region, country: country, localTime: localTime),
-            condition: .init(text: text, icon: icon)
+            condition: .init(text: text, icon: icon),
+            isDay: isDay
         )
     }
 }

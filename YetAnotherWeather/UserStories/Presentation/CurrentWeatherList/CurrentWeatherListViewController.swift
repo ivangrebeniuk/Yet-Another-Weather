@@ -10,7 +10,7 @@ import SnapKit
 
 private extension String {
     static let weatherHeaderText = "Weather"
-    static let searchFielPlaceholderText = "Type city to search"
+    static let searchFielPlaceholderText = "Type location to search"
 }
 
 protocol ICurrentWeatherListView: AnyObject {

@@ -46,25 +46,23 @@ final class WeatherDetailsPresenter {
     }
     
     // MARK: - Private
-    
     func getWeatherForecast() {
         forecastService.getWeatherForecast(for: location) { [weak self] result in
-            switch result {
-            case .success(let result):
-                self?.handleSuccessResult(result)
-            case .failure(let error):
-                print("Ошибочка: \(error.localizedDescription)")
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                self.view?.startLoader()
+                switch result {
+                case .success(let forecastModel):
+                    let viewModel = viewModelFactory.makeCurrentWeatherViewModel(
+                        model: forecastModel
+                    )
+                    view?.updateView(wit: viewModel)
+                case .failure(let error):
+                    view?.showAlert()
+                    print("Ошибочка: \(error.localizedDescription)")
+                }
+                self.view?.stopLoader()
             }
-        }
-    }
-    
-    private func handleSuccessResult(_ result: ForecastModel) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            self.forecastData = result
-            guard let forecastData = self.forecastData else { return }
-            let viewModel = self.viewModelFactory.makeCurrentWeatherViewModel(model: forecastData)
-            self.view?.updateView(wit: viewModel)
         }
     }
 }
