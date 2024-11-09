@@ -8,6 +8,11 @@
 import Foundation
 // ПЕРЕДАВАТЬ isDay как параметр и взависимости от этого конфигурировать фон и цвет шрифта
 
+private extension String {
+    static let isDayImageName = "Day_BikiniBottom"
+    static let isNightImageName = "Night_BikiniBottom"
+}
+
 protocol IWeatherDetailsViewModelFactory {
     
     func makeCurrentWeatherViewModel(model: ForecastModel) -> WeatherDetailsViewModel
@@ -15,15 +20,8 @@ protocol IWeatherDetailsViewModelFactory {
 
 final class WeatherDetailsViewModelFactory {
     
-    typealias CurrentWeatherModel = WeatherDetailsViewModel.CurrentWeatherViewModel
-    
-    // Dependencies
-    private let backgroundImageResolver: IBackgroundImageResolver
-
-    init(backgroundImageResolver: IBackgroundImageResolver) {
-        self.backgroundImageResolver = backgroundImageResolver
-    }
-    
+    private typealias CurrentWeatherModel = WeatherDetailsViewModel.CurrentWeatherViewModel
+        
     // MARK: - Private
     
     private func makeTempreature(_ temp: Double?) -> String? {
@@ -34,17 +32,20 @@ final class WeatherDetailsViewModelFactory {
     private func makeCurrentWeatherViewModel(from model: ForecastModel) -> CurrentWeatherModel {
         return CurrentWeatherModel(
             location: model.currentWeather.location.name,
-            currentTemp: makeTempreature(model.currentWeather.temperature),
             conditions: model.currentWeather.condition.text,
+            isDay: model.currentWeather.isDay,
+            currentTemp: makeTempreature(model.currentWeather.temperature),
             minTemp: makeTempreature(model.forecastDays.first?.maxTemp),
             maxTemp: makeTempreature(model.forecastDays.first?.maxTemp)
         )
     }
     
     private func makeBackgroundImageTitle(from model: ForecastModel) -> String {
-        let isDay: Bool = model.currentWeather.isDay == 1 ? true : false
-        let backgroundImage = backgroundImageResolver.resolveBackgroundImage(isDay: isDay)
-        return backgroundImage.weatherDetailsImageTitle
+        if model.currentWeather.isDay {
+            return .isDayImageName
+        } else {
+            return .isNightImageName
+        }
     }
 }
 

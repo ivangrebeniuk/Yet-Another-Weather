@@ -50,7 +50,7 @@ final class WeatherDetailsPresenter {
         forecastService.getWeatherForecast(for: location) { [weak self] result in
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
-                self.view?.startLoader()
+                view?.startLoader()
                 switch result {
                 case .success(let forecastModel):
                     let viewModel = viewModelFactory.makeCurrentWeatherViewModel(
@@ -59,9 +59,10 @@ final class WeatherDetailsPresenter {
                     view?.updateView(wit: viewModel)
                 case .failure(let error):
                     view?.showAlert()
+                    output?.didRequestToDismiss()
                     print("Ошибочка: \(error.localizedDescription)")
                 }
-                self.view?.stopLoader()
+                view?.stopLoader()
             }
         }
     }

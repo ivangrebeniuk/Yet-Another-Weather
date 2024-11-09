@@ -30,7 +30,7 @@ extension CurrentWeatherModel: JSONParsable {
             temperature: temperature,
             location: .init(name: name, region: region, country: country, localTime: localTime),
             condition: .init(text: text, icon: icon),
-            isDay: isDay
+            isDay: isDay == 1
         )
     }
 }

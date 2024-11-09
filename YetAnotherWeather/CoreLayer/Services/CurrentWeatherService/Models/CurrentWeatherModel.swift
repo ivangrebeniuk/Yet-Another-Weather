@@ -19,5 +19,5 @@ struct CurrentWeatherModel: Codable {
     let temperature: Double
     let location: Location
     let condition: Condition
-    let isDay: Int
+    let isDay: Bool
 }

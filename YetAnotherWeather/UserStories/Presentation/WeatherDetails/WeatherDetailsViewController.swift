@@ -17,18 +17,13 @@ private extension String {
 }
 
 protocol IWeatherDetailsView: AnyObject {
-    
-    /// Update UI
-    ///  paramters: - `model`
+
     func updateView(wit model: WeatherDetailsViewModel)
     
-    /// Show activity indicator
     func startLoader()
     
-    /// Hide activity indicator
     func stopLoader()
     
-    /// Show error alert message
     func showAlert()
 }
 
@@ -47,9 +42,10 @@ final class WeatherDetailsViewController: UIViewController {
         message: .alertMessage,
         firstButtonText: .alertButtonText,
         firstButtonStyle: .cancel,
-        actionHandler: { [weak self] in
-            self?.presenter.didRequestToDismiss()
-        }
+        actionHandler: nil
+//        actionHandler: { [weak self] in
+//            self?.presenter.didRequestToDismiss()
+//        }
     )
     
     // MARK: - Init
@@ -101,6 +97,7 @@ final class WeatherDetailsViewController: UIViewController {
         view.addSubview(currentWeatherView)
         
         setUpNavigationBar()
+        loader.color = .white
     }
     
     private func setUpBackground(withImage imageTitle: String) {
@@ -143,7 +140,6 @@ extension WeatherDetailsViewController: IWeatherDetailsView {
     }
     
     func startLoader() {
-        loader.color = .white
         loader.startAnimating()
         currentWeatherView.isHidden = true
     }
@@ -154,6 +150,9 @@ extension WeatherDetailsViewController: IWeatherDetailsView {
     }
     
     func showAlert() {
-        showAlert(alertController)
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            showAlert(alertController)
+        }
     }
 }

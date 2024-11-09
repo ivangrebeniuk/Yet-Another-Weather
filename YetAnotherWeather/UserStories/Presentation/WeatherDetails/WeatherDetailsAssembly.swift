@@ -12,23 +12,18 @@ final class WeatherDetailsAssembly {
     
     // Dependenciec
     private let forecastService: IForecastService
-    private let backgroundImageResolver: IBackgroundImageResolver
     
     // MARK: - Init
     
     init(
-        weatherForecastService: IForecastService,
-        backgroundImageResolver: IBackgroundImageResolver
+        weatherForecastService: IForecastService
     ) {
         self.forecastService = weatherForecastService
-        self.backgroundImageResolver = backgroundImageResolver
     }
     
     func assemble(location: String, output: WeatherDetailsOutput) -> UIViewController {
         
-        let viewModelFactory = WeatherDetailsViewModelFactory(
-            backgroundImageResolver: backgroundImageResolver
-        )
+        let viewModelFactory = WeatherDetailsViewModelFactory()
         
         let presenter = WeatherDetailsPresenter(
             forecastService: forecastService,

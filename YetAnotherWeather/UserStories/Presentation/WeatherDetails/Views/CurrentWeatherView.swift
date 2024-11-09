@@ -21,7 +21,6 @@ final class CurrentWeatherView: UIView {
     
     private var locationLabel: UILabel = {
         let label = UILabel()
-        label.textColor = UIColor.white
         label.font = UIFont.systemFont(ofSize: CGFloat(37), weight: .regular)
         label.textAlignment = .center
         return label
@@ -29,7 +28,6 @@ final class CurrentWeatherView: UIView {
     
     private var currentTempLabel: UILabel = {
         let label = UILabel()
-        label.textColor = UIColor.white
         label.font = UIFont.systemFont(ofSize: CGFloat(102), weight: .thin)
         label.textAlignment = .center
         return label
@@ -37,7 +35,6 @@ final class CurrentWeatherView: UIView {
     
     private var conditionsLabel: UILabel = {
         let label = UILabel()
-        label.textColor = UIColor.white
         label.font = UIFont.systemFont(ofSize: CGFloat(24), weight: .regular)
         label.textAlignment = .center
         return label
@@ -45,7 +42,6 @@ final class CurrentWeatherView: UIView {
     
     private var highAndLowLabel: UILabel = {
         let label = UILabel()
-        label.textColor = UIColor.white
         label.font = UIFont.systemFont(ofSize: CGFloat(21), weight: .medium)
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -78,21 +74,35 @@ final class CurrentWeatherView: UIView {
             $0.leading.trailing.equalToSuperview().inset(8)
         }
         
-        locationLabel.snp.makeConstraints {
-            $0.leading.trailing.equalToSuperview()
-        }
-        
-        currentTempLabel.snp.makeConstraints {
-            $0.leading.trailing.equalToSuperview()
-
-        }
-        
-        conditionsLabel.snp.makeConstraints {
-            $0.leading.trailing.equalToSuperview()
-        }
-        
-        highAndLowLabel.snp.makeConstraints {
-            $0.leading.trailing.equalToSuperview()
+//        locationLabel.snp.makeConstraints {
+//            $0.leading.trailing.equalToSuperview()
+//        }
+//        
+//        currentTempLabel.snp.makeConstraints {
+//            $0.leading.trailing.equalToSuperview()
+//
+//        }
+//        
+//        conditionsLabel.snp.makeConstraints {
+//            $0.leading.trailing.equalToSuperview()
+//        }
+//        
+//        highAndLowLabel.snp.makeConstraints {
+//            $0.leading.trailing.equalToSuperview()
+//        }
+    }
+    
+    private func setUpTextColor(isDay: Bool) {
+        if isDay {
+            locationLabel.textColor = .black
+            currentTempLabel.textColor = .black
+            conditionsLabel.textColor = .black
+            highAndLowLabel.textColor = .black
+        } else {
+            locationLabel.textColor = .white
+            currentTempLabel.textColor = .white
+            conditionsLabel.textColor = .white
+            highAndLowLabel.textColor = .white
         }
     }
 }
@@ -103,20 +113,23 @@ extension CurrentWeatherView: ConfigurableView {
     
     struct Model {
         let location: String
-        let currentTemp: String?
         let conditions: String
+        let isDay: Bool
+        let currentTemp: String?
         let minTemp: String?
         let maxTemp: String?
     }
     
     func configure(with model: Model) {
+        setUpTextColor(isDay: model.isDay)
         locationLabel.text = model.location
         currentTempLabel.text = model.currentTemp
         conditionsLabel.text = model.conditions
-        guard let maxTemp = model.maxTemp, let minTemp = model.minTemp else {
+        if let maxTemp = model.maxTemp, let minTemp = model.minTemp {
+            highAndLowLabel.text = "H:\(maxTemp)  L:\(minTemp)"
+            highAndLowLabel.isHidden = false
+        } else {
             highAndLowLabel.isHidden = true
-            return
         }
-        highAndLowLabel.text = "H:\(maxTemp)  L:\(minTemp)"
     }
 }
