@@ -37,15 +37,14 @@ final class WeatherDetailsViewController: UIViewController {
     private let backgroundImageView = UIImageView()
     private let loader = UIActivityIndicatorView(style: .large)
     
-    private lazy var alertController = configureAlertMessage(
+    private lazy var alertController = makeAlertMessage(
         with: .alertTitle,
         message: .alertMessage,
         firstButtonText: .alertButtonText,
         firstButtonStyle: .cancel,
-        actionHandler: nil
-//        actionHandler: { [weak self] in
-//            self?.presenter.didRequestToDismiss()
-//        }
+        actionHandler: { [weak self] in
+            self?.presenter.didRequestToDismiss()
+        }
     )
     
     // MARK: - Init

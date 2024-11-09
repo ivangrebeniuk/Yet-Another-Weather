@@ -59,7 +59,6 @@ final class WeatherDetailsPresenter {
                     view?.updateView(wit: viewModel)
                 case .failure(let error):
                     view?.showAlert()
-                    output?.didRequestToDismiss()
                     print("Ошибочка: \(error.localizedDescription)")
                 }
                 view?.stopLoader()
