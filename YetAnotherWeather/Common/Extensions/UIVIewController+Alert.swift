@@ -10,7 +10,7 @@ import UIKit
 
 extension UIViewController {
     
-    func configureAlertMessage(
+    func makeAlertMessage(
         with title: String,
         message: String?,
         firstButtonText: String,
