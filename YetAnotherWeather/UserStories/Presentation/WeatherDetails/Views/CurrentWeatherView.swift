@@ -73,31 +73,14 @@ final class CurrentWeatherView: UIView {
             $0.top.bottom.equalToSuperview()
             $0.leading.trailing.equalToSuperview().inset(8)
         }
-        
-//        locationLabel.snp.makeConstraints {
-//            $0.leading.trailing.equalToSuperview()
-//        }
-//        
-//        currentTempLabel.snp.makeConstraints {
-//            $0.leading.trailing.equalToSuperview()
-//
-//        }
-//        
-//        conditionsLabel.snp.makeConstraints {
-//            $0.leading.trailing.equalToSuperview()
-//        }
-//        
-//        highAndLowLabel.snp.makeConstraints {
-//            $0.leading.trailing.equalToSuperview()
-//        }
     }
     
     private func setUpTextColor(isDay: Bool) {
         if isDay {
-            locationLabel.textColor = .black
-            currentTempLabel.textColor = .black
-            conditionsLabel.textColor = .black
-            highAndLowLabel.textColor = .black
+            locationLabel.textColor = .white
+            currentTempLabel.textColor = .white
+            conditionsLabel.textColor = .white
+            highAndLowLabel.textColor = .white
         } else {
             locationLabel.textColor = .white
             currentTempLabel.textColor = .white

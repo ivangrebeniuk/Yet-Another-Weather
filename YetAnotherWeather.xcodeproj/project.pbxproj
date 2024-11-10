@@ -50,7 +50,9 @@
 		E2D1AE612CA29ABB00008AD6 /* ForecastParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2D1AE602CA29ABB00008AD6 /* ForecastParser.swift */; };
 		E2D1AE632CA29B0800008AD6 /* ForecastService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2D1AE622CA29B0800008AD6 /* ForecastService.swift */; };
 		E2D1AE652CA29BA700008AD6 /* ConditionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2D1AE642CA29BA700008AD6 /* ConditionModel.swift */; };
-		E2F679822CDDD81800B57BB6 /* UIVIewController+Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2F679812CDDD81800B57BB6 /* UIVIewController+Alert.swift */; };
+		E2F692D72CE0A7A500B57BB6 /* AlertMessageViewModelFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2F692D62CE0A7A500B57BB6 /* AlertMessageViewModelFactory.swift */; };
+		E2F692DA2CE0AC4E00B57BB6 /* UIAlertController+Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2F692D92CE0AC4E00B57BB6 /* UIAlertController+Alert.swift */; };
+		E2F692DC2CE0AE7900B57BB6 /* SingleButtonAlertViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2F692DB2CE0AE7900B57BB6 /* SingleButtonAlertViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -101,7 +103,9 @@
 		E2D1AE602CA29ABB00008AD6 /* ForecastParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForecastParser.swift; sourceTree = "<group>"; };
 		E2D1AE622CA29B0800008AD6 /* ForecastService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForecastService.swift; sourceTree = "<group>"; };
 		E2D1AE642CA29BA700008AD6 /* ConditionModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConditionModel.swift; sourceTree = "<group>"; };
-		E2F679812CDDD81800B57BB6 /* UIVIewController+Alert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIVIewController+Alert.swift"; sourceTree = "<group>"; };
+		E2F692D62CE0A7A500B57BB6 /* AlertMessageViewModelFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertMessageViewModelFactory.swift; sourceTree = "<group>"; };
+		E2F692D92CE0AC4E00B57BB6 /* UIAlertController+Alert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIAlertController+Alert.swift"; sourceTree = "<group>"; };
+		E2F692DB2CE0AE7900B57BB6 /* SingleButtonAlertViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleButtonAlertViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -278,19 +282,19 @@
 		E23DC6082CA5977D00CCEEA7 /* Common */ = {
 			isa = PBXGroup;
 			children = (
-				E2F679802CDDD7F400B57BB6 /* Extensions */,
-				E23DC6092CA5979100CCEEA7 /* Classes */,
+				E2F692D82CE0AC0700B57BB6 /* Alerts */,
+				E23DC6092CA5979100CCEEA7 /* Models */,
 				E2419D262C0B779100342DA8 /* Protocols */,
 			);
 			path = Common;
 			sourceTree = "<group>";
 		};
-		E23DC6092CA5979100CCEEA7 /* Classes */ = {
+		E23DC6092CA5979100CCEEA7 /* Models */ = {
 			isa = PBXGroup;
 			children = (
 				E23DC60A2CA597A500CCEEA7 /* Module.swift */,
 			);
-			path = Classes;
+			path = Models;
 			sourceTree = "<group>";
 		};
 		E2419D1D2C0B73E200342DA8 /* CurrentWeatherService */ = {
@@ -434,12 +438,14 @@
 			path = Submodules;
 			sourceTree = "<group>";
 		};
-		E2F679802CDDD7F400B57BB6 /* Extensions */ = {
+		E2F692D82CE0AC0700B57BB6 /* Alerts */ = {
 			isa = PBXGroup;
 			children = (
-				E2F679812CDDD81800B57BB6 /* UIVIewController+Alert.swift */,
+				E2F692D92CE0AC4E00B57BB6 /* UIAlertController+Alert.swift */,
+				E2F692DB2CE0AE7900B57BB6 /* SingleButtonAlertViewModel.swift */,
+				E2F692D62CE0A7A500B57BB6 /* AlertMessageViewModelFactory.swift */,
 			);
-			path = Extensions;
+			path = Alerts;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -562,8 +568,8 @@
 				E26CA8912BF2948A00F01EC9 /* CurrentWeatherListViewController.swift in Sources */,
 				E20DD2002C5918CE009A4C1F /* WeatherDetailsViewModelFactory.swift in Sources */,
 				E23D81612CA5652B00CCEEA7 /* SearchResultParser.swift in Sources */,
-				E2F679822CDDD81800B57BB6 /* UIVIewController+Alert.swift in Sources */,
 				E2AD195B2C19A93C0038F6FC /* CurrentWeatherModel+JSONParsable.swift in Sources */,
+				E2F692D72CE0A7A500B57BB6 /* AlertMessageViewModelFactory.swift in Sources */,
 				E2D1AE612CA29ABB00008AD6 /* ForecastParser.swift in Sources */,
 				E2419D252C0B772E00342DA8 /* CurrentWeatherCellView.swift in Sources */,
 				E20EECF52C4AA12A00B48F16 /* SearchResulsAssembly.swift in Sources */,
@@ -579,6 +585,7 @@
 				E280DAFB2C31740F00D683CD /* IJSONParser.swift in Sources */,
 				E23D81682CA5684E00CCEEA7 /* WeatherDetailsFlowCoordinator.swift in Sources */,
 				E22ECF842CBA878D0039AEC5 /* CurrentWeatherView.swift in Sources */,
+				E2F692DA2CE0AC4E00B57BB6 /* UIAlertController+Alert.swift in Sources */,
 				E280DAFD2C31750F00D683CD /* CurrentWeatherParser.swift in Sources */,
 				E20EECFA2C4AA16200B48F16 /* SearchResultsPresenter.swift in Sources */,
 				E20EECF82C4AA14800B48F16 /* SearchResultCellView.swift in Sources */,
@@ -596,6 +603,7 @@
 				4813DE1A2BF2802300800CCD /* AppDelegate.swift in Sources */,
 				E2AD339E2C1479DD0038F6FC /* URLRequestFactory.swift in Sources */,
 				E2AD33A02C1479F00038F6FC /* IURLRequestFactory.swift in Sources */,
+				E2F692DC2CE0AE7900B57BB6 /* SingleButtonAlertViewModel.swift in Sources */,
 				E2AD33A62C1622DF0038F6FC /* NetworkRequestError.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -18,7 +18,7 @@ private extension String {
 
 protocol IWeatherDetailsView: AnyObject {
 
-    func updateView(wit model: WeatherDetailsViewModel)
+    func updateView(with model: WeatherDetailsViewModel)
     
     func startLoader()
     
@@ -37,15 +37,9 @@ final class WeatherDetailsViewController: UIViewController {
     private let backgroundImageView = UIImageView()
     private let loader = UIActivityIndicatorView(style: .large)
     
-    private lazy var alertController = makeAlertMessage(
-        with: .alertTitle,
-        message: .alertMessage,
-        firstButtonText: .alertButtonText,
-        firstButtonStyle: .cancel,
-        actionHandler: { [weak self] in
-            self?.presenter.didRequestToDismiss()
-        }
-    )
+    private lazy var alertController = UIAlertController.makeSingleButtonAlert { [weak self] in
+        self?.presenter.didRequestToDismiss()
+    }
     
     // MARK: - Init
     
@@ -133,7 +127,7 @@ final class WeatherDetailsViewController: UIViewController {
 
 extension WeatherDetailsViewController: IWeatherDetailsView {
     
-    func updateView(wit model: WeatherDetailsViewModel) {
+    func updateView(with model: WeatherDetailsViewModel) {
         currentWeatherView.configure(with: model.currentWeatherViewModel)
         setUpBackground(withImage: model.backgroundImageTitle)
     }
@@ -151,7 +145,7 @@ extension WeatherDetailsViewController: IWeatherDetailsView {
     func showAlert() {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
-            showAlert(alertController)
+            present(alertController, animated: true)
         }
     }
 }

@@ -56,7 +56,7 @@ final class WeatherDetailsPresenter {
                     let viewModel = viewModelFactory.makeCurrentWeatherViewModel(
                         model: forecastModel
                     )
-                    view?.updateView(wit: viewModel)
+                    view?.updateView(with: viewModel)
                 case .failure(let error):
                     view?.showAlert()
                     print("Ошибочка: \(error.localizedDescription)")
