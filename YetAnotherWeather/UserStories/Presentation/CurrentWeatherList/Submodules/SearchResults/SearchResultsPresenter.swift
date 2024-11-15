@@ -54,11 +54,11 @@ final class SearchResultsPresenter {
                 case .success(let results):
                     searchResults = results
                     searchResultViewModels = makeViewModels(from: results)
-                    view?.updateTableView()
                 case .failure(let error):
                     print(error.localizedDescription)
                     searchResultViewModels = []
                 }
+                view?.updateTableView()
             }
         }
     }

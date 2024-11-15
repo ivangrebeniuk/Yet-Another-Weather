@@ -53,7 +53,6 @@
 		E2F692D72CE0A7A500B57BB6 /* AlertMessageViewModelFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2F692D62CE0A7A500B57BB6 /* AlertMessageViewModelFactory.swift */; };
 		E2F692DA2CE0AC4E00B57BB6 /* UIAlertController+Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2F692D92CE0AC4E00B57BB6 /* UIAlertController+Alert.swift */; };
 		E2F692DC2CE0AE7900B57BB6 /* SingleButtonAlertViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2F692DB2CE0AE7900B57BB6 /* SingleButtonAlertViewModel.swift */; };
-		E2F692DE2CE0CC6000B57BB6 /* ForecastWeatherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2F692DD2CE0CC6000B57BB6 /* ForecastWeatherView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -107,7 +106,6 @@
 		E2F692D62CE0A7A500B57BB6 /* AlertMessageViewModelFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertMessageViewModelFactory.swift; sourceTree = "<group>"; };
 		E2F692D92CE0AC4E00B57BB6 /* UIAlertController+Alert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIAlertController+Alert.swift"; sourceTree = "<group>"; };
 		E2F692DB2CE0AE7900B57BB6 /* SingleButtonAlertViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleButtonAlertViewModel.swift; sourceTree = "<group>"; };
-		E2F692DD2CE0CC6000B57BB6 /* ForecastWeatherView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForecastWeatherView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -225,7 +223,6 @@
 			isa = PBXGroup;
 			children = (
 				E22ECF832CBA878D0039AEC5 /* CurrentWeatherView.swift */,
-				E2F692DD2CE0CC6000B57BB6 /* ForecastWeatherView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -619,7 +616,6 @@
 				E23D815F2CA5651100CCEEA7 /* SearchResultModel.swift in Sources */,
 				E23D81632CA5654900CCEEA7 /* SerachResult+JSONParsable.swift in Sources */,
 				E2ADD4AC2C1777480038F6FC /* NetworkService.swift in Sources */,
-				E2F692DE2CE0CC6000B57BB6 /* ForecastWeatherView.swift in Sources */,
 				4813DE1A2BF2802300800CCD /* AppDelegate.swift in Sources */,
 				E2AD339E2C1479DD0038F6FC /* URLRequestFactory.swift in Sources */,
 				E2AD33A02C1479F00038F6FC /* IURLRequestFactory.swift in Sources */,
