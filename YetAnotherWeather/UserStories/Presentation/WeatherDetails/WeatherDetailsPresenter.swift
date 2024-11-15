@@ -50,10 +50,10 @@ final class WeatherDetailsPresenter {
     
     // MARK: - Private
     func getWeatherForecast() {
+        view?.startLoader()
         forecastService.getWeatherForecast(for: location) { result in
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
-                view?.startLoader()
                 switch result {
                 case .success(let forecastModel):
                     let viewModel = viewModelFactory.makeCurrentWeatherViewModel(
