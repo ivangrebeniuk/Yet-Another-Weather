@@ -10,10 +10,8 @@ import UIKit
 
 extension UIAlertController {
         
-    static func makeSingleButtonAlert(action: (() -> Void)?) -> UIAlertController {
-        
-        let model = AlertMessageViewModelFactory().makeSingleButtonErrorAlert(actionHandler: action)
-        
+    static func makeSingleButtonAlert(model: SingleButtonAlertViewModel) -> UIAlertController {
+                
         let alertMessage = UIAlertController(
             title: model.title,
             message: model.message,

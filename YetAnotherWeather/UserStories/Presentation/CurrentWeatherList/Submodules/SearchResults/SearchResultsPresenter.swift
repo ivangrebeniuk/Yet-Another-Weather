@@ -48,17 +48,17 @@ final class SearchResultsPresenter {
     
     private func searchLocations(text: String) {
         searchLocationsService.getSearchResults(for: text) { result in
-            switch result {
-            case .success(let results):
-                DispatchQueue.main.async { [weak self] in
-                    guard let self else { return }
-                    self.searchResults = results
-                    self.searchResultViewModels = self.makeViewModels(from: results)
-                    self.view?.updateTableView()
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                switch result {
+                case .success(let results):
+                    searchResults = results
+                    searchResultViewModels = makeViewModels(from: results)
+                    view?.updateTableView()
+                case .failure(let error):
+                    print(error.localizedDescription)
+                    searchResultViewModels = []
                 }
-            case .failure(let error):
-                print(error.localizedDescription)
-                self.searchResultViewModels = []
             }
         }
     }

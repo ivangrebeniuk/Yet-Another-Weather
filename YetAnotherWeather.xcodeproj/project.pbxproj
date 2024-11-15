@@ -53,6 +53,7 @@
 		E2F692D72CE0A7A500B57BB6 /* AlertMessageViewModelFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2F692D62CE0A7A500B57BB6 /* AlertMessageViewModelFactory.swift */; };
 		E2F692DA2CE0AC4E00B57BB6 /* UIAlertController+Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2F692D92CE0AC4E00B57BB6 /* UIAlertController+Alert.swift */; };
 		E2F692DC2CE0AE7900B57BB6 /* SingleButtonAlertViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2F692DB2CE0AE7900B57BB6 /* SingleButtonAlertViewModel.swift */; };
+		E2F692DE2CE0CC6000B57BB6 /* ForecastWeatherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2F692DD2CE0CC6000B57BB6 /* ForecastWeatherView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -106,6 +107,7 @@
 		E2F692D62CE0A7A500B57BB6 /* AlertMessageViewModelFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertMessageViewModelFactory.swift; sourceTree = "<group>"; };
 		E2F692D92CE0AC4E00B57BB6 /* UIAlertController+Alert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIAlertController+Alert.swift"; sourceTree = "<group>"; };
 		E2F692DB2CE0AE7900B57BB6 /* SingleButtonAlertViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleButtonAlertViewModel.swift; sourceTree = "<group>"; };
+		E2F692DD2CE0CC6000B57BB6 /* ForecastWeatherView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForecastWeatherView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -182,11 +184,11 @@
 		E20DD1F02C58F34F009A4C1F /* WeatherDetails */ = {
 			isa = PBXGroup;
 			children = (
+				E2F6E0972CE235F200B57BB6 /* Flow */,
 				E20DD1F92C59169C009A4C1F /* WeatherDetailsAssembly.swift */,
 				E20DD1FB2C5916B0009A4C1F /* WeatherDetailsPresenter.swift */,
 				E20DD1FD2C5916F3009A4C1F /* WeatherDetailsViewController.swift */,
 				E20DD1FF2C5918CE009A4C1F /* WeatherDetailsViewModelFactory.swift */,
-				E23D81672CA5684E00CCEEA7 /* WeatherDetailsFlowCoordinator.swift */,
 				E23500362CCEB58400456FA4 /* Models */,
 				E20DD2012C5918D3009A4C1F /* Views */,
 			);
@@ -223,6 +225,7 @@
 			isa = PBXGroup;
 			children = (
 				E22ECF832CBA878D0039AEC5 /* CurrentWeatherView.swift */,
+				E2F692DD2CE0CC6000B57BB6 /* ForecastWeatherView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -335,10 +338,10 @@
 		E2419D2A2C0B9F8B00342DA8 /* CurrentWeatherList */ = {
 			isa = PBXGroup;
 			children = (
+				E2F6E0982CE2360300B57BB6 /* Flow */,
 				E26CA8962BF2953000F01EC9 /* CurrentWeatherListAssembly.swift */,
 				E26CA8902BF2948A00F01EC9 /* CurrentWeatherListViewController.swift */,
 				E26CA8932BF2950100F01EC9 /* CurrentWeatherListPresenter.swift */,
-				48C9DBB72BFA7BF900001A57 /* CurrentWeatherListFlowCoordinator.swift */,
 				E2D18D8A2CA2DE3600008AD6 /* Submodules */,
 				E2419D232C0B76FB00342DA8 /* Views */,
 			);
@@ -446,6 +449,22 @@
 				E2F692D62CE0A7A500B57BB6 /* AlertMessageViewModelFactory.swift */,
 			);
 			path = Alerts;
+			sourceTree = "<group>";
+		};
+		E2F6E0972CE235F200B57BB6 /* Flow */ = {
+			isa = PBXGroup;
+			children = (
+				E23D81672CA5684E00CCEEA7 /* WeatherDetailsFlowCoordinator.swift */,
+			);
+			path = Flow;
+			sourceTree = "<group>";
+		};
+		E2F6E0982CE2360300B57BB6 /* Flow */ = {
+			isa = PBXGroup;
+			children = (
+				48C9DBB72BFA7BF900001A57 /* CurrentWeatherListFlowCoordinator.swift */,
+			);
+			path = Flow;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -600,6 +619,7 @@
 				E23D815F2CA5651100CCEEA7 /* SearchResultModel.swift in Sources */,
 				E23D81632CA5654900CCEEA7 /* SerachResult+JSONParsable.swift in Sources */,
 				E2ADD4AC2C1777480038F6FC /* NetworkService.swift in Sources */,
+				E2F692DE2CE0CC6000B57BB6 /* ForecastWeatherView.swift in Sources */,
 				4813DE1A2BF2802300800CCD /* AppDelegate.swift in Sources */,
 				E2AD339E2C1479DD0038F6FC /* URLRequestFactory.swift in Sources */,
 				E2AD33A02C1479F00038F6FC /* IURLRequestFactory.swift in Sources */,

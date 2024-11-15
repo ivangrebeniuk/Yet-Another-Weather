@@ -97,14 +97,14 @@ extension CurrentWeatherView: ConfigurableView {
     struct Model {
         let location: String
         let conditions: String
-        let isDay: Bool
+        let isLightContent: Bool
         let currentTemp: String?
         let minTemp: String?
         let maxTemp: String?
     }
     
     func configure(with model: Model) {
-        setUpTextColor(isDay: model.isDay)
+        setUpTextColor(isDay: model.isLightContent)
         locationLabel.text = model.location
         currentTempLabel.text = model.currentTemp
         conditionsLabel.text = model.conditions

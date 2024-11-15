@@ -101,14 +101,14 @@ extension CurrentWeatherService: ICurrentWeatherService {
             }
         }
         group.notify(queue: .main) { [weak self] in
+            guard let self else { return }
             guard locations.count != errors.count else {
                 if let error = errors.first {
                     completion(.failure(error))
                 }
                 return
             }
-            guard let self else { return }
-            let sortedLocations = self.makeResultsArray(from: locationsWeather)
+            let sortedLocations = makeResultsArray(from: locationsWeather)
             completion(.success(sortedLocations))
         }
     }
@@ -124,9 +124,9 @@ extension CurrentWeatherService: ICurrentWeatherService {
 
         for location in locations {
             group.enter()
-            networkQueue.async {
+            networkQueue.async { [weak self] in
                 semaphore.wait()
-                self.getCurrentWeather(for: location) { result in
+                self?.getCurrentWeather(for: location) { result in
                     switch result {
                     case .success(let currentWeather):
                         locationsWeather.append(currentWeather)

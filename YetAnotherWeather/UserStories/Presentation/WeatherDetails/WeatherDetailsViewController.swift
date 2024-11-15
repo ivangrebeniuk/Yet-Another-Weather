@@ -24,7 +24,7 @@ protocol IWeatherDetailsView: AnyObject {
     
     func stopLoader()
     
-    func showAlert()
+    func showAlert(withModel model: SingleButtonAlertViewModel)
 }
 
 final class WeatherDetailsViewController: UIViewController {
@@ -37,9 +37,6 @@ final class WeatherDetailsViewController: UIViewController {
     private let backgroundImageView = UIImageView()
     private let loader = UIActivityIndicatorView(style: .large)
     
-    private lazy var alertController = UIAlertController.makeSingleButtonAlert { [weak self] in
-        self?.presenter.didRequestToDismiss()
-    }
     
     // MARK: - Init
     
@@ -80,8 +77,6 @@ final class WeatherDetailsViewController: UIViewController {
         )
         navigationController?.navigationBar.tintColor = .white
         navigationController?.navigationBar.isTranslucent = true
-        navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
-        navigationController?.navigationBar.shadowImage = UIImage()
     }
     
     private func setUpUI() {
@@ -93,7 +88,7 @@ final class WeatherDetailsViewController: UIViewController {
         loader.color = .white
     }
     
-    private func setUpBackground(withImage imageTitle: String) {
+    private func configureBackgroundImage(withImage imageTitle: String) {
         let image = UIImage(named: imageTitle)
         backgroundImageView.image = image
         backgroundImageView.contentMode = .scaleAspectFill
@@ -101,7 +96,7 @@ final class WeatherDetailsViewController: UIViewController {
     
     private func setUpConstraints() {
         backgroundImageView.snp.makeConstraints {
-            $0.top.bottom.leading.trailing.equalToSuperview()
+            $0.edges.equalToSuperview()
         }
         
         currentWeatherView.snp.makeConstraints {
@@ -110,7 +105,7 @@ final class WeatherDetailsViewController: UIViewController {
         }
         
         loader.snp.makeConstraints {
-            $0.centerX.centerY.equalToSuperview()
+            $0.center.equalToSuperview()
         }
     }
     
@@ -129,7 +124,7 @@ extension WeatherDetailsViewController: IWeatherDetailsView {
     
     func updateView(with model: WeatherDetailsViewModel) {
         currentWeatherView.configure(with: model.currentWeatherViewModel)
-        setUpBackground(withImage: model.backgroundImageTitle)
+        configureBackgroundImage(withImage: model.backgroundImageTitle)
     }
     
     func startLoader() {
@@ -142,10 +137,8 @@ extension WeatherDetailsViewController: IWeatherDetailsView {
         currentWeatherView.isHidden = false
     }
     
-    func showAlert() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            present(alertController, animated: true)
-        }
+    func showAlert(withModel model: SingleButtonAlertViewModel) {
+        let alertController = UIAlertController.makeSingleButtonAlert(model: model)
+        present(alertController, animated: true)
     }
 }

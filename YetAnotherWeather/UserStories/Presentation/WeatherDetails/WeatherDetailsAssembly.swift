@@ -24,8 +24,10 @@ final class WeatherDetailsAssembly {
     func assemble(location: String, output: WeatherDetailsOutput) -> UIViewController {
         
         let viewModelFactory = WeatherDetailsViewModelFactory()
+        let alertViewModelFactory = AlertViewModelFactory()
         
         let presenter = WeatherDetailsPresenter(
+            alertViewModelFactory: alertViewModelFactory,
             forecastService: forecastService,
             viewModelFactory: viewModelFactory,
             location: location,

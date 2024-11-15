@@ -33,7 +33,7 @@ final class WeatherDetailsViewModelFactory {
         return CurrentWeatherModel(
             location: model.currentWeather.location.name,
             conditions: model.currentWeather.condition.text,
-            isDay: model.currentWeather.isDay,
+            isLightContent: model.currentWeather.isDay,
             currentTemp: makeTempreature(model.currentWeather.temperature),
             minTemp: makeTempreature(model.forecastDays.first?.maxTemp),
             maxTemp: makeTempreature(model.forecastDays.first?.maxTemp)

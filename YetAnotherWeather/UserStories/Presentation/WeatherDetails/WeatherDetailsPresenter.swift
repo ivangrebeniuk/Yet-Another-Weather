@@ -21,6 +21,7 @@ protocol IWeatherDetailsPresenter {
 final class WeatherDetailsPresenter {
     
     // Dependencies
+    private let alertViewModelFactory: IAlertViewModelFactory
     private let forecastService: IForecastService
     private let viewModelFactory: IWeatherDetailsViewModelFactory
     private let location: String
@@ -34,11 +35,13 @@ final class WeatherDetailsPresenter {
     // MARK: - Init
     
     init(
+        alertViewModelFactory: IAlertViewModelFactory,
         forecastService: IForecastService,
         viewModelFactory: IWeatherDetailsViewModelFactory,
         location: String,
         output: WeatherDetailsOutput
     ) {
+        self.alertViewModelFactory = alertViewModelFactory
         self.forecastService = forecastService
         self.viewModelFactory = viewModelFactory
         self.location = location
@@ -47,7 +50,7 @@ final class WeatherDetailsPresenter {
     
     // MARK: - Private
     func getWeatherForecast() {
-        forecastService.getWeatherForecast(for: location) { [weak self] result in
+        forecastService.getWeatherForecast(for: location) { result in
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
                 view?.startLoader()
@@ -58,7 +61,10 @@ final class WeatherDetailsPresenter {
                     )
                     view?.updateView(with: viewModel)
                 case .failure(let error):
-                    view?.showAlert()
+                    let alertModel = alertViewModelFactory.makeSingleButtonErrorAlert { [weak self] in
+                        self?.didRequestToDismiss()
+                    }
+                    view?.showAlert(withModel: alertModel)
                     print("Ошибочка: \(error.localizedDescription)")
                 }
                 view?.stopLoader()

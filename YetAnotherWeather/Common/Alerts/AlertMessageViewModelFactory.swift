@@ -14,7 +14,7 @@ private extension String {
     static let alertButtonText = "OK"
 }
 
-protocol IAlertMessageViewModelFactory: AnyObject {
+protocol IAlertViewModelFactory: AnyObject {
     
     func makeSingleButtonErrorAlert(
         actionHandler: (() -> Void)?
@@ -23,7 +23,7 @@ protocol IAlertMessageViewModelFactory: AnyObject {
 
 // MARK: - IAlertMessageViewModelFactory
 
-final class AlertMessageViewModelFactory: IAlertMessageViewModelFactory {
+final class AlertViewModelFactory: IAlertViewModelFactory {
     
     func makeSingleButtonErrorAlert(
         actionHandler: (() -> Void)?
