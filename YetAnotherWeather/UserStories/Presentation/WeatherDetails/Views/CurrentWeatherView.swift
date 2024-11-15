@@ -6,15 +6,8 @@
 //
 
 import Foundation
+import SnapKit
 import UIKit
-
-private extension UIColor {
-    static let inversedTitleColor = UIColor(
-        dynamicProvider: {
-            $0.userInterfaceStyle == .dark ? .black : .white
-        }
-    )
-}
 
 final class CurrentWeatherView: UIView {
     
@@ -22,41 +15,33 @@ final class CurrentWeatherView: UIView {
     private var stackView: UIStackView = {
         let stackView = UIStackView()
         stackView.axis = .vertical
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.distribution = .fillProportionally
+        stackView.alignment = .center
         return stackView
     }()
     
     private var locationLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .inversedTitleColor
         label.font = UIFont.systemFont(ofSize: CGFloat(37), weight: .regular)
         label.textAlignment = .center
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
     private var currentTempLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .inversedTitleColor
         label.font = UIFont.systemFont(ofSize: CGFloat(102), weight: .thin)
         label.textAlignment = .center
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
     private var conditionsLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .inversedTitleColor
         label.font = UIFont.systemFont(ofSize: CGFloat(24), weight: .regular)
         label.textAlignment = .center
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
     private var highAndLowLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .inversedTitleColor
         label.font = UIFont.systemFont(ofSize: CGFloat(21), weight: .medium)
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -88,27 +73,19 @@ final class CurrentWeatherView: UIView {
             $0.top.bottom.equalToSuperview()
             $0.leading.trailing.equalToSuperview().inset(8)
         }
-        
-        locationLabel.snp.makeConstraints {
-            $0.centerX.equalToSuperview()
-            $0.leading.trailing.equalToSuperview()
-        }
-        
-        currentTempLabel.snp.makeConstraints {
-            //$0.top.equalTo(locationLabel.snp.bottom)
-            $0.centerX.equalToSuperview()
-            $0.leading.trailing.equalToSuperview()
-
-        }
-        
-        conditionsLabel.snp.makeConstraints {
-            $0.centerX.equalToSuperview()
-            $0.leading.trailing.equalToSuperview()
-        }
-        
-        highAndLowLabel.snp.makeConstraints {
-            $0.centerX.equalToSuperview()
-            $0.leading.trailing.equalToSuperview()
+    }
+    
+    private func setUpTextColor(isDay: Bool) {
+        if isDay {
+            locationLabel.textColor = .white
+            currentTempLabel.textColor = .white
+            conditionsLabel.textColor = .white
+            highAndLowLabel.textColor = .white
+        } else {
+            locationLabel.textColor = .white
+            currentTempLabel.textColor = .white
+            conditionsLabel.textColor = .white
+            highAndLowLabel.textColor = .white
         }
     }
 }
@@ -117,19 +94,25 @@ final class CurrentWeatherView: UIView {
 
 extension CurrentWeatherView: ConfigurableView {
     
-//    struct Model {
-//        let location: String
-//        let currentTemp: String
-//        let conditions: String
-//        let minTemp: String
-//        let maxTemp: String
-//    }
+    struct Model {
+        let location: String
+        let conditions: String
+        let isLightContent: Bool
+        let currentTemp: String?
+        let minTemp: String?
+        let maxTemp: String?
+    }
     
-    func configure(with model: WeatherDetailsViewModel.CurrentWeatherViewModel) {
-        self.backgroundColor = UIColor.systemGray3
+    func configure(with model: Model) {
+        setUpTextColor(isDay: model.isLightContent)
         locationLabel.text = model.location
         currentTempLabel.text = model.currentTemp
         conditionsLabel.text = model.conditions
-        highAndLowLabel.text = "H:\(model.maxTemp)  L:\(model.minTemp)"
+        if let maxTemp = model.maxTemp, let minTemp = model.minTemp {
+            highAndLowLabel.text = "H:\(maxTemp)  L:\(minTemp)"
+            highAndLowLabel.isHidden = false
+        } else {
+            highAndLowLabel.isHidden = true
+        }
     }
 }

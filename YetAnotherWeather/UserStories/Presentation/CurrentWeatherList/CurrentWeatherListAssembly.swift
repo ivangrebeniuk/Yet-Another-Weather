@@ -10,8 +10,8 @@ import UIKit
 class CurrentWeatherListAssembly {
     
     // Dependencies
-    let currentWeatherService: ICurrentWeatherService
-    let searchResultAssembly: SearchResultsAssembly
+    private let currentWeatherService: ICurrentWeatherService
+    private let searchResultAssembly: SearchResultsAssembly
     
     init(
         weatherNetworkService: ICurrentWeatherService,

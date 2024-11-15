@@ -21,6 +21,7 @@ protocol IWeatherDetailsPresenter {
 final class WeatherDetailsPresenter {
     
     // Dependencies
+    private let alertViewModelFactory: IAlertViewModelFactory
     private let forecastService: IForecastService
     private let viewModelFactory: IWeatherDetailsViewModelFactory
     private let location: String
@@ -34,11 +35,13 @@ final class WeatherDetailsPresenter {
     // MARK: - Init
     
     init(
+        alertViewModelFactory: IAlertViewModelFactory,
         forecastService: IForecastService,
         viewModelFactory: IWeatherDetailsViewModelFactory,
         location: String,
         output: WeatherDetailsOutput
     ) {
+        self.alertViewModelFactory = alertViewModelFactory
         self.forecastService = forecastService
         self.viewModelFactory = viewModelFactory
         self.location = location
@@ -46,25 +49,26 @@ final class WeatherDetailsPresenter {
     }
     
     // MARK: - Private
-    
     func getWeatherForecast() {
-        forecastService.getWeatherForecast(for: location) { [weak self] result in
-            switch result {
-            case .success(let result):
-                self?.handleSuccessResult(result)
-            case .failure(let error):
-                print("Ошибочка: \(error.localizedDescription)")
+        view?.startLoader()
+        forecastService.getWeatherForecast(for: location) { result in
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                switch result {
+                case .success(let forecastModel):
+                    let viewModel = viewModelFactory.makeCurrentWeatherViewModel(
+                        model: forecastModel
+                    )
+                    view?.updateView(with: viewModel)
+                case .failure(let error):
+                    let alertModel = alertViewModelFactory.makeSingleButtonErrorAlert { [weak self] in
+                        self?.didRequestToDismiss()
+                    }
+                    view?.showAlert(withModel: alertModel)
+                    print("Ошибочка: \(error.localizedDescription)")
+                }
+                view?.stopLoader()
             }
-        }
-    }
-    
-    private func handleSuccessResult(_ result: ForecastModel) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            self.forecastData = result
-            guard let forecastData = self.forecastData else { return }
-            let viewModel = self.viewModelFactory.makeCurrentWeatherViewModel(model: forecastData)
-            self.view?.updateView(wit: viewModel)
         }
     }
 }

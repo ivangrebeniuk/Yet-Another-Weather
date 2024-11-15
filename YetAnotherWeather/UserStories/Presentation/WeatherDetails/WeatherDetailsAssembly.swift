@@ -11,19 +11,23 @@ import UIKit
 final class WeatherDetailsAssembly {
     
     // Dependenciec
-    let forecastService: IForecastService
+    private let forecastService: IForecastService
     
     // MARK: - Init
     
-    init(weatherForecastService: IForecastService) {
+    init(
+        weatherForecastService: IForecastService
+    ) {
         self.forecastService = weatherForecastService
     }
     
     func assemble(location: String, output: WeatherDetailsOutput) -> UIViewController {
         
         let viewModelFactory = WeatherDetailsViewModelFactory()
+        let alertViewModelFactory = AlertViewModelFactory()
         
         let presenter = WeatherDetailsPresenter(
+            alertViewModelFactory: alertViewModelFactory,
             forecastService: forecastService,
             viewModelFactory: viewModelFactory,
             location: location,

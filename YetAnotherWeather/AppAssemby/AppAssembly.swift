@@ -33,7 +33,9 @@ final class AppAssembly {
     }
     
     private var weatherDetailsAssembly: WeatherDetailsAssembly {
-        WeatherDetailsAssembly(weatherForecastService: forecastService)
+        WeatherDetailsAssembly(
+            weatherForecastService: forecastService
+        )
     }
     
     private var weatherDeatailsFlowCoordinator: WeatherDetailsFlowCoordinator {

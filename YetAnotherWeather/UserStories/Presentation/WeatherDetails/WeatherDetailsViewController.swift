@@ -9,9 +9,22 @@ import Foundation
 import UIKit
 import SnapKit
 
-protocol IWeatherDetailsView: AnyObject {
+private extension String {
     
-    func updateView(wit model: WeatherDetailsViewModel)
+    static let alertTitle = "Something went wrong"
+    static let alertMessage = "Try again later"
+    static let alertButtonText = "OK"
+}
+
+protocol IWeatherDetailsView: AnyObject {
+
+    func updateView(with model: WeatherDetailsViewModel)
+    
+    func startLoader()
+    
+    func stopLoader()
+    
+    func showAlert(withModel model: SingleButtonAlertViewModel)
 }
 
 final class WeatherDetailsViewController: UIViewController {
@@ -20,11 +33,16 @@ final class WeatherDetailsViewController: UIViewController {
     private let presenter: IWeatherDetailsPresenter
     
     // UI
-    let currentWeatherView = CurrentWeatherView()
+    private let currentWeatherView = CurrentWeatherView()
+    private let backgroundImageView = UIImageView()
+    private let loader = UIActivityIndicatorView(style: .large)
+    
     
     // MARK: - Init
     
-    init(presenter: IWeatherDetailsPresenter) {
+    init(
+        presenter: IWeatherDetailsPresenter
+    ) {
         self.presenter = presenter
         super.init(nibName: nil, bundle: nil)
     }
@@ -36,9 +54,9 @@ final class WeatherDetailsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         presenter.viewDidLoad()
-        setUpNavigationBar()
-        view.backgroundColor = .systemGray6
         setUpUI()
+        setUpConstraints()
+        view.backgroundColor = .systemBackground
     }
     
     // MARK: - Private
@@ -46,26 +64,48 @@ final class WeatherDetailsViewController: UIViewController {
     private func setUpNavigationBar() {
         navigationItem.leftBarButtonItem = UIBarButtonItem(
             title: "Cancel",
-            style: .done,
+            style: .plain,
             target: self,
             action: #selector(cancelButtonTapped)
         )
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             title: "Add",
-            style: .plain,
+            style: .done,
             target: self,
             action: #selector(addButtonTapped)
         )
+        navigationController?.navigationBar.tintColor = .white
+        navigationController?.navigationBar.isTranslucent = true
     }
     
     private func setUpUI() {
+        view.addSubview(backgroundImageView)
+        view.addSubview(loader)
         view.addSubview(currentWeatherView)
+        
+        setUpNavigationBar()
+        loader.color = .white
+    }
+    
+    private func configureBackgroundImage(withImage imageTitle: String) {
+        let image = UIImage(named: imageTitle)
+        backgroundImageView.image = image
+        backgroundImageView.contentMode = .scaleAspectFill
+    }
+    
+    private func setUpConstraints() {
+        backgroundImageView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
         
         currentWeatherView.snp.makeConstraints {
             $0.top.equalToSuperview().offset(78)
             $0.leading.trailing.equalToSuperview()
-            $0.height.equalTo(200)
+        }
+        
+        loader.snp.makeConstraints {
+            $0.center.equalToSuperview()
         }
     }
     
@@ -82,7 +122,23 @@ final class WeatherDetailsViewController: UIViewController {
 
 extension WeatherDetailsViewController: IWeatherDetailsView {
     
-    func updateView(wit model: WeatherDetailsViewModel) {
+    func updateView(with model: WeatherDetailsViewModel) {
         currentWeatherView.configure(with: model.currentWeatherViewModel)
+        configureBackgroundImage(withImage: model.backgroundImageTitle)
+    }
+    
+    func startLoader() {
+        loader.startAnimating()
+        currentWeatherView.isHidden = true
+    }
+    
+    func stopLoader() {
+        loader.stopAnimating()
+        currentWeatherView.isHidden = false
+    }
+    
+    func showAlert(withModel model: SingleButtonAlertViewModel) {
+        let alertController = UIAlertController.makeSingleButtonAlert(model: model)
+        present(alertController, animated: true)
     }
 }
