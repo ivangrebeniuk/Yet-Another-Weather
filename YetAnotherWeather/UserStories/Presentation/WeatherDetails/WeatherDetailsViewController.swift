@@ -36,7 +36,11 @@ final class WeatherDetailsViewController: UIViewController {
     private let currentWeatherView = CurrentWeatherView()
     private let backgroundImageView = UIImageView()
     private let loader = UIActivityIndicatorView(style: .large)
-    
+    private let forecastView = ForecastStackView()
+    private let forecastContainerView = UIView()
+    private let forecastBlurEffectView = UIVisualEffectView(
+        effect: UIBlurEffect(style: .dark)
+    )
     
     // MARK: - Init
     
@@ -83,15 +87,30 @@ final class WeatherDetailsViewController: UIViewController {
         view.addSubview(backgroundImageView)
         view.addSubview(loader)
         view.addSubview(currentWeatherView)
+        view.addSubview(forecastContainerView)
+        forecastContainerView.addSubview(forecastBlurEffectView)
+        forecastContainerView.addSubview(forecastView)
         
         setUpNavigationBar()
-        loader.color = .white
+        setUpBlurEffect()
+        loader.color = .darkGray
+        
+        forecastContainerView.layer.cornerRadius = 12
+        forecastContainerView.layer.borderWidth = 0.5
+        forecastContainerView.layer.borderColor = UIColor.systemGray5.cgColor
     }
     
     private func configureBackgroundImage(withImage imageTitle: String) {
         let image = UIImage(named: imageTitle)
         backgroundImageView.image = image
         backgroundImageView.contentMode = .scaleAspectFill
+    }
+    
+    private func setUpBlurEffect() {
+        forecastBlurEffectView.frame = forecastContainerView.bounds
+        forecastBlurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        forecastBlurEffectView.layer.cornerRadius = 12
+        forecastBlurEffectView.layer.masksToBounds = true
     }
     
     private func setUpConstraints() {
@@ -106,6 +125,15 @@ final class WeatherDetailsViewController: UIViewController {
         
         loader.snp.makeConstraints {
             $0.center.equalToSuperview()
+        }
+        
+        forecastView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
+        
+        forecastContainerView.snp.makeConstraints {
+            $0.top.equalTo(currentWeatherView.snp.bottom).offset(18)
+            $0.leading.trailing.equalToSuperview().inset(18)
         }
     }
     
@@ -125,16 +153,20 @@ extension WeatherDetailsViewController: IWeatherDetailsView {
     func updateView(with model: WeatherDetailsViewModel) {
         currentWeatherView.configure(with: model.currentWeatherViewModel)
         configureBackgroundImage(withImage: model.backgroundImageTitle)
+        forecastView.configure(with: model.forecastViewModel)
+        view.layoutIfNeeded()
     }
     
     func startLoader() {
         loader.startAnimating()
         currentWeatherView.isHidden = true
+        forecastView.isHidden = true
     }
     
     func stopLoader() {
         loader.stopAnimating()
         currentWeatherView.isHidden = false
+        forecastView.isHidden = false
     }
     
     func showAlert(withModel model: SingleButtonAlertViewModel) {

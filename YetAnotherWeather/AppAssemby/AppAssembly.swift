@@ -15,6 +15,7 @@ final class AppAssembly {
     private let urlRequestsFactory = URLRequestFactory()
     private let networkService = NetworkService(session: URLSession.shared)
     private let networkQueue = DispatchQueue(label: "ru.i.grebeniuk.serialNetworkQueue")
+    private let dateFormatter = CustomDateFormatter()
     
     // MARK: - Presentation Assemblies
     
@@ -72,7 +73,8 @@ final class AppAssembly {
     private var forecastService: IForecastService {
         return ForecastService(
             networkService: networkService,
-            urlRequestsFactory: urlRequestsFactory
+            urlRequestsFactory: urlRequestsFactory,
+            dateFormatter: dateFormatter
         )
     }
 }

@@ -10,15 +10,19 @@ import Foundation
 struct WeatherDetailsViewModel {
     
     typealias CurrentWeatherViewModel = CurrentWeatherView.Model
+    typealias ForecastViewModel = ForecastStackView.Model
     
     let currentWeatherViewModel: CurrentWeatherViewModel
     let backgroundImageTitle: String
+    let forecastViewModel: ForecastViewModel
     
     init(
         currentWeatherViewModel: CurrentWeatherViewModel,
-        backgroundImageTitle: String
+        backgroundImageTitle: String,
+        forecastViewModel: ForecastViewModel
     ) {
         self.currentWeatherViewModel = currentWeatherViewModel
         self.backgroundImageTitle = backgroundImageTitle
+        self.forecastViewModel = forecastViewModel
     }
 }

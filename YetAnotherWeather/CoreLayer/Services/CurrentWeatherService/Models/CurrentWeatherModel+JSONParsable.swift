@@ -22,6 +22,7 @@ extension CurrentWeatherModel: JSONParsable {
               let temperature = json["current"]["temp_c"].double,
               let localTime = json["location"]["localtime_epoch"].int,
               let icon = json["current"]["condition"]["icon"].string,
+              let iconUrl = URL(string: icon),
               let text = json["current"]["condition"]["text"].string,
               let isDay = json["current"]["is_day"].int
         else { return nil }
@@ -29,7 +30,7 @@ extension CurrentWeatherModel: JSONParsable {
         return CurrentWeatherModel(
             temperature: temperature,
             location: .init(name: name, region: region, country: country, localTime: localTime),
-            condition: .init(text: text, icon: icon),
+            condition: .init(text: text, iconUrl: iconUrl),
             isDay: isDay == 1
         )
     }

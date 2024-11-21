@@ -10,6 +10,12 @@ import SwiftyJSON
 
 final class ForecastParser: IJSONParser {
     
+    private let dateFormatter: ICustomDateFormatter
+    
+    init(dateFormatter: ICustomDateFormatter) {
+        self.dateFormatter = dateFormatter
+    }
+    
     func parse(_ json: JSON) throws -> ForecastModel {
         let currentWeatherParser = CurrentWeatherParser()
         
@@ -19,22 +25,27 @@ final class ForecastParser: IJSONParser {
         
         let days: [ForecastModel.ForecastDay] = try forecastDay.map {
             guard
-                let date = $0["date_epoch"].int,
+                let stringDate = $0["date"].string,
+                let date = dateFormatter.localDate(from: stringDate),
                 let maxTemp = $0["day"]["maxtemp_c"].double,
                 let minTemp = $0["day"]["mintemp_c"].double,
                 let avgTemp = $0["day"]["avgtemp_c"].double,
                 let text = $0["day"]["condition"]["text"].string,
-                let icon = $0["day"]["condition"]["icon"].string
+                let icon = $0["day"]["condition"]["icon"].string,
+                let iconUrl = URL(string: "https:" + icon),
+                let daylyChanceOfRain = $0["day"]["daily_chance_of_rain"].int
             else {
                 throw NetworkRequestError.modelParsingError
             }
 
             return ForecastModel.ForecastDay(
                 date: date,
-                maxTemp: maxTemp,
-                minTemp: minTemp,
+                lowTemp: maxTemp,
+                highTemp: minTemp,
                 avgTemp: avgTemp,
-                condition: .init(text: text, icon: icon))
+                condition: .init(text: text, iconUrl: iconUrl),
+                daylyChanceOfRain: daylyChanceOfRain
+            )
         }
         return ForecastModel(
             currentWeather: try currentWeatherParser.parse(json),

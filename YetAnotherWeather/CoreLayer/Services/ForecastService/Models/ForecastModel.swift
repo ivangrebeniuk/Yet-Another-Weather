@@ -10,11 +10,12 @@ import Foundation
 struct ForecastModel {
     
     struct ForecastDay {
-        let date: Int
-        let maxTemp: Double
-        let minTemp: Double
+        let date: Date
+        let lowTemp: Double
+        let highTemp: Double
         let avgTemp: Double
         let condition: Condition
+        let daylyChanceOfRain: Int
     }
     
     let currentWeather: CurrentWeatherModel
