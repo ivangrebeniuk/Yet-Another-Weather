@@ -20,7 +20,8 @@ extension CurrentWeatherModel: JSONParsable {
               let region = json["location"]["region"].string,
               let country = json["location"]["country"].string,
               let temperature = json["current"]["temp_c"].double,
-              let localTime = json["location"]["localtime_epoch"].int,
+              let localTime = json["location"]["localtime_epoch"].string,
+              let timeZone = json["location"]["tz_id"].string,
               let icon = json["current"]["condition"]["icon"].string,
               let iconUrl = URL(string: icon),
               let text = json["current"]["condition"]["text"].string,
@@ -29,7 +30,13 @@ extension CurrentWeatherModel: JSONParsable {
         
         return CurrentWeatherModel(
             temperature: temperature,
-            location: .init(name: name, region: region, country: country, localTime: localTime),
+            location: .init(
+                name: name,
+                region: region,
+                country: country,
+                localTime: localTime,
+                timeZone: timeZone
+            ),
             condition: .init(text: text, iconUrl: iconUrl),
             isDay: isDay == 1
         )

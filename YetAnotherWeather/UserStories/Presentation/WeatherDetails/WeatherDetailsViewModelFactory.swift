@@ -6,7 +6,6 @@
 //
 
 import Foundation
-// ПЕРЕДАВАТЬ isDay как параметр и взависимости от этого конфигурировать фон и цвет шрифта
 
 private extension String {
     static let isDayImageName = "Day_BikiniBottom"
@@ -20,8 +19,18 @@ protocol IWeatherDetailsViewModelFactory {
 
 final class WeatherDetailsViewModelFactory {
     
+    // Typealias
     private typealias CurrentWeatherModel = WeatherDetailsViewModel.CurrentWeatherViewModel
     private typealias ForecastViewModel = WeatherDetailsViewModel.ForecastViewModel
+    
+    // Dependencies
+    private let dateFormatter: ICustomDateFormatter
+    
+    // MARK: - Init
+    
+    init(dateFormatter: ICustomDateFormatter) {
+        self.dateFormatter = dateFormatter
+    }
         
     // MARK: - Private
     
@@ -30,8 +39,20 @@ final class WeatherDetailsViewModelFactory {
         return String(Int(tempreture)) + "°"
     }
     
-    private func getWeekday(from date: Date) -> String {
-        let calendar = Calendar.current
+    private func getWeekday(from dateString: String, timeZone: String) -> String {
+        guard
+            let timeZone = TimeZone(identifier: timeZone),
+            let date = dateFormatter.localDate(
+                from: dateString,
+                mask: "yyyy-MM-dd",
+                timeZone: timeZone
+            )
+        else {
+            return ""
+        }
+        
+        var calendar = Calendar.current
+        calendar.timeZone = timeZone
         let isToday = calendar.isDateInToday(date)
         
         guard !isToday else { return "Today" }
@@ -54,17 +75,17 @@ final class WeatherDetailsViewModelFactory {
     
     private func makeForecastViewModel(from model: ForecastModel) -> ForecastViewModel {
         let titleLabel = "\(model.forecastDays.count)-DAY FORECAST"
-        
+        let timeZone = model.currentWeather.location.timeZone
         let forecastDays: [SingleDayForecastView.Model] = model.forecastDays.map { day in
             let chanceOrRain: String?
-            if day.daylyChanceOfRain != 0 {
-                chanceOrRain = "\(day.daylyChanceOfRain)%"
+            if day.chanceOfRain != 0 {
+                chanceOrRain = "\(day.chanceOfRain)%"
             } else {
                 chanceOrRain = nil
             }
             
             return SingleDayForecastView.Model(
-                day: getWeekday(from: day.date),
+                day: getWeekday(from: day.date, timeZone: timeZone),
                 imageURL: day.condition.iconUrl,
                 rainFallChance: chanceOrRain,
                 lowLetter: "L:",

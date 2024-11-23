@@ -30,16 +30,10 @@ final class SingleDayForecastView: UIView {
         return label
     }()
     
-    // lowLabel и hightLabel разбить на две вью: отельно буква и знак ":" и отдельно температура
-//    - написать отдельную вью под Temperature (L/H и строка под температуру)
-//    - сделать адаптивную верстку с процентным соотношением как обсуждали
-//    - переделать конфигурацию чтобы не было 3 захордкоженых вьюшек под каждый день
-//    - сделать заблюреный фон под все это дело
-    
     private let lowLetterLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: CGFloat(22), weight: .regular)
-        label.alpha = 0.5
+        label.alpha = 0.6
         label.textColor = .white
         return label
     }()

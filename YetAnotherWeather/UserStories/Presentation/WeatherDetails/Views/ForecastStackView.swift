@@ -8,10 +8,10 @@
 import Foundation
 import UIKit
 
-final class ForecastStackView: UIView {
+final class ForecastView: UIView {
     
     // UI
-    private var stackView: UIStackView = {
+    private var daysStackView: UIStackView = {
         let stackView = UIStackView()
         stackView.distribution = .fillEqually
         stackView.axis = .vertical
@@ -24,6 +24,7 @@ final class ForecastStackView: UIView {
         stackView.axis = .horizontal
         stackView.alignment = .center
         stackView.spacing = 6
+        stackView.alpha = 0.6
         return stackView
     }()
 
@@ -58,49 +59,53 @@ final class ForecastStackView: UIView {
     // MARK: - Private
     
     private func setUpUI() {
-        addSubview(stackView)
+        addSubview(titleStackView)
+        addSubview(daysStackView)
         
-        containerView.addSubview(titleStackView)
         titleStackView.addArrangedSubview(titleIcon)
         titleStackView.addArrangedSubview(titleLabel)
-        
-        stackView.addArrangedSubview(containerView)
     }
     
     private func setUpConstraints() {
-        stackView.snp.makeConstraints {
-            $0.edges.equalToSuperview().inset(
-                UIEdgeInsets(top: 0, left: 6, bottom: 0, right: 6)
-            )
-        }
-        
         titleStackView.snp.makeConstraints {
-            $0.height.equalToSuperview()
-            $0.leading.equalToSuperview()
+            $0.top.leading.trailing.equalToSuperview().inset(
+                UIEdgeInsets(top: 8, left: 6, bottom: 0, right: 6)
+            )
         }
         
         titleIcon.snp.makeConstraints {
             $0.height.width.equalTo(17)
+        }
+        
+        daysStackView.snp.makeConstraints {
+            $0.top.equalTo(titleStackView.snp.bottom).offset(6)
+            $0.leading.trailing.bottom.equalToSuperview().inset(
+                UIEdgeInsets(top: 0, left: 6, bottom: 0, right: 6)
+            )
         }
     }
 }
 
 // MARK: - ConfigurableVIew
 
-extension ForecastStackView: ConfigurableView {
+extension ForecastView: ConfigurableView {
     
     struct Model {
         let titleLabel: String
         let daysForecasts: [SingleDayForecastView.Model]
     }
     
-    func configure(with model: ForecastStackView.Model) {
+    func configure(with model: ForecastView.Model) {
         titleLabel.text = model.titleLabel
         
-        _ = model.daysForecasts.map { model in
+        daysStackView.arrangedSubviews.forEach {
+            $0.removeFromSuperview()
+        }
+        
+        for model in model.daysForecasts {
             let view = SingleDayForecastView()
             view.configure(with: model)
-            stackView.addArrangedSubview(view)
+            daysStackView.addArrangedSubview(view)
         }
     }
 }

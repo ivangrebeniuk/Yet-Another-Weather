@@ -10,11 +10,7 @@ import SwiftyJSON
 
 final class ForecastParser: IJSONParser {
     
-    private let dateFormatter: ICustomDateFormatter
-    
-    init(dateFormatter: ICustomDateFormatter) {
-        self.dateFormatter = dateFormatter
-    }
+    // MARK: - IJSONParser
     
     func parse(_ json: JSON) throws -> ForecastModel {
         let currentWeatherParser = CurrentWeatherParser()
@@ -25,8 +21,7 @@ final class ForecastParser: IJSONParser {
         
         let days: [ForecastModel.ForecastDay] = try forecastDay.map {
             guard
-                let stringDate = $0["date"].string,
-                let date = dateFormatter.localDate(from: stringDate),
+                let date = $0["date"].string,
                 let maxTemp = $0["day"]["maxtemp_c"].double,
                 let minTemp = $0["day"]["mintemp_c"].double,
                 let avgTemp = $0["day"]["avgtemp_c"].double,
@@ -44,7 +39,7 @@ final class ForecastParser: IJSONParser {
                 highTemp: minTemp,
                 avgTemp: avgTemp,
                 condition: .init(text: text, iconUrl: iconUrl),
-                daylyChanceOfRain: daylyChanceOfRain
+                chanceOfRain: daylyChanceOfRain
             )
         }
         return ForecastModel(

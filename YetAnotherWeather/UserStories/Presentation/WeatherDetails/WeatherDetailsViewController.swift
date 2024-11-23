@@ -36,7 +36,8 @@ final class WeatherDetailsViewController: UIViewController {
     private let currentWeatherView = CurrentWeatherView()
     private let backgroundImageView = UIImageView()
     private let loader = UIActivityIndicatorView(style: .large)
-    private let forecastView = ForecastStackView()
+    
+    private let forecastView = ForecastView()
     private let forecastContainerView = UIView()
     private let forecastBlurEffectView = UIVisualEffectView(
         effect: UIBlurEffect(style: .dark)

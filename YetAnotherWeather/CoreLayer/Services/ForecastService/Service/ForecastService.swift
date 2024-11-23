@@ -23,18 +23,15 @@ final class ForecastService {
     
     private let networkService: INetworkService
     private let urlRequestsFactory: IURLRequestFactory
-    private let dateFormatter: ICustomDateFormatter
     
     // MARK: - Init
     
     init(
         networkService: INetworkService,
-        urlRequestsFactory: IURLRequestFactory,
-        dateFormatter: ICustomDateFormatter
+        urlRequestsFactory: IURLRequestFactory
     ) {
         self.networkService = networkService
         self.urlRequestsFactory = urlRequestsFactory
-        self.dateFormatter = dateFormatter
     }
 }
 
@@ -48,7 +45,7 @@ extension ForecastService: IForecastService {
     ) {
         do {
             let request = try urlRequestsFactory.makeForecastRequest(for: locationId)
-            let parser = ForecastParser(dateFormatter: dateFormatter)
+            let parser = ForecastParser()
             networkService.load(request: request, parser: parser) { (result: Result<ForecastModel, Error>) in
                 switch result {
                 case .success(let model):
