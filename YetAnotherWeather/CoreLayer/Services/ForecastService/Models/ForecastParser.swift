@@ -35,8 +35,8 @@ final class ForecastParser: IJSONParser {
 
             return ForecastModel.ForecastDay(
                 date: date,
-                lowTemp: maxTemp,
-                highTemp: minTemp,
+                lowTemp: minTemp,
+                highTemp: maxTemp,
                 avgTemp: avgTemp,
                 condition: .init(text: text, iconUrl: iconUrl),
                 chanceOfRain: daylyChanceOfRain

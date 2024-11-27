@@ -20,52 +20,52 @@ enum BeaufortScale {
     case gale
     case strongGale
     case storm
-    case violentStrom
+    case violentStorm
     case hurricane
-    
+
     var title: String {
         switch self {
         case .calm:
-            return "Calm weather"
+            return "Calm weather🧘"
         case .lightAir, .lightBreeze, .gentleBreeze, .moderateBreeze, .freshBreeze:
-            return "A little windy"
+            return "A little windy🍃"
         case .strongBreeze, .moderateGale:
-            return "Windy"
+            return "Windy💨"
         case .gale, .strongGale:
-            return "Strongly windy"
-        case .storm, .violentStrom:
-            return "Storm"
+            return "Strongly windy💨"
+        case .storm, .violentStorm:
+            return "Storm🌊"
         case .hurricane:
-            return "Hurricane"
+            return "Hurricane🌪️"
         }
     }
     
     var description: String {
         switch self {
         case .calm:
-            return "Smoke rises vertically."
+            return "No wind at all. Smoke rises vertically."
         case .lightAir:
             return "Direction shown by smoke drift."
         case .lightBreeze:
-            return "Wind felt on face; leaves rustle."
+            return "Wind felt on face."
         case .gentleBreeze:
-            return "Leaves and small twigs in constant motion."
+            return "Slightly windy: leaves and small twigs in constant motion."
         case .moderateBreeze:
-            return "Wind raises dust and loose paper"
+            return "It's a little bit windy outside: wind raises dust and loose paper."
         case .freshBreeze:
-            return "Small trees in leaf begin to sway"
+            return "It is windy; you can feel it. Small trees in leaf begin to sway."
         case .strongBreeze:
-            return "Umbrellas used with difficulty"
+            return "Wind is quite strong: umbrellas used with difficulty."
         case .moderateGale:
-            return "Inconvenience when walking against the wind"
+            return "The wind is strong. Inconvenience when walking against the wind."
         case .gale:
-            return "It's very difficult to go against the wind"
+            return "Strong wind. It's very difficult to go against the wind."
         case .strongGale:
-            return "Slight structural damage (roof slates removed)"
+            return "Danger: slight structural damage (roof slates removed)."
         case .storm:
-            return "Structural damage. Be careful!"
-        case .violentStrom:
-            return "Widespread damage. Run for cover!"
+            return "Danger: structural damage. Be careful!"
+        case .violentStorm:
+            return "Danger: widespread damage. Run for cover!"
         case .hurricane:
             return "Devastation. Run for cover."
         }
@@ -96,7 +96,7 @@ enum BeaufortScale {
         case 24.5...28.4:
             return .storm
         case 28.5...32.6:
-            return .violentStrom
+            return .violentStorm
         case 32.7...999:
             return .hurricane
         default:
