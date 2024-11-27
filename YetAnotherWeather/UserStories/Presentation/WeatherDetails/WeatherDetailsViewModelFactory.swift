@@ -22,6 +22,7 @@ final class WeatherDetailsViewModelFactory {
     // Typealias
     private typealias CurrentWeatherModel = WeatherDetailsViewModel.CurrentWeatherViewModel
     private typealias ForecastViewModel = WeatherDetailsViewModel.ForecastViewModel
+    private typealias WindViewModel = WeatherDetailsViewModel.WindViewModel
     
     // Dependencies
     private let dateFormatter: ICustomDateFormatter
@@ -31,8 +32,29 @@ final class WeatherDetailsViewModelFactory {
     init(dateFormatter: ICustomDateFormatter) {
         self.dateFormatter = dateFormatter
     }
-        
-    // MARK: - Private
+}
+
+// MARK: - IWeatherDetailsViewModelFactory
+
+extension WeatherDetailsViewModelFactory: IWeatherDetailsViewModelFactory {
+    
+    func makeCurrentWeatherViewModel(model: ForecastModel) -> WeatherDetailsViewModel {
+        let currenWeatherModel = makeCurrentWeatherViewModel(from: model)
+        let imageTitle = makeBackgroundImageTitle(from: model)
+        let forecastModel = makeForecastViewModel(from: model)
+        let windModel = makeWindViewModel(from: model)
+        return WeatherDetailsViewModel(
+            currentWeatherViewModel: currenWeatherModel,
+            backgroundImageTitle: imageTitle,
+            forecastViewModel: forecastModel,
+            windViewModel: windModel
+        )
+    }
+}
+
+// MARK: - Private
+
+private extension WeatherDetailsViewModelFactory {
     
     private func makeTempreature(_ temp: Double?) -> String? {
         guard let tempreture = temp else { return nil }
@@ -105,20 +127,19 @@ final class WeatherDetailsViewModelFactory {
             return .isNightImageName
         }
     }
-}
-
-// MARK: - IWeatherDetailsViewModelFactory
-
-extension WeatherDetailsViewModelFactory: IWeatherDetailsViewModelFactory {
     
-    func makeCurrentWeatherViewModel(model: ForecastModel) -> WeatherDetailsViewModel {
-        let currenWeatherModel = makeCurrentWeatherViewModel(from: model)
-        let imageTitle = makeBackgroundImageTitle(from: model)
-        let forecastModel = makeForecastViewModel(from: model)
-        return WeatherDetailsViewModel(
-            currentWeatherViewModel: currenWeatherModel,
-            backgroundImageTitle: imageTitle,
-            forecastViewModel: forecastModel
+    private func makeWindViewModel(from model: ForecastModel) -> WindViewModel {
+        let windSpeed = round(100 * model.currentWeather.wind.windSpeed) / 100
+        let windGust = round(100 * model.currentWeather.wind.windGust) / 100
+        let direction = model.currentWeather.wind.windDirection
+        let degree = model.currentWeather.wind.windDegree
+        return WindViewModel(
+            title: "WIND",
+            summaryStatus: BeaufortScale.evaluteWind(windSpeed: windSpeed).title,
+            summaryDescription: BeaufortScale.evaluteWind(windSpeed: windSpeed).description,
+            wind: .init(title: "Wind", value: "\(windSpeed) m/s"),
+            gusts: .init(title: "Gusts", value: "\(windGust) m/s"),
+            windDirection: .init(title: "Direction", value: "\(degree)° \(direction)")
         )
     }
 }

@@ -117,10 +117,8 @@ final class SingleDayForecastView: UIView {
     private func setUpConstraints() {
         bottomBorder.snp.makeConstraints {
             $0.height.equalTo(0.5)
-            $0.bottom.equalTo(forecastHorizontalStack.snp.bottom)
-            $0.leading.trailing.equalToSuperview().inset(
-                UIEdgeInsets(top: 0, left: 6, bottom: 0, right: 6)
-            )
+            $0.bottom.equalTo(forecastHorizontalStack.snp.bottom).offset(6)
+            $0.leading.trailing.equalToSuperview()
         }
         
         imageView.snp.makeConstraints {

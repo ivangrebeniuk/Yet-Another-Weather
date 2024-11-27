@@ -23,7 +23,7 @@ final class SearchResultParser: IJSONParser {
                     let region = result["region"].string,
                     let country = result["country"].string
                 else {
-                    throw NetworkRequestError.modelParsingError
+                    throw NetworkRequestError.searchParsingError
                 }
                 
                 let searchResult = SearchResultModel(

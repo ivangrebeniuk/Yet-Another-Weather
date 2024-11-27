@@ -34,9 +34,7 @@ final class ForecastView: UIView {
         label.textColor = .white
         return label
     }()
-    
-    private let containerView = UIView()
-    
+        
     private let titleIcon: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage.init(systemName: "calendar")

@@ -17,8 +17,16 @@ struct CurrentWeatherModel: Codable {
         let timeZone: String
     }
     
+    struct Wind: Codable {
+        let windSpeed: Double
+        let windGust: Double
+        let windDirection: String
+        let windDegree: Int
+    }
+    
     let temperature: Double
     let location: Location
     let condition: Condition
     let isDay: Bool
+    let wind: Wind
 }
