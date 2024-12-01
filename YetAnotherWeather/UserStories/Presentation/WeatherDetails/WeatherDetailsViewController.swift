@@ -35,19 +35,16 @@ final class WeatherDetailsViewController: UIViewController {
     // UI
     private let currentWeatherView = CurrentWeatherView()
     private let backgroundImageView = UIImageView()
-    private let loader = UIActivityIndicatorView(style: .large)
+    private let loader = UIActivityIndicatorView(style: .medium)
     
     private let forecastView = ForecastView()
     private let forecastContainerView = UIView()
-    private let forecastBlurEffectView = UIVisualEffectView(
-        effect: UIBlurEffect(style: .dark)
-    )
     
     private let windView = WindView()
     private let windContainerView = UIView()
-    private let windBlurEffectView = UIVisualEffectView(
-        effect: UIBlurEffect(style: .dark)
-    )
+    
+    private let blurredForecastContainer = UIView().blurred(cornerRadius: 12)
+    private let blurredWindContainerView = UIView().blurred(cornerRadius: 12)
     
     // MARK: - Init
     
@@ -97,43 +94,13 @@ final class WeatherDetailsViewController: UIViewController {
         view.addSubview(forecastContainerView)
         view.addSubview(windContainerView)
         
-        forecastContainerView.addSubview(forecastBlurEffectView)
+        forecastContainerView.addSubview(blurredForecastContainer)
         forecastContainerView.addSubview(forecastView)
-        windContainerView.addSubview(windBlurEffectView)
+        windContainerView.addSubview(blurredWindContainerView)
         windContainerView.addSubview(windView)
         
         setUpNavigationBar()
-        setUpBlurEffect()
-        setUpWidgetBorders()
         loader.color = .darkGray
-    }
-    
-    private func setUpWidgetBorders() {
-        forecastContainerView.layer.cornerRadius = 12
-        forecastContainerView.layer.borderWidth = 0.5
-        forecastContainerView.layer.borderColor = UIColor.systemGray5.cgColor
-        
-        windContainerView.layer.cornerRadius = 12
-        windContainerView.layer.borderWidth = 0.5
-        windContainerView.layer.borderColor = UIColor.systemGray5.cgColor
-    }
-    
-    private func configureBackgroundImage(withImage imageTitle: String) {
-        let image = UIImage(named: imageTitle)
-        backgroundImageView.image = image
-        backgroundImageView.contentMode = .scaleAspectFill
-    }
-    
-    private func setUpBlurEffect() {
-        forecastBlurEffectView.frame = forecastContainerView.bounds
-        forecastBlurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        forecastBlurEffectView.layer.cornerRadius = 12
-        forecastBlurEffectView.layer.masksToBounds = true
-        
-        windBlurEffectView.frame = windContainerView.bounds
-        windBlurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        windBlurEffectView.layer.cornerRadius = 12
-        windBlurEffectView.layer.masksToBounds = true
     }
     
     private func setUpConstraints() {
@@ -151,11 +118,11 @@ final class WeatherDetailsViewController: UIViewController {
         }
         
         forecastView.snp.makeConstraints {
-            $0.edges.equalToSuperview().inset(6)
+            $0.edges.equalToSuperview()
         }
         
         windView.snp.makeConstraints {
-            $0.edges.equalToSuperview().inset(6)
+            $0.edges.equalToSuperview()
         }
         
         forecastContainerView.snp.makeConstraints {
@@ -167,8 +134,22 @@ final class WeatherDetailsViewController: UIViewController {
             $0.top.equalTo(forecastContainerView.snp.bottom).offset(18)
             $0.leading.trailing.equalToSuperview().inset(18)
         }
+        
+        blurredForecastContainer.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
+        
+        blurredWindContainerView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
     }
     
+    private func configureBackgroundImage(withImage imageTitle: String) {
+        let image = UIImage(named: imageTitle)
+        backgroundImageView.image = image
+        backgroundImageView.contentMode = .scaleAspectFill
+    }
+        
     @objc private func cancelButtonTapped() {
         presenter.didRequestToDismiss()
     }
@@ -183,25 +164,24 @@ final class WeatherDetailsViewController: UIViewController {
 extension WeatherDetailsViewController: IWeatherDetailsView {
     
     func updateView(with model: WeatherDetailsViewModel) {
-        currentWeatherView.configure(with: model.currentWeatherViewModel)
         configureBackgroundImage(withImage: model.backgroundImageTitle)
+        currentWeatherView.configure(with: model.currentWeatherViewModel)
         forecastView.configure(with: model.forecastViewModel)
-        
-
         windView.configure(with: model.windViewModel)
-        view.layoutIfNeeded()
     }
     
     func startLoader() {
         loader.startAnimating()
         currentWeatherView.isHidden = true
-        forecastView.isHidden = true
+        forecastContainerView.isHidden = true
+        windContainerView.isHidden = true
     }
     
     func stopLoader() {
         loader.stopAnimating()
         currentWeatherView.isHidden = false
-        forecastView.isHidden = false
+        forecastContainerView.isHidden = false
+        windContainerView.isHidden = false
     }
     
     func showAlert(withModel model: SingleButtonAlertViewModel) {

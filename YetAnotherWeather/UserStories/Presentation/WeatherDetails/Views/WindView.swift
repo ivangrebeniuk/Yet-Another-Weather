@@ -12,6 +12,18 @@ import UIKit
 final class WindView: UIView {
 
     // UI
+    private let windView = WindParametersView()
+    private let gustsView = WindParametersView()
+    private let windDirectionView = WindParametersView()
+    
+    private let containerStackView: UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.distribution = .fillEqually
+        stackView.spacing = 12
+        return stackView
+    }()
+    
     private var titleStackView: UIStackView = {
         let stackView = UIStackView()
         stackView.axis = .horizontal
@@ -35,9 +47,7 @@ final class WindView: UIView {
         imageView.tintColor = .white
         return imageView
     }()
-    
-    private let summaryContainerView = UIView()
-    
+        
     private let summaryStatusLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: CGFloat(22), weight: .medium)
@@ -65,15 +75,10 @@ final class WindView: UIView {
     
     private let windStackView: UIStackView = {
         let stackView = UIStackView()
-        stackView.distribution = .fillEqually
         stackView.axis = .vertical
         stackView.spacing = 6
         return stackView
     }()
-    
-    private let windView = WindParamersView()
-    private let gustsView = WindParamersView()
-    private let windDirectionView = WindParamersView()
     
     // MARK: - Init
     
@@ -90,46 +95,42 @@ final class WindView: UIView {
     // MARK: - Private
     
     private func setUpUI() {
+        
+        let windBottomLine = BottomLineView()
+        let gustsBottomLine = BottomLineView()
+        
         addSubview(titleStackView)
-        addSubview(summaryContainerView)
-        addSubview(windStackView)
+        addSubview(containerStackView)
+        containerStackView.addArrangedSubview(windStackView)
+        containerStackView.addArrangedSubview(summaryStackView)
         
         titleStackView.addArrangedSubview(titleIcon)
         titleStackView.addArrangedSubview(titleLabel)
         
-        summaryContainerView.addSubview(summaryStackView)
         summaryStackView.addArrangedSubview(summaryStatusLabel)
         summaryStackView.addArrangedSubview(summaryDescriptionLabel)
         
         windStackView.addArrangedSubview(windView)
+        windStackView.addArrangedSubview(windBottomLine)
         windStackView.addArrangedSubview(gustsView)
+        windStackView.addArrangedSubview(gustsBottomLine)
         windStackView.addArrangedSubview(windDirectionView)
     }
     
     private func setUpConstraints() {
         titleStackView.snp.makeConstraints {
-            $0.top.leading.equalToSuperview().inset(UIEdgeInsets(top: 8, left: 6, bottom: 0, right: 0))
-            $0.width.equalToSuperview().multipliedBy(0.5)
+            $0.top.equalToSuperview().inset(8)
+            $0.leading.trailing.equalToSuperview().inset(12)
         }
         
         titleIcon.snp.makeConstraints {
-            $0.height.width.equalTo(17)
+            $0.size.equalTo(17)
         }
         
-        windStackView.snp.makeConstraints {
+        containerStackView.snp.makeConstraints {
             $0.top.equalTo(titleStackView.snp.bottom).offset(6)
-            $0.bottom.equalToSuperview()
-            $0.leading.equalToSuperview().offset(6)
-            $0.width.equalToSuperview().multipliedBy(0.5)
-        }
-        summaryContainerView.snp.makeConstraints {
-            $0.top.equalToSuperview().offset(6)
-            $0.bottom.trailing.equalToSuperview()
-            $0.leading.equalTo(windStackView.snp.trailing)
-        }
-        
-        summaryStackView.snp.makeConstraints {
-            $0.edges.equalToSuperview().inset(8)
+            $0.bottom.equalToSuperview().inset(6)
+            $0.leading.trailing.equalToSuperview().inset(12)
         }
     }
 }
@@ -142,9 +143,9 @@ extension WindView: ConfigurableView {
         let title: String
         let summaryStatus: String
         let summaryDescription: String
-        let wind: WindParamersView.Model
-        let gusts: WindParamersView.Model
-        let windDirection: WindParamersView.Model
+        let wind: WindParametersView.Model
+        let gusts: WindParametersView.Model
+        let windDirection: WindParametersView.Model
     }
     
     func configure(with model: WindView.Model) {

@@ -111,7 +111,7 @@ final class NetworkService: INetworkService {
                 let parsedData = try parser.parse(JSON(data))
                 completion(.success(parsedData))
             } catch {
-                completion(.failure(NetworkRequestError.modelParsingError))
+                completion(.failure(error))
             }
         }.resume()
     }

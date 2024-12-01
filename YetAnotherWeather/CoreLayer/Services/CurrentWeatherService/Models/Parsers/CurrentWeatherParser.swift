@@ -23,7 +23,7 @@ final class CurrentWeatherParser: IJSONParser {
               let iconUrl = URL(string: icon),
               let text = json["current"]["condition"]["text"].string,
               let isDay = json["current"]["is_day"].int
-        else { throw NetworkRequestError.currentWeatherParsingError }
+        else { throw NetworkRequestError.modelParsingError(CurrentWeatherModel.self) }
         
         return CurrentWeatherModel(
             temperature: temperature,

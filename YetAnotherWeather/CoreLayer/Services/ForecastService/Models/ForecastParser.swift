@@ -16,7 +16,7 @@ final class ForecastParser: IJSONParser {
         let currentWeatherParser = CurrentWeatherParser()
         
         guard let forecastDay = json["forecast"]["forecastday"].array else {
-            throw NetworkRequestError.forecastParsingError
+            throw NetworkRequestError.modelParsingError(ForecastModel.self)
         }
         
         let days: [ForecastModel.ForecastDay] = try forecastDay.map {
@@ -30,7 +30,7 @@ final class ForecastParser: IJSONParser {
                 let iconUrl = URL(string: "https:" + icon),
                 let daylyChanceOfRain = $0["day"]["daily_chance_of_rain"].int
             else {
-                throw NetworkRequestError.forecastParsingError
+                throw NetworkRequestError.modelParsingError(ForecastModel.self)
             }
 
             return ForecastModel.ForecastDay(

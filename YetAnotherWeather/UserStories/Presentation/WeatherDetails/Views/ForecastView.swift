@@ -13,7 +13,6 @@ final class ForecastView: UIView {
     // UI
     private var daysStackView: UIStackView = {
         let stackView = UIStackView()
-        stackView.distribution = .fillEqually
         stackView.axis = .vertical
         stackView.spacing = 6
         return stackView
@@ -66,20 +65,18 @@ final class ForecastView: UIView {
     
     private func setUpConstraints() {
         titleStackView.snp.makeConstraints {
-            $0.top.leading.trailing.equalToSuperview().inset(
-                UIEdgeInsets(top: 8, left: 6, bottom: 0, right: 6)
-            )
+            $0.top.equalToSuperview().inset(8)
+            $0.leading.trailing.equalToSuperview().inset(12)
         }
         
         titleIcon.snp.makeConstraints {
-            $0.height.width.equalTo(17)
+            $0.size.equalTo(17)
         }
         
         daysStackView.snp.makeConstraints {
             $0.top.equalTo(titleStackView.snp.bottom).offset(6)
-            $0.leading.trailing.bottom.equalToSuperview().inset(
-                UIEdgeInsets(top: 0, left: 6, bottom: 0, right: 6)
-            )
+            $0.bottom.equalToSuperview().inset(6)
+            $0.leading.trailing.equalToSuperview().inset(12)
         }
     }
 }
@@ -89,21 +86,29 @@ final class ForecastView: UIView {
 extension ForecastView: ConfigurableView {
     
     struct Model {
-        let titleLabel: String
-        let daysForecasts: [SingleDayForecastView.Model]
+        let forecastTitle: String
+        let forecasts: [SingleDayForecastView.Model]
     }
     
     func configure(with model: ForecastView.Model) {
-        titleLabel.text = model.titleLabel
+        titleLabel.text = model.forecastTitle
         
         daysStackView.arrangedSubviews.forEach {
             $0.removeFromSuperview()
         }
         
-        for model in model.daysForecasts {
+        var counter = 0
+        let amountOfModels = model.forecasts.count
+        for model in model.forecasts {
             let view = SingleDayForecastView()
+            let bottomLineView = BottomLineView()
             view.configure(with: model)
             daysStackView.addArrangedSubview(view)
+            counter += 1
+            
+            if counter < amountOfModels {
+                daysStackView.addArrangedSubview(bottomLineView)
+            }
         }
     }
 }

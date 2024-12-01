@@ -19,7 +19,7 @@ final class WindParser: IJSONParser {
             let windDirection = json["current"]["wind_dir"].string,
             let windDegree = json["current"]["wind_degree"].int
         else {
-            throw NetworkRequestError.windParsingError
+            throw NetworkRequestError.modelParsingError(CurrentWeatherModel.Wind.self)
         }
 
         return CurrentWeatherModel.Wind(

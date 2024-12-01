@@ -1,5 +1,5 @@
 //
-//  Dateformatter.swift
+//  CustomDateFormatter.swift
 //  YetAnotherWeather
 //
 //  Created by Ivan Grebenyuk on 17.11.2024.
@@ -14,7 +14,10 @@ protocol ICustomDateFormatter {
 
 final class CustomDateFormatter: ICustomDateFormatter {
     
-    private let dateFormatter = DateFormatter()
+    // Properties
+    private lazy var dateFormatter = DateFormatter()
+    
+    // MARK: - ICustomDateFormatter
     
     func localDate(from dateString: String, mask: String, timeZone: TimeZone) -> Date? {
         dateFormatter.dateFormat = mask

@@ -1,5 +1,5 @@
 //
-//  WindParamersView.swift
+//  WindParametersView.swift
 //  YetAnotherWeather
 //
 //  Created by Ivan Grebenyuk on 23.11.2024.
@@ -9,7 +9,7 @@ import Foundation
 import SnapKit
 import UIKit
 
-final class WindParamersView: UIView {
+final class WindParametersView: UIView {
 
     // UI
     private let titleLabel: UILabel = {
@@ -22,24 +22,17 @@ final class WindParamersView: UIView {
     
     private let valueLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: CGFloat(18), weight: .regular)
+        label.font = UIFont.systemFont(ofSize: CGFloat(16), weight: .regular)
         label.alpha = 0.6
         label.textColor = .white
         label.textAlignment = .right
         return label
     }()
     
-    private let bottomBorder: UIView = {
-        let view = UIView()
-        view.backgroundColor = UIColor.systemGray5
-        return view
-    }()
-    
     private let stackView: UIStackView = {
         let stackView = UIStackView()
         stackView.axis = .horizontal
         stackView.alignment = .center
-        stackView.distribution = .fill
         return stackView
     }()
     
@@ -59,7 +52,6 @@ final class WindParamersView: UIView {
     
     private func setUpUI() {
         addSubview(stackView)
-        addSubview(bottomBorder)
         stackView.addArrangedSubview(titleLabel)
         stackView.addArrangedSubview(valueLabel)
     }
@@ -68,25 +60,19 @@ final class WindParamersView: UIView {
         stackView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
-        
-        bottomBorder.snp.makeConstraints {
-            $0.height.equalTo(0.5)
-            $0.bottom.equalTo(stackView.snp.bottom).offset(6)
-            $0.leading.trailing.equalToSuperview()
-        }
     }
 }
 
 // MARK: - ConfigurableView
 
-extension WindParamersView: ConfigurableView {
+extension WindParametersView: ConfigurableView {
     
     struct Model {
         let title: String
         let value: String
     }
     
-    func configure(with model: WindParamersView.Model) {
+    func configure(with model: WindParametersView.Model) {
         titleLabel.text = model.title
         valueLabel.text = model.value
     }

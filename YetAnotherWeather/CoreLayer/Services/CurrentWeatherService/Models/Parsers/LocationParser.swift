@@ -18,7 +18,7 @@ final class LocationParser: IJSONParser {
             let localTime = json["location"]["localtime"].string,
             let timeZone = json["location"]["tz_id"].string
         else {
-            throw NetworkRequestError.locationParsingError
+            throw NetworkRequestError.modelParsingError(CurrentWeatherModel.self)
         }
         
         return CurrentWeatherModel.Location(

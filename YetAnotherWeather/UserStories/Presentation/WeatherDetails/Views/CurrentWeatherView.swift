@@ -44,7 +44,6 @@ final class CurrentWeatherView: UIView {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: CGFloat(21), weight: .medium)
         label.textAlignment = .center
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     

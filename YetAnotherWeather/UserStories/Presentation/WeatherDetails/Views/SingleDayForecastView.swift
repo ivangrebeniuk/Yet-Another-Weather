@@ -10,6 +10,20 @@ import SnapKit
 import Kingfisher
 import UIKit
 
+private extension String {
+    static let lowTempLetter = "L:"
+    static let highTempLetter = "H:"
+}
+
+private extension CGFloat {
+    static let dayLabelMultiplier = 0.3
+    static let iconAndRainMultiplier = 0.2
+    static let lowTempLabelMultiplier = 0.15
+    static let highTempLabelMultiplier = 0.15
+    static let lowLetterLabelMultiplier = 0.1
+    static let hightLetterLabelMultiplier = 0.1
+}
+
 final class SingleDayForecastView: UIView {
     
     // UI
@@ -35,6 +49,7 @@ final class SingleDayForecastView: UIView {
         label.font = UIFont.systemFont(ofSize: CGFloat(22), weight: .regular)
         label.alpha = 0.6
         label.textColor = .white
+        label.text = .lowTempLetter
         return label
     }()
     
@@ -42,6 +57,7 @@ final class SingleDayForecastView: UIView {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: CGFloat(22), weight: .regular)
         label.textColor = .white
+        label.text = .highTempLetter
         return label
     }()
     
@@ -76,12 +92,6 @@ final class SingleDayForecastView: UIView {
         return stackView
     }()
     
-    private let bottomBorder: UIView = {
-        let view = UIView()
-        view.backgroundColor = UIColor.systemGray5
-        return view
-    }()
-    
     // MARK: - Init
     
     override init(frame: CGRect) {
@@ -98,10 +108,6 @@ final class SingleDayForecastView: UIView {
     
     private func setUpUI() {
         addSubview(forecastHorizontalStack)
-        addSubview(bottomBorder)
-        
-        imageAndRainStack.addArrangedSubview(imageView)
-        imageAndRainStack.addArrangedSubview(rainFallChanceLabel)
         
         forecastHorizontalStack.addArrangedSubview(dayLabel)
         forecastHorizontalStack.addArrangedSubview(imageAndRainStack)
@@ -112,13 +118,13 @@ final class SingleDayForecastView: UIView {
         forecastHorizontalStack.addArrangedSubview(highLetterLabel)
         forecastHorizontalStack.addArrangedSubview(highTempLabel)
         
+        imageAndRainStack.addArrangedSubview(imageView)
+        imageAndRainStack.addArrangedSubview(rainFallChanceLabel)
     }
     
     private func setUpConstraints() {
-        bottomBorder.snp.makeConstraints {
-            $0.height.equalTo(0.5)
-            $0.bottom.equalTo(forecastHorizontalStack.snp.bottom).offset(6)
-            $0.leading.trailing.equalToSuperview()
+        forecastHorizontalStack.snp.makeConstraints {
+            $0.edges.equalToSuperview()
         }
         
         imageView.snp.makeConstraints {
@@ -126,32 +132,19 @@ final class SingleDayForecastView: UIView {
             $0.height.equalTo(24)
         }
         
-        forecastHorizontalStack.snp.makeConstraints {
-            $0.edges.equalToSuperview()
-        }
+        let subviewsWidthDict: [UIView: CGFloat] = [
+            dayLabel: CGFloat(.dayLabelMultiplier),
+            imageAndRainStack: CGFloat(.iconAndRainMultiplier),
+            lowLetterLabel: CGFloat(.lowLetterLabelMultiplier),
+            lowTempLabel: CGFloat(.lowTempLabelMultiplier),
+            highLetterLabel: CGFloat(.hightLetterLabelMultiplier),
+            highTempLabel: CGFloat(.highTempLabelMultiplier)
+        ]
         
-        dayLabel.snp.makeConstraints {
-            $0.width.equalToSuperview().multipliedBy(0.3)
-        }
-        
-        imageAndRainStack.snp.makeConstraints {
-            $0.width.equalToSuperview().multipliedBy(0.2)
-        }
-        
-        lowLetterLabel.snp.makeConstraints {
-            $0.width.equalToSuperview().multipliedBy(0.1)
-        }
-        
-        lowTempLabel.snp.makeConstraints {
-            $0.width.equalToSuperview().multipliedBy(0.15)
-        }
-        
-        highLetterLabel.snp.makeConstraints {
-            $0.width.equalToSuperview().multipliedBy(0.1)
-        }
-        
-        highTempLabel.snp.makeConstraints {
-            $0.width.equalToSuperview().multipliedBy(0.15)
+        for (view, multiplier) in subviewsWidthDict {
+            view.snp.makeConstraints {
+                $0.width.equalToSuperview().multipliedBy(multiplier)
+            }
         }
     }
 }
@@ -164,9 +157,7 @@ extension SingleDayForecastView: ConfigurableView {
         let day: String
         let imageURL: URL
         let rainFallChance: String?
-        let lowLetter: String
         let lowTemp: String
-        let highLetter: String
         let highTemp: String
     }
     
@@ -175,9 +166,7 @@ extension SingleDayForecastView: ConfigurableView {
         dayLabel.text = model.day
         imageView.kf.setImage(with: model.imageURL)
         rainFallChanceLabel.text = model.rainFallChance
-        lowLetterLabel.text = model.lowLetter
         lowTempLabel.text = model.lowTemp
-        highLetterLabel.text = model.highLetter
         highTempLabel.text = model.highTemp
     }
 }
