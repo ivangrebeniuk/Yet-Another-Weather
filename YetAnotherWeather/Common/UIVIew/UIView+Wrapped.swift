@@ -9,9 +9,9 @@ import Foundation
 import SnapKit
 import UIKit
 
-public extension UIView {
+extension UIView {
     
-    func blurred(cornerRadius: CGFloat) -> UIVisualEffectView {
+    func wrappedInBlurred() -> UIVisualEffectView {
         
         let blurEffectView = UIVisualEffectView(
             effect: UIBlurEffect(style: .dark)
@@ -19,7 +19,6 @@ public extension UIView {
         
         blurEffectView.contentView.addSubview(self)
         blurEffectView.layer.masksToBounds = true
-        blurEffectView.layer.cornerRadius = cornerRadius
 
         self.snp.makeConstraints { make in
             make.edges.equalToSuperview()

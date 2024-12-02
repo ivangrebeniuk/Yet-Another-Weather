@@ -59,6 +59,7 @@
 		E2D1AE612CA29ABB00008AD6 /* ForecastParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2D1AE602CA29ABB00008AD6 /* ForecastParser.swift */; };
 		E2D1AE632CA29B0800008AD6 /* ForecastService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2D1AE622CA29B0800008AD6 /* ForecastService.swift */; };
 		E2D1AE652CA29BA700008AD6 /* ConditionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2D1AE642CA29BA700008AD6 /* ConditionModel.swift */; };
+		E2E926942CFDF9A400DFB00C /* BeaufortScaleResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E926932CFDF9A400DFB00C /* BeaufortScaleResolver.swift */; };
 		E2F692D72CE0A7A500B57BB6 /* AlertMessageViewModelFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2F692D62CE0A7A500B57BB6 /* AlertMessageViewModelFactory.swift */; };
 		E2F692DA2CE0AC4E00B57BB6 /* UIAlertController+Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2F692D92CE0AC4E00B57BB6 /* UIAlertController+Alert.swift */; };
 		E2F692DC2CE0AE7900B57BB6 /* SingleButtonAlertViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2F692DB2CE0AE7900B57BB6 /* SingleButtonAlertViewModel.swift */; };
@@ -121,6 +122,7 @@
 		E2D1AE602CA29ABB00008AD6 /* ForecastParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForecastParser.swift; sourceTree = "<group>"; };
 		E2D1AE622CA29B0800008AD6 /* ForecastService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForecastService.swift; sourceTree = "<group>"; };
 		E2D1AE642CA29BA700008AD6 /* ConditionModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConditionModel.swift; sourceTree = "<group>"; };
+		E2E926932CFDF9A400DFB00C /* BeaufortScaleResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeaufortScaleResolver.swift; sourceTree = "<group>"; };
 		E2F692D62CE0A7A500B57BB6 /* AlertMessageViewModelFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertMessageViewModelFactory.swift; sourceTree = "<group>"; };
 		E2F692D92CE0AC4E00B57BB6 /* UIAlertController+Alert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIAlertController+Alert.swift"; sourceTree = "<group>"; };
 		E2F692DB2CE0AE7900B57BB6 /* SingleButtonAlertViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleButtonAlertViewModel.swift; sourceTree = "<group>"; };
@@ -263,6 +265,7 @@
 			children = (
 				E23500372CCEB5A200456FA4 /* WeatherDetailsViewModel.swift */,
 				E20C58542CF70BF500DAFBA2 /* BeaufortScale.swift */,
+				E2E926932CFDF9A400DFB00C /* BeaufortScaleResolver.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -663,6 +666,7 @@
 				E280DAFD2C31750F00D683CD /* CurrentWeatherParser.swift in Sources */,
 				E20EECFA2C4AA16200B48F16 /* SearchResultsPresenter.swift in Sources */,
 				E20EECF82C4AA14800B48F16 /* SearchResultCellView.swift in Sources */,
+				E2E926942CFDF9A400DFB00C /* BeaufortScaleResolver.swift in Sources */,
 				E2AD19592C19A7E20038F6FC /* CurrentWeatherModel.swift in Sources */,
 				E23500382CCEB5A200456FA4 /* WeatherDetailsViewModel.swift in Sources */,
 				E2419D282C0B77B100342DA8 /* ConfigurableView.swift in Sources */,

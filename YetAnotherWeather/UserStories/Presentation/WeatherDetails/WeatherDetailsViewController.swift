@@ -40,13 +40,11 @@ final class WeatherDetailsViewController: UIViewController {
     private let loader = UIActivityIndicatorView(style: .medium)
     
     private let forecastView = ForecastView()
-    private let forecastContainerView = UIView()
+    private lazy var blurredForecastContainer = forecastView.wrappedInBlurred()
     
     private let windView = WindView()
-    private let windContainerView = UIView()
+    private lazy var blurredWindContainerView = windView.wrappedInBlurred()
     
-    private let blurredForecastContainer = UIView().blurred(cornerRadius: 12)
-    private let blurredWindContainerView = UIView().blurred(cornerRadius: 12)
     
     private let garbageView1: UIView = {
         let view = UIView()
@@ -86,6 +84,7 @@ final class WeatherDetailsViewController: UIViewController {
     // MARK: - Private
     
     private func setUpUI() {
+        
         view.addSubview(backgroundImageView)
         view.addSubview(scrollView)
         
@@ -93,16 +92,13 @@ final class WeatherDetailsViewController: UIViewController {
         
         contentView.addSubview(loader)
         contentView.addSubview(currentWeatherView)
-        contentView.addSubview(forecastContainerView)
-        contentView.addSubview(windContainerView)
-        
-        forecastContainerView.addSubview(blurredForecastContainer)
-        forecastContainerView.addSubview(forecastView)
-        windContainerView.addSubview(blurredWindContainerView)
-        windContainerView.addSubview(windView)
+        contentView.addSubview(blurredForecastContainer)
+        contentView.addSubview(blurredWindContainerView)
         
         setUpNavigationBar()
         loader.color = .darkGray
+        blurredForecastContainer.layer.cornerRadius = 12
+        blurredWindContainerView.layer.cornerRadius = 12
     }
     
     private func setUpConstraints() {
@@ -117,7 +113,6 @@ final class WeatherDetailsViewController: UIViewController {
         contentView.snp.makeConstraints {
             $0.edges.equalTo(scrollView)
             $0.width.equalTo(scrollView)
-            $0.bottom.equalTo(windContainerView.snp.bottom).offset(18)
         }
         
         currentWeatherView.snp.makeConstraints {
@@ -128,31 +123,16 @@ final class WeatherDetailsViewController: UIViewController {
         loader.snp.makeConstraints {
             $0.center.equalToSuperview()
         }
-        
-        forecastView.snp.makeConstraints {
-            $0.edges.equalToSuperview()
-        }
-        
-        windView.snp.makeConstraints {
-            $0.edges.equalToSuperview()
-        }
-        
-        forecastContainerView.snp.makeConstraints {
+        // ПЕРЕДЕЛАТЬ В STACKVIEW
+        blurredForecastContainer.snp.makeConstraints {
             $0.top.equalTo(currentWeatherView.snp.bottom).offset(18)
             $0.leading.trailing.equalToSuperview().inset(18)
         }
         
-        windContainerView.snp.makeConstraints {
-            $0.top.equalTo(forecastContainerView.snp.bottom).offset(18)
-            $0.leading.trailing.equalToSuperview().inset(18)
-        }
-        
-        blurredForecastContainer.snp.makeConstraints {
-            $0.edges.equalToSuperview()
-        }
-        
         blurredWindContainerView.snp.makeConstraints {
-            $0.edges.equalToSuperview()
+            $0.top.equalTo(blurredForecastContainer.snp.bottom).offset(18)
+            $0.leading.trailing.equalToSuperview().inset(18)
+            $0.bottom.equalToSuperview().inset(40)
         }
     }
     
@@ -203,15 +183,15 @@ extension WeatherDetailsViewController: IWeatherDetailsView {
     func startLoader() {
         loader.startAnimating()
         currentWeatherView.isHidden = true
-        forecastContainerView.isHidden = true
-        windContainerView.isHidden = true
+        blurredForecastContainer.isHidden = true
+        blurredWindContainerView.isHidden = true
     }
     
     func stopLoader() {
         loader.stopAnimating()
         currentWeatherView.isHidden = false
-        forecastContainerView.isHidden = false
-        windContainerView.isHidden = false
+        blurredForecastContainer.isHidden = false
+        blurredWindContainerView.isHidden = false
     }
     
     func showAlert(withModel model: SingleButtonAlertViewModel) {

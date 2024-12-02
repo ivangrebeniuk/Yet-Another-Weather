@@ -101,7 +101,7 @@ extension ForecastView: ConfigurableView {
         let amountOfModels = model.forecasts.count
         for model in model.forecasts {
             let view = SingleDayForecastView()
-            let bottomLineView = BottomLineView()
+            let bottomLineView = BottomLineView(configuration: .default)
             view.configure(with: model)
             daysStackView.addArrangedSubview(view)
             counter += 1

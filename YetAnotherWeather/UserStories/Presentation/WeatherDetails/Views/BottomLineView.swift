@@ -11,31 +11,48 @@ import UIKit
 
 final class BottomLineView: UIView {
     
+    struct Configuration {
+        let lineColor: UIColor
+        let lineHeight: CGFloat
+        let lineInsets: CGFloat
+        
+        static var `default`: Self = .init(
+            lineColor: .systemGray5,
+            lineHeight: 0.5,
+            lineInsets: 6
+        )
+    }
+    
     // UI
-    private let bottomLineView: UIView = {
+    private let lineView: UIView = {
         let view = UIView()
-        view.backgroundColor = UIColor.systemGray5
         view.alpha = 0.6
         return view
     }()
     
     // MARK: - Init
     
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        setUpUI()
+    init(configuration: BottomLineView.Configuration) {
+        super.init(frame: .zero)
+        setUpUI(configuration: configuration)
+        
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    private func setUpUI() {
-        addSubview(bottomLineView)
+    // MARK: - Private
+    
+    private func setUpUI(configuration: BottomLineView.Configuration) {
+        addSubview(lineView)
         
-        bottomLineView.snp.makeConstraints {
-            $0.leading.trailing.equalToSuperview().inset(6)
-            $0.height.equalTo(0.5)            
+        lineView.backgroundColor = configuration.lineColor
+        
+        lineView.snp.makeConstraints {
+            $0.top.bottom.equalToSuperview()
+            $0.leading.trailing.equalToSuperview().inset(configuration.lineInsets)
+            $0.height.equalTo(configuration.lineHeight)
         }
     }
 }

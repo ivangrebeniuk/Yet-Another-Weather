@@ -10,23 +10,29 @@ import UIKit
 
 final class WeatherDetailsAssembly {
     
-    // Dependenciec
+    // Dependencies
+    private let beaufortScaleResolver: IBeaufortScaleResolver
     private let dateFormatter: ICustomDateFormatter
     private let forecastService: IForecastService
     
     // MARK: - Init
     
     init(
+        beaufortScaleResolver: IBeaufortScaleResolver,
         dateFormatter: ICustomDateFormatter,
         forecastService: IForecastService
     ) {
+        self.beaufortScaleResolver = beaufortScaleResolver
         self.dateFormatter = dateFormatter
         self.forecastService = forecastService
     }
     
     func assemble(location: String, output: WeatherDetailsOutput) -> UIViewController {
         
-        let viewModelFactory = WeatherDetailsViewModelFactory(dateFormatter: dateFormatter)
+        let viewModelFactory = WeatherDetailsViewModelFactory(
+            beaufortScaleResolver: beaufortScaleResolver,
+            dateFormatter: dateFormatter
+        )
         let alertViewModelFactory = AlertViewModelFactory()
         
         let presenter = WeatherDetailsPresenter(

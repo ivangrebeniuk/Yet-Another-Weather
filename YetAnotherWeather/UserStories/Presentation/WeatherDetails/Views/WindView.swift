@@ -97,8 +97,8 @@ final class WindView: UIView {
     
     private func setUpUI() {
         
-        let windBottomLine = BottomLineView()
-        let gustsBottomLine = BottomLineView()
+        let windBottomLine = BottomLineView(configuration: .default)
+        let gustsBottomLine = BottomLineView(configuration: .default)        
         
         addSubview(titleStackView)
         addSubview(containerStackView)
