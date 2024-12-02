@@ -77,6 +77,7 @@ final class WindView: UIView {
         let stackView = UIStackView()
         stackView.axis = .vertical
         stackView.spacing = 6
+        stackView.distribution = .equalCentering
         return stackView
     }()
     

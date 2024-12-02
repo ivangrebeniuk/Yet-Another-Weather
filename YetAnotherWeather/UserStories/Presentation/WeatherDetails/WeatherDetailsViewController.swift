@@ -33,6 +33,8 @@ final class WeatherDetailsViewController: UIViewController {
     private let presenter: IWeatherDetailsPresenter
     
     // UI
+    private let scrollView = UIScrollView()
+    private let contentView = UIView()
     private let currentWeatherView = CurrentWeatherView()
     private let backgroundImageView = UIImageView()
     private let loader = UIActivityIndicatorView(style: .medium)
@@ -45,6 +47,20 @@ final class WeatherDetailsViewController: UIViewController {
     
     private let blurredForecastContainer = UIView().blurred(cornerRadius: 12)
     private let blurredWindContainerView = UIView().blurred(cornerRadius: 12)
+    
+    private let garbageView1: UIView = {
+        let view = UIView()
+        view.backgroundColor = .red
+        view.layer.cornerRadius = 12
+        return view
+    }()
+    
+    private let garbageView2: UIView = {
+        let view = UIView()
+        view.backgroundColor = .green
+        view.layer.cornerRadius = 12
+        return view
+    }()
     
     // MARK: - Init
     
@@ -69,30 +85,16 @@ final class WeatherDetailsViewController: UIViewController {
     
     // MARK: - Private
     
-    private func setUpNavigationBar() {
-        navigationItem.leftBarButtonItem = UIBarButtonItem(
-            title: "Cancel",
-            style: .plain,
-            target: self,
-            action: #selector(cancelButtonTapped)
-        )
-        
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            title: "Add",
-            style: .done,
-            target: self,
-            action: #selector(addButtonTapped)
-        )
-        navigationController?.navigationBar.tintColor = .white
-        navigationController?.navigationBar.isTranslucent = true
-    }
-    
     private func setUpUI() {
         view.addSubview(backgroundImageView)
-        view.addSubview(loader)
-        view.addSubview(currentWeatherView)
-        view.addSubview(forecastContainerView)
-        view.addSubview(windContainerView)
+        view.addSubview(scrollView)
+        
+        scrollView.addSubview(contentView)
+        
+        contentView.addSubview(loader)
+        contentView.addSubview(currentWeatherView)
+        contentView.addSubview(forecastContainerView)
+        contentView.addSubview(windContainerView)
         
         forecastContainerView.addSubview(blurredForecastContainer)
         forecastContainerView.addSubview(forecastView)
@@ -106,6 +108,16 @@ final class WeatherDetailsViewController: UIViewController {
     private func setUpConstraints() {
         backgroundImageView.snp.makeConstraints {
             $0.edges.equalToSuperview()
+        }
+        
+        scrollView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
+            
+        contentView.snp.makeConstraints {
+            $0.edges.equalTo(scrollView)
+            $0.width.equalTo(scrollView)
+            $0.bottom.equalTo(windContainerView.snp.bottom).offset(18)
         }
         
         currentWeatherView.snp.makeConstraints {
@@ -148,6 +160,24 @@ final class WeatherDetailsViewController: UIViewController {
         let image = UIImage(named: imageTitle)
         backgroundImageView.image = image
         backgroundImageView.contentMode = .scaleAspectFill
+    }
+    
+    private func setUpNavigationBar() {
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            title: "Cancel",
+            style: .plain,
+            target: self,
+            action: #selector(cancelButtonTapped)
+        )
+        
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            title: "Add",
+            style: .done,
+            target: self,
+            action: #selector(addButtonTapped)
+        )
+        navigationController?.navigationBar.tintColor = .white
+        navigationController?.navigationBar.isTranslucent = true
     }
         
     @objc private func cancelButtonTapped() {
