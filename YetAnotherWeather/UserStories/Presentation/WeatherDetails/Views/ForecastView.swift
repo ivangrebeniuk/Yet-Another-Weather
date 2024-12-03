@@ -11,34 +11,12 @@ import UIKit
 final class ForecastView: UIView {
     
     // UI
+    private let headerView = WidgetHeaderView()
     private var daysStackView: UIStackView = {
         let stackView = UIStackView()
         stackView.axis = .vertical
         stackView.spacing = 6
         return stackView
-    }()
-    
-    private var titleStackView: UIStackView = {
-        let stackView = UIStackView()
-        stackView.axis = .horizontal
-        stackView.alignment = .center
-        stackView.spacing = 6
-        stackView.alpha = 0.6
-        return stackView
-    }()
-
-    private let titleLabel: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: CGFloat(15), weight: .medium)
-        label.textColor = .white
-        return label
-    }()
-        
-    private let titleIcon: UIImageView = {
-        let imageView = UIImageView()
-        imageView.image = UIImage.init(systemName: "calendar")
-        imageView.tintColor = .white
-        return imageView
     }()
     
     // MARK: - Init
@@ -56,27 +34,18 @@ final class ForecastView: UIView {
     // MARK: - Private
     
     private func setUpUI() {
-        addSubview(titleStackView)
+        addSubview(headerView)
         addSubview(daysStackView)
-        
-        titleStackView.addArrangedSubview(titleIcon)
-        titleStackView.addArrangedSubview(titleLabel)
     }
     
     private func setUpConstraints() {
-        titleStackView.snp.makeConstraints {
-            $0.top.equalToSuperview().inset(8)
-            $0.leading.trailing.equalToSuperview().inset(12)
-        }
-        
-        titleIcon.snp.makeConstraints {
-            $0.size.equalTo(17)
+        headerView.snp.makeConstraints {
+            $0.top.leading.trailing.equalToSuperview().inset(12)
         }
         
         daysStackView.snp.makeConstraints {
-            $0.top.equalTo(titleStackView.snp.bottom).offset(6)
-            $0.bottom.equalToSuperview().inset(6)
-            $0.leading.trailing.equalToSuperview().inset(12)
+            $0.top.equalTo(headerView.snp.bottom).offset(6)
+            $0.bottom.leading.trailing.equalToSuperview().inset(12)
         }
     }
 }
@@ -86,27 +55,30 @@ final class ForecastView: UIView {
 extension ForecastView: ConfigurableView {
     
     struct Model {
-        let forecastTitle: String
+        let forecastHeader: WidgetHeaderView.Model
         let forecasts: [SingleDayForecastView.Model]
     }
     
     func configure(with model: ForecastView.Model) {
-        titleLabel.text = model.forecastTitle
+        headerView.configure(
+            with: .init(
+                imageTitle: model.forecastHeader.imageTitle,
+                headerTitleText: model.forecastHeader.headerTitleText
+            )
+        )
         
         daysStackView.arrangedSubviews.forEach {
             $0.removeFromSuperview()
         }
         
-        var counter = 0
         let amountOfModels = model.forecasts.count
-        for model in model.forecasts {
+        for (index, model) in model.forecasts.enumerated() {
             let view = SingleDayForecastView()
             let bottomLineView = BottomLineView(configuration: .default)
             view.configure(with: model)
             daysStackView.addArrangedSubview(view)
-            counter += 1
             
-            if counter < amountOfModels {
+            if index < amountOfModels - 1 {
                 daysStackView.addArrangedSubview(bottomLineView)
             }
         }

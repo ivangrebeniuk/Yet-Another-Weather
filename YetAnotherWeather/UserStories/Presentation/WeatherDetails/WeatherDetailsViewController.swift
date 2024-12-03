@@ -39,26 +39,19 @@ final class WeatherDetailsViewController: UIViewController {
     private let backgroundImageView = UIImageView()
     private let loader = UIActivityIndicatorView(style: .medium)
     
+    private let widgetsStackView: UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .vertical
+        stackView.spacing = 18
+        stackView.alignment = .center
+        return stackView
+    }()
+    
     private let forecastView = ForecastView()
     private lazy var blurredForecastContainer = forecastView.wrappedInBlurred()
     
     private let windView = WindView()
     private lazy var blurredWindContainerView = windView.wrappedInBlurred()
-    
-    
-    private let garbageView1: UIView = {
-        let view = UIView()
-        view.backgroundColor = .red
-        view.layer.cornerRadius = 12
-        return view
-    }()
-    
-    private let garbageView2: UIView = {
-        let view = UIView()
-        view.backgroundColor = .green
-        view.layer.cornerRadius = 12
-        return view
-    }()
     
     // MARK: - Init
     
@@ -92,8 +85,9 @@ final class WeatherDetailsViewController: UIViewController {
         
         contentView.addSubview(loader)
         contentView.addSubview(currentWeatherView)
-        contentView.addSubview(blurredForecastContainer)
-        contentView.addSubview(blurredWindContainerView)
+        contentView.addSubview(widgetsStackView)
+        widgetsStackView.addArrangedSubview(blurredForecastContainer)
+        widgetsStackView.addArrangedSubview(blurredWindContainerView)
         
         setUpNavigationBar()
         loader.color = .darkGray
@@ -123,14 +117,9 @@ final class WeatherDetailsViewController: UIViewController {
         loader.snp.makeConstraints {
             $0.center.equalToSuperview()
         }
-        // ПЕРЕДЕЛАТЬ В STACKVIEW
-        blurredForecastContainer.snp.makeConstraints {
+
+        widgetsStackView.snp.makeConstraints {
             $0.top.equalTo(currentWeatherView.snp.bottom).offset(18)
-            $0.leading.trailing.equalToSuperview().inset(18)
-        }
-        
-        blurredWindContainerView.snp.makeConstraints {
-            $0.top.equalTo(blurredForecastContainer.snp.bottom).offset(18)
             $0.leading.trailing.equalToSuperview().inset(18)
             $0.bottom.equalToSuperview().inset(40)
         }

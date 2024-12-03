@@ -120,7 +120,15 @@ private extension WeatherDetailsViewModelFactory {
             )
         }
         
-        return ForecastViewModel(forecastTitle: titleLabel, forecasts: forecastDays)
+        let forecastHeader = WidgetHeaderView.Model(
+            imageTitle: "calendar",
+            headerTitleText: titleLabel
+        )
+        
+        return ForecastViewModel(
+            forecastHeader: forecastHeader,
+            forecasts: forecastDays
+        )
     }
     
     private func makeBackgroundImageTitle(from model: ForecastModel) -> String {
@@ -136,8 +144,12 @@ private extension WeatherDetailsViewModelFactory {
         let windGust = round(100 * model.currentWeather.wind.windGust) / 100
         let direction = model.currentWeather.wind.windDirection
         let degree = model.currentWeather.wind.windDegree
+        let widgetHeader = WidgetHeaderView.Model(
+            imageTitle: "wind",
+            headerTitleText: "WIND"
+        )
         return WindViewModel(
-            title: "WIND",
+            windWidgetHeader: widgetHeader,
             summaryStatus: beaufortScaleResolver.getWindTitle(forWindSpeed: windSpeed),
             summaryDescription: beaufortScaleResolver.getWindDescription(forWindSpeed: windSpeed),
             wind: .init(title: "Wind", value: "\(windSpeed) m/s"),

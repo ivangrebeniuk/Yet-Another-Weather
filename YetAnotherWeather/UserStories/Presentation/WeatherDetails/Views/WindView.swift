@@ -12,6 +12,7 @@ import UIKit
 final class WindView: UIView {
 
     // UI
+    private let widgetHeaderView = WidgetHeaderView()
     private let windView = WindParametersView()
     private let gustsView = WindParametersView()
     private let windDirectionView = WindParametersView()
@@ -22,30 +23,6 @@ final class WindView: UIView {
         stackView.distribution = .fillEqually
         stackView.spacing = 12
         return stackView
-    }()
-    
-    private var titleStackView: UIStackView = {
-        let stackView = UIStackView()
-        stackView.axis = .horizontal
-        stackView.alignment = .center
-        stackView.spacing = 6
-        stackView.alpha = 0.6
-        return stackView
-    }()
-    
-    private let titleLabel: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: CGFloat(15), weight: .medium)
-        label.textColor = .white
-        label.numberOfLines = 0
-        return label
-    }()
-    
-    private let titleIcon: UIImageView = {
-        let imageView = UIImageView()
-        imageView.image = UIImage.init(systemName: "wind")
-        imageView.tintColor = .white
-        return imageView
     }()
         
     private let summaryStatusLabel: UILabel = {
@@ -96,17 +73,13 @@ final class WindView: UIView {
     // MARK: - Private
     
     private func setUpUI() {
-        
         let windBottomLine = BottomLineView(configuration: .default)
         let gustsBottomLine = BottomLineView(configuration: .default)        
         
-        addSubview(titleStackView)
+        addSubview(widgetHeaderView)
         addSubview(containerStackView)
         containerStackView.addArrangedSubview(windStackView)
         containerStackView.addArrangedSubview(summaryStackView)
-        
-        titleStackView.addArrangedSubview(titleIcon)
-        titleStackView.addArrangedSubview(titleLabel)
         
         summaryStackView.addArrangedSubview(summaryStatusLabel)
         summaryStackView.addArrangedSubview(summaryDescriptionLabel)
@@ -119,19 +92,13 @@ final class WindView: UIView {
     }
     
     private func setUpConstraints() {
-        titleStackView.snp.makeConstraints {
-            $0.top.equalToSuperview().inset(8)
-            $0.leading.trailing.equalToSuperview().inset(12)
-        }
-        
-        titleIcon.snp.makeConstraints {
-            $0.size.equalTo(17)
+        widgetHeaderView.snp.makeConstraints {
+            $0.top.leading.trailing.equalToSuperview().inset(12)
         }
         
         containerStackView.snp.makeConstraints {
-            $0.top.equalTo(titleStackView.snp.bottom).offset(6)
-            $0.bottom.equalToSuperview().inset(6)
-            $0.leading.trailing.equalToSuperview().inset(12)
+            $0.top.equalTo(widgetHeaderView.snp.bottom).offset(6)
+            $0.bottom.leading.trailing.equalToSuperview().inset(12)
         }
     }
 }
@@ -141,7 +108,7 @@ final class WindView: UIView {
 extension WindView: ConfigurableView {
     
     struct Model {
-        let title: String
+        let windWidgetHeader: WidgetHeaderView.Model
         let summaryStatus: String
         let summaryDescription: String
         let wind: WindParametersView.Model
@@ -150,7 +117,7 @@ extension WindView: ConfigurableView {
     }
     
     func configure(with model: WindView.Model) {
-        titleLabel.text = model.title
+        widgetHeaderView.configure(with: model.windWidgetHeader)
         summaryStatusLabel.text = model.summaryStatus
         summaryDescriptionLabel.text = model.summaryDescription
         windView.configure(with: model.wind)

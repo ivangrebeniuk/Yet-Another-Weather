@@ -16,10 +16,10 @@ private extension String {
 }
 
 private extension CGFloat {
-    static let dayLabelMultiplier = 0.3
+    static let dayLabelMultiplier = 0.35
     static let iconAndRainMultiplier = 0.2
-    static let lowTempLabelMultiplier = 0.15
-    static let highTempLabelMultiplier = 0.15
+    static let lowTempLabelMultiplier = 0.125
+    static let highTempLabelMultiplier = 0.125
     static let lowLetterLabelMultiplier = 0.1
     static let hightLetterLabelMultiplier = 0.1
 }
@@ -128,8 +128,7 @@ final class SingleDayForecastView: UIView {
         }
         
         imageView.snp.makeConstraints {
-            $0.width.equalTo(32)
-            $0.height.equalTo(24)
+            $0.size.equalTo(32)
         }
         
         let subviewsWidthDict: [UIView: CGFloat] = [
@@ -162,9 +161,10 @@ extension SingleDayForecastView: ConfigurableView {
     }
     
     func configure(with model: SingleDayForecastView.Model) {
-        imageView.contentMode = .scaleAspectFill
+        imageView.contentMode = .scaleAspectFit
         dayLabel.text = model.day
         imageView.kf.setImage(with: model.imageURL)
+        rainFallChanceLabel.isHidden = model.rainFallChance == nil
         rainFallChanceLabel.text = model.rainFallChance
         lowTempLabel.text = model.lowTemp
         highTempLabel.text = model.highTemp
