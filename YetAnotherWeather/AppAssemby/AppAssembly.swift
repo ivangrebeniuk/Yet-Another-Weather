@@ -12,14 +12,26 @@ import SnapKit
 final class AppAssembly {
     
     // Dependencies
-    private let urlRequestsFactory = URLRequestFactory()
-    private let networkService = NetworkService(session: URLSession.shared)
-    private let networkQueue = DispatchQueue(label: "ru.i.grebeniuk.serialNetworkQueue")
+    private lazy var urlRequestsFactory = URLRequestFactory()
+    private lazy var networkService = NetworkService(session: URLSession.shared)
+    private lazy var networkQueue = DispatchQueue(label: "ru.i.grebeniuk.serialNetworkQueue")
+    private lazy var dateFormatter = CustomDateFormatter()
+    private lazy var beaufortScaleResolver = BeaufortScaleResolver()
+        
+    // MARK: - FlowCoordinators
     
-    // MARK: - Presentation Assemblies
+    var currentWeatherListFlowCoordinator: CurrentWeatherListFlowCoordinator {
+        CurrentWeatherListFlowCoordinator(
+            currentWeatherListAssembly: currentWeatherListAssembly,
+            weatherDetailsAssembly: weatherDetailsAssembly,
+            weatherDetailsFlowCoordinator: weatherDeatailsFlowCoordinator
+        )
+    }
+    
+    // MARK: - Private Presentation
     
     private var currentWeatherListAssembly: CurrentWeatherListAssembly {
-        return CurrentWeatherListAssembly(
+        CurrentWeatherListAssembly(
             weatherNetworkService: currentWeatherService,
             searchResultAssembly: searchResultsAssembly
         )
@@ -34,7 +46,9 @@ final class AppAssembly {
     
     private var weatherDetailsAssembly: WeatherDetailsAssembly {
         WeatherDetailsAssembly(
-            weatherForecastService: forecastService
+            beaufortScaleResolver: beaufortScaleResolver,
+            dateFormatter: dateFormatter,
+            forecastService: forecastService
         )
     }
     
@@ -42,20 +56,10 @@ final class AppAssembly {
         WeatherDetailsFlowCoordinator(weatherDetailsAssembly: weatherDetailsAssembly)
     }
     
-    // MARK: - FlowCoordinators
-    
-    var currentWeatherListFlowCoordinator: CurrentWeatherListFlowCoordinator {
-        return CurrentWeatherListFlowCoordinator(
-            currentWeatherListAssembly: currentWeatherListAssembly,
-            weatherDetailsAssembly: weatherDetailsAssembly,
-            weatherDetailsFlowCoordinator: weatherDeatailsFlowCoordinator
-        )
-    }
-    
-    // MARK: - Private
+    // MARK: - Private Services
     
     private var currentWeatherService: ICurrentWeatherService {
-        return CurrentWeatherService(
+        CurrentWeatherService(
             networkQueue: networkQueue,
             networkService: networkService,
             urlRequestsFactory: urlRequestsFactory
@@ -63,14 +67,14 @@ final class AppAssembly {
     }
     
     private var searchLocationsService: ISearchLocationsService {
-        return SearchLocationsService(
+        SearchLocationsService(
             networkService: networkService,
             urlRequestsFactory: urlRequestsFactory
         )
     }
     
     private var forecastService: IForecastService {
-        return ForecastService(
+        ForecastService(
             networkService: networkService,
             urlRequestsFactory: urlRequestsFactory
         )

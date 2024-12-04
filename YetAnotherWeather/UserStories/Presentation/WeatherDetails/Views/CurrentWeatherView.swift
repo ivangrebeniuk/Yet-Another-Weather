@@ -37,6 +37,7 @@ final class CurrentWeatherView: UIView {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: CGFloat(24), weight: .regular)
         label.textAlignment = .center
+        label.numberOfLines = 0
         return label
     }()
     
@@ -44,7 +45,6 @@ final class CurrentWeatherView: UIView {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: CGFloat(21), weight: .medium)
         label.textAlignment = .center
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -99,8 +99,8 @@ extension CurrentWeatherView: ConfigurableView {
         let conditions: String
         let isLightContent: Bool
         let currentTemp: String?
-        let minTemp: String?
-        let maxTemp: String?
+        let lowTemp: String?
+        let highTemp: String?
     }
     
     func configure(with model: Model) {
@@ -108,8 +108,8 @@ extension CurrentWeatherView: ConfigurableView {
         locationLabel.text = model.location
         currentTempLabel.text = model.currentTemp
         conditionsLabel.text = model.conditions
-        if let maxTemp = model.maxTemp, let minTemp = model.minTemp {
-            highAndLowLabel.text = "H:\(maxTemp)  L:\(minTemp)"
+        if let highTemp = model.highTemp, let lowTemp = model.lowTemp {
+            highAndLowLabel.text = "H:\(highTemp)  L:\(lowTemp)"
             highAndLowLabel.isHidden = false
         } else {
             highAndLowLabel.isHidden = true

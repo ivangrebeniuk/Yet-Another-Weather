@@ -33,10 +33,24 @@ final class WeatherDetailsViewController: UIViewController {
     private let presenter: IWeatherDetailsPresenter
     
     // UI
+    private let scrollView = UIScrollView()
+    private let contentView = UIView()
     private let currentWeatherView = CurrentWeatherView()
     private let backgroundImageView = UIImageView()
-    private let loader = UIActivityIndicatorView(style: .large)
+    private let loader = UIActivityIndicatorView(style: .medium)
     
+    private let widgetsStackView: UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .vertical
+        stackView.spacing = 18
+        return stackView
+    }()
+    
+    private let forecastView = ForecastView()
+    private lazy var blurredForecastContainer = forecastView.wrappedInBlurred()
+    
+    private let windView = WindView()
+    private lazy var blurredWindContainerView = windView.wrappedInBlurred()
     
     // MARK: - Init
     
@@ -61,6 +75,61 @@ final class WeatherDetailsViewController: UIViewController {
     
     // MARK: - Private
     
+    private func setUpUI() {
+        
+        view.addSubview(backgroundImageView)
+        view.addSubview(scrollView)
+        
+        scrollView.addSubview(contentView)
+        
+        contentView.addSubview(loader)
+        contentView.addSubview(currentWeatherView)
+        contentView.addSubview(widgetsStackView)
+        widgetsStackView.addArrangedSubview(blurredForecastContainer)
+        widgetsStackView.addArrangedSubview(blurredWindContainerView)
+        
+        setUpNavigationBar()
+        loader.color = .darkGray
+        blurredForecastContainer.layer.cornerRadius = 12
+        blurredWindContainerView.layer.cornerRadius = 12
+    }
+    
+    private func setUpConstraints() {
+        backgroundImageView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
+        
+        scrollView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
+            
+        contentView.snp.makeConstraints {
+            $0.edges.equalTo(scrollView)
+            $0.width.equalTo(scrollView)
+        }
+        
+        currentWeatherView.snp.makeConstraints {
+            $0.top.equalToSuperview().offset(78)
+            $0.leading.trailing.equalToSuperview()
+        }
+        
+        loader.snp.makeConstraints {
+            $0.center.equalToSuperview()
+        }
+
+        widgetsStackView.snp.makeConstraints {
+            $0.top.equalTo(currentWeatherView.snp.bottom).offset(18)
+            $0.leading.trailing.equalToSuperview().inset(18)
+            $0.bottom.equalToSuperview().inset(40)
+        }
+    }
+    
+    private func configureBackgroundImage(withImage imageTitle: String) {
+        let image = UIImage(named: imageTitle)
+        backgroundImageView.image = image
+        backgroundImageView.contentMode = .scaleAspectFill
+    }
+    
     private func setUpNavigationBar() {
         navigationItem.leftBarButtonItem = UIBarButtonItem(
             title: "Cancel",
@@ -78,37 +147,7 @@ final class WeatherDetailsViewController: UIViewController {
         navigationController?.navigationBar.tintColor = .white
         navigationController?.navigationBar.isTranslucent = true
     }
-    
-    private func setUpUI() {
-        view.addSubview(backgroundImageView)
-        view.addSubview(loader)
-        view.addSubview(currentWeatherView)
         
-        setUpNavigationBar()
-        loader.color = .white
-    }
-    
-    private func configureBackgroundImage(withImage imageTitle: String) {
-        let image = UIImage(named: imageTitle)
-        backgroundImageView.image = image
-        backgroundImageView.contentMode = .scaleAspectFill
-    }
-    
-    private func setUpConstraints() {
-        backgroundImageView.snp.makeConstraints {
-            $0.edges.equalToSuperview()
-        }
-        
-        currentWeatherView.snp.makeConstraints {
-            $0.top.equalToSuperview().offset(78)
-            $0.leading.trailing.equalToSuperview()
-        }
-        
-        loader.snp.makeConstraints {
-            $0.center.equalToSuperview()
-        }
-    }
-    
     @objc private func cancelButtonTapped() {
         presenter.didRequestToDismiss()
     }
@@ -123,18 +162,24 @@ final class WeatherDetailsViewController: UIViewController {
 extension WeatherDetailsViewController: IWeatherDetailsView {
     
     func updateView(with model: WeatherDetailsViewModel) {
-        currentWeatherView.configure(with: model.currentWeatherViewModel)
         configureBackgroundImage(withImage: model.backgroundImageTitle)
+        currentWeatherView.configure(with: model.currentWeatherViewModel)
+        forecastView.configure(with: model.forecastViewModel)
+        windView.configure(with: model.windViewModel)
     }
     
     func startLoader() {
         loader.startAnimating()
         currentWeatherView.isHidden = true
+        blurredForecastContainer.isHidden = true
+        blurredWindContainerView.isHidden = true
     }
     
     func stopLoader() {
         loader.stopAnimating()
         currentWeatherView.isHidden = false
+        blurredForecastContainer.isHidden = false
+        blurredWindContainerView.isHidden = false
     }
     
     func showAlert(withModel model: SingleButtonAlertViewModel) {

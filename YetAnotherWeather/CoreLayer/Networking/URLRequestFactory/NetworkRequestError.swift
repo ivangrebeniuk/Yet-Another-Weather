@@ -10,7 +10,7 @@ import Foundation
 enum NetworkRequestError: Error {
     case invalidURL
     case endpointError
-    case modelParsingError
+    case modelParsingError(Any.Type)
 }
 
 extension NetworkRequestError: LocalizedError {
@@ -23,8 +23,8 @@ extension NetworkRequestError: LocalizedError {
             return "Не удалось преобразовать String в URL"
         case .endpointError:
             return "Не удалось создать URL"
-        case .modelParsingError:
-            return "Не удалось распарсить данные"
+        case .modelParsingError(let type):
+            return "Не удалось распарсить данные: \(type)"
         }
     }
 }

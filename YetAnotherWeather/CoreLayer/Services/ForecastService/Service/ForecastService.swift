@@ -26,7 +26,10 @@ final class ForecastService {
     
     // MARK: - Init
     
-    init(networkService: INetworkService, urlRequestsFactory: IURLRequestFactory) {
+    init(
+        networkService: INetworkService,
+        urlRequestsFactory: IURLRequestFactory
+    ) {
         self.networkService = networkService
         self.urlRequestsFactory = urlRequestsFactory
     }
@@ -43,7 +46,7 @@ extension ForecastService: IForecastService {
         do {
             let request = try urlRequestsFactory.makeForecastRequest(for: locationId)
             let parser = ForecastParser()
-            networkService.load(request: request, parser: parser) { (result: Result<ForecastModel, Error>) in
+            networkService.load(request: request, parser: parser) { result in
                 switch result {
                 case .success(let model):
                     completion(.success(model))

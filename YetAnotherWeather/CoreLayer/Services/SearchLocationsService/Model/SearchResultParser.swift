@@ -10,7 +10,7 @@ import SwiftyJSON
 
 final class SearchResultParser: IJSONParser {
     
-    func parse(_ json: SwiftyJSON.JSON) throws -> ([SearchResultModel]) {
+    func parse(_ json: SwiftyJSON.JSON) throws -> [SearchResultModel] {
         let rawResults = json.arrayValue
         
         var results = [SearchResultModel]()
@@ -23,7 +23,7 @@ final class SearchResultParser: IJSONParser {
                     let region = result["region"].string,
                     let country = result["country"].string
                 else {
-                    throw NetworkRequestError.modelParsingError
+                    throw NetworkRequestError.modelParsingError(SearchResultModel.self)
                 }
                 
                 let searchResult = SearchResultModel(
