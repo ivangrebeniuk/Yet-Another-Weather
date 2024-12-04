@@ -43,7 +43,6 @@ final class WeatherDetailsViewController: UIViewController {
         let stackView = UIStackView()
         stackView.axis = .vertical
         stackView.spacing = 18
-        stackView.alignment = .center
         return stackView
     }()
     

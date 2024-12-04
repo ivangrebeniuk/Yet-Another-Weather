@@ -35,7 +35,11 @@ final class SingleDayForecastView: UIView {
         return label
     }()
     
-    private let imageView = UIImageView()
+    private let imageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
     
     private let rainFallChanceLabel: UILabel = {
         let label = UILabel()
@@ -161,7 +165,6 @@ extension SingleDayForecastView: ConfigurableView {
     }
     
     func configure(with model: SingleDayForecastView.Model) {
-        imageView.contentMode = .scaleAspectFit
         dayLabel.text = model.day
         imageView.kf.setImage(with: model.imageURL)
         rainFallChanceLabel.isHidden = model.rainFallChance == nil
