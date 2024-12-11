@@ -13,6 +13,7 @@ protocol WeatherDetailsOutput: AnyObject {
 }
 
 protocol IWeatherDetailsPresenter {
+    var isAddedToFavourites: Bool { get }
     func viewDidLoad()
     func didTapAddButton()
     func didRequestToDismiss()
@@ -25,6 +26,7 @@ final class WeatherDetailsPresenter {
     private let forecastService: IForecastService
     private let viewModelFactory: IWeatherDetailsViewModelFactory
     private let location: String
+    internal let isAddedToFavourites: Bool
     private weak var output: WeatherDetailsOutput?
 
     weak var view: IWeatherDetailsView?
@@ -39,12 +41,14 @@ final class WeatherDetailsPresenter {
         forecastService: IForecastService,
         viewModelFactory: IWeatherDetailsViewModelFactory,
         location: String,
+        isAddedToFavourites: Bool,
         output: WeatherDetailsOutput
     ) {
         self.alertViewModelFactory = alertViewModelFactory
         self.forecastService = forecastService
         self.viewModelFactory = viewModelFactory
         self.location = location
+        self.isAddedToFavourites = isAddedToFavourites
         self.output = output
     }
     

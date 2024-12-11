@@ -27,7 +27,7 @@ final class WeatherDetailsAssembly {
         self.forecastService = forecastService
     }
     
-    func assemble(location: String, output: WeatherDetailsOutput) -> UIViewController {
+    func assemble(location: String, isAddedToFavourites: Bool, output: WeatherDetailsOutput) -> UIViewController {
         
         let viewModelFactory = WeatherDetailsViewModelFactory(
             beaufortScaleResolver: beaufortScaleResolver,
@@ -40,6 +40,7 @@ final class WeatherDetailsAssembly {
             forecastService: forecastService,
             viewModelFactory: viewModelFactory,
             location: location,
+            isAddedToFavourites: isAddedToFavourites,
             output: output
         )
         

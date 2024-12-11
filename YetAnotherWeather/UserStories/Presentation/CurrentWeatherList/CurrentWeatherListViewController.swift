@@ -11,14 +11,23 @@ import SnapKit
 private extension String {
     static let weatherHeaderText = "Weather"
     static let searchFielPlaceholderText = "Type location to search"
+    static let cellIdentifier = "CurrentWeatherCellIdentifier"
 }
 
 protocol ICurrentWeatherListView: AnyObject {
     
+    func update(with items: [CurrentWeatherCell.Model])
     func hideSearchResults()
 }
 
-class CurrentWeatherListViewController: UIViewController {
+final class CurrentWeatherListViewController: UIViewController {
+    
+    private enum Section {
+        case main
+    }
+    private typealias Item = CurrentWeatherCell.Model
+    private typealias DataSource = UITableViewDiffableDataSource<Section, Item>
+    private typealias Snapshot = NSDiffableDataSourceSnapshot<Section, Item>
     
     // Dependencies
     private let resultsViewController: UIViewController
@@ -26,21 +35,9 @@ class CurrentWeatherListViewController: UIViewController {
     private lazy var searchController = UISearchController(searchResultsController: resultsViewController)
 
     
-    // MARK: - UI
-    
-    private lazy var button: UIButton = {
-        let button = UIButton()
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.setTitle("Кнопка", for: .normal)
-        
-        button.layer.cornerRadius = 18
-        button.backgroundColor = .systemBlue
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 24, weight: .medium)
-        
-        button.addAction(.init(handler: { [weak self] _ in self?.buttonTapped() }), for: .touchUpInside)
-        return button
-    }()
-    
+    // UI
+    private lazy var tableView = UITableView()
+    private lazy var dataSource = makeDataSourcre()
     
     // MARK: - Init
     
@@ -60,38 +57,69 @@ class CurrentWeatherListViewController: UIViewController {
     // MARK: - Lifecicle
     
     override func viewDidLoad() {
+        super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        setUpNavigationBar()
-        setUpConstraints()
+        tableView.delegate = self
+        tableView.register(CurrentWeatherCell.self, forCellReuseIdentifier: .cellIdentifier)
+        setUpUI()
+        presenter.viewDidLoad()
     }
     
     // MARK: - Private
+    
+    private func setUpUI() {
+        setUpNavigationBar()
+        view.addSubview(tableView)
+        tableView.snp.makeConstraints {
+            $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 15, left: 20, bottom: 40, right: 20))
+        }
+    }
     
     private func setUpNavigationBar() {
         navigationItem.title = .weatherHeaderText
         navigationController?.navigationBar.prefersLargeTitles = true
         
         searchController.searchResultsUpdater = resultsViewController as? UISearchResultsUpdating
-        searchController.obscuresBackgroundDuringPresentation = false
-        
         searchController.searchBar.placeholder = .searchFielPlaceholderText
         
         navigationItem.searchController = searchController
-        definesPresentationContext = true
     }
     
-    private func setUpConstraints() {
-        view.addSubview(button)
-        
-        button.snp.makeConstraints {
-            $0.center.equalToSuperview()
-            $0.width.equalTo(200)
+    private func makeDataSourcre() -> DataSource {
+        DataSource(tableView: tableView) { tableView, indexPath, item in
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: .cellIdentifier, for: indexPath) as? CurrentWeatherCell else {
+                return UITableViewCell()
+            }            
+            cell.configure(with: item)
+            cell.layer.cornerRadius = 12
+            cell.layer.masksToBounds = true
+            return cell
         }
     }
+}
+
+// MARK: - UITableViewDelegate
+
+extension CurrentWeatherListViewController: UITableViewDelegate {
     
-    private func buttonTapped() {
-        print("YO!")
-        presenter.getOrderedWeatherItems()
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 128
+    }
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let deleteAction = UIContextualAction(style: .destructive, title: "") { [weak self] (_, _, completionHandler) in
+            self?.presenter.deleteLocation(atIndex: indexPath.row)
+            completionHandler(true)
+        }
+        
+        deleteAction.image = UIImage.init(systemName: "trash")
+        deleteAction.backgroundColor = .red
+        return UISwipeActionsConfiguration(actions: [deleteAction])
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        presenter.didSelectRowAt(indexPath: indexPath)
     }
 }
 
@@ -101,5 +129,13 @@ extension CurrentWeatherListViewController: ICurrentWeatherListView {
     
     func hideSearchResults() {
         searchController.isActive = false
+    }
+    
+    func update(with items: [CurrentWeatherCell.Model]) {
+        var snapshot = Snapshot()
+        snapshot.appendSections([.main])
+        snapshot.appendItems(items, toSection: .main)
+        
+        dataSource.apply(snapshot, animatingDifferences: true)
     }
 }

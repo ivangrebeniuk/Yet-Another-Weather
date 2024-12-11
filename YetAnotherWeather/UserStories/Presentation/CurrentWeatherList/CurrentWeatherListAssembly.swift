@@ -10,21 +10,29 @@ import UIKit
 class CurrentWeatherListAssembly {
     
     // Dependencies
+    private let dateFormatter: ICustomDateFormatter
     private let currentWeatherService: ICurrentWeatherService
     private let searchResultAssembly: SearchResultsAssembly
     
+    // MARK: - Init
+    
     init(
+        dateFormatter: ICustomDateFormatter,
         weatherNetworkService: ICurrentWeatherService,
         searchResultAssembly: SearchResultsAssembly
     ) {
+        self.dateFormatter = dateFormatter
         self.currentWeatherService = weatherNetworkService
         self.searchResultAssembly = searchResultAssembly
     }
     
     func assemble(output: CurrentWeatherListOutput?) -> Module<CurrentWeatherListInput> {
         
+        let viewModelFactory = CurrentWeatherCellViewModelFactory(dateFormatter: dateFormatter)
+        
         let presenter = CurrentWeatherListPresenter(
             currentWeatherService: currentWeatherService,
+            viewModelFactory: viewModelFactory,
             output: output
         )
         
