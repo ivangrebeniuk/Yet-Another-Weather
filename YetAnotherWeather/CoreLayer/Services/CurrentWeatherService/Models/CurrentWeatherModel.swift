@@ -29,4 +29,5 @@ struct CurrentWeatherModel: Codable {
     let condition: Condition
     let isDay: Bool
     let wind: Wind
+    let feelsLike: Double
 }

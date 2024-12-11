@@ -137,13 +137,15 @@ final class WeatherDetailsViewController: UIViewController {
             target: self,
             action: #selector(cancelButtonTapped)
         )
+        if !presenter.isAddedToFavourites {
+            navigationItem.rightBarButtonItem = UIBarButtonItem(
+                title: "Add",
+                style: .done,
+                target: self,
+                action: #selector(addButtonTapped)
+            )
+        }
         
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            title: "Add",
-            style: .done,
-            target: self,
-            action: #selector(addButtonTapped)
-        )
         navigationController?.navigationBar.tintColor = .white
         navigationController?.navigationBar.isTranslucent = true
     }

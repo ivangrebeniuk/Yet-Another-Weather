@@ -32,6 +32,7 @@ final class AppAssembly {
     
     private var currentWeatherListAssembly: CurrentWeatherListAssembly {
         CurrentWeatherListAssembly(
+            dateFormatter: dateFormatter,
             weatherNetworkService: currentWeatherService,
             searchResultAssembly: searchResultsAssembly
         )

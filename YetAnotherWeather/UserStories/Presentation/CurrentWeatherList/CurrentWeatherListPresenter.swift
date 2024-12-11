@@ -12,37 +12,62 @@ protocol CurrentWeatherListInput: AnyObject {
 }
 
 protocol CurrentWeatherListOutput: AnyObject {
-    
-    func didSelectLocation(_ location: String)
+    func didSelectLocation(_ location: String, isAddedToFavourites: Bool)
 }
 
 protocol ICurrentWeatherListPresenter {
-            
-    func getSortedCurrentWeatherItems()
-    
-    func getOrderedWeatherItems()
+    func viewDidLoad()
+    func deleteLocation(atIndex index: Int)
+    func didSelectRowAt(indexPath: IndexPath)
 }
 
 class CurrentWeatherListPresenter {
     
     // Dependencies
     private let currentWeatherService: ICurrentWeatherService
+    private let viewModelFactory: ICurrentWeatherCellViewModelFactory
     weak var output: CurrentWeatherListOutput?
     weak var view: ICurrentWeatherListView?
     
     // Models
-    private var weatherToShow: [CurrentWeatherModel] = []
-    private var searchResults = [SearchResultModel]()
-    private var favouriteLocations = [String]()
+    private var favouriteLocationsIDs = [String]()
+    private var currentWeatherViewModels = [CurrentWeatherCell.Model]()
 
     // MARK: - Init
     
     init(
         currentWeatherService: ICurrentWeatherService,
+        viewModelFactory: ICurrentWeatherCellViewModelFactory,
         output: CurrentWeatherListOutput?
     ) {
         self.currentWeatherService = currentWeatherService
+        self.viewModelFactory = viewModelFactory
         self.output = output
+    }
+    
+    // MARK: - Private
+    
+    private func makeViewModels(from models: [CurrentWeatherModel]) -> [CurrentWeatherCell.Model] {
+        models.map {
+            viewModelFactory.makeViewModel(model: $0)
+        }
+    }
+    
+    func getSortedCurrentWeatherItems() {
+        currentWeatherService.getSortedCurrentWeatherItems(
+            for: favouriteLocationsIDs
+        ) { result in
+            DispatchQueue.main.async { [weak self] in
+                switch result {
+                case .success(let results):
+                    guard let self else { return }
+                    currentWeatherViewModels = makeViewModels(from: results)
+                    view?.update(with: currentWeatherViewModels)
+                case .failure(let error):
+                    print("Ошибочка: \(error.localizedDescription)")
+                }
+            }
+        }
     }
 }
 
@@ -50,36 +75,33 @@ class CurrentWeatherListPresenter {
 
 extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
     
-    func getSortedCurrentWeatherItems() {
-        currentWeatherService.getSortedCurrentWeatherItems(
-            for: favouriteLocations
-        ) { result in
-            DispatchQueue.main.async { [weak self] in
-                switch result {
-                case .success(let results):
-                    self?.weatherToShow = results
-                    self?.weatherToShow.forEach {
-                        print("!!!", $0.location.name)
-                        print("!!!", $0.temperature)
-                    }
-                case .failure(let error):
-                    print("Ошибочка: \(error.localizedDescription)")
-                }
-            }
-        }
+    func viewDidLoad() {
+        getSortedCurrentWeatherItems()
+    }
+    func deleteLocation(atIndex index: Int) {
+        // дропаем из списка вью модель чтобы перерисовать таблицу
+        currentWeatherViewModels.remove(at: index)
+        // дропаем id локации из списка избранных городов
+        // иначе при добавлении новой локиции появится удаленный город
+        favouriteLocationsIDs.remove(at: index)
+        view?.update(with: currentWeatherViewModels)
+    }
+    
+    func didSelectRowAt(indexPath: IndexPath) {
+        let location = favouriteLocationsIDs[indexPath.row]
+        output?.didSelectLocation(location, isAddedToFavourites: true)
     }
     
     func getOrderedWeatherItems() {
         currentWeatherService.getOrderedCurrentWeatherItems(
-            for: favouriteLocations
+            for: favouriteLocationsIDs
         ) { result in
             DispatchQueue.main.async { [weak self] in
                 switch result {
                 case .success(let results):
-                    self?.weatherToShow = results
-                    self?.weatherToShow.forEach {
-                        print("!!!", $0.location.name)
-                        print("!!! time: \($0.location.localTime)")
+                    let viewModels = self?.makeViewModels(from: results)
+                    viewModels?.forEach {
+                        print($0.location)
                     }
                 case .failure(let error):
                     print("Ошибочка: \(error.localizedDescription)")
@@ -92,9 +114,13 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
 // MARK: - SearchResultsOutput
 
 extension CurrentWeatherListPresenter: SearchResultsOutput {
+    
     func didSelectLocation(_ location: String) {
         print("Search Results output сработал")
-        output?.didSelectLocation(location)
+        output?.didSelectLocation(
+            location,
+            isAddedToFavourites: favouriteLocationsIDs.contains(location)
+        )
     }
 }
 
@@ -104,10 +130,7 @@ extension CurrentWeatherListPresenter: CurrentWeatherListInput {
     
     func addToFavourites(location: String) {
         view?.hideSearchResults()
-        favouriteLocations.append(location)
-        print("!!! Локация \(location) была добавлена в массив")
-        favouriteLocations.forEach {
-            print("!!!", $0)
-        }
+        favouriteLocationsIDs.append(location)
+        getSortedCurrentWeatherItems()
     }
 }
