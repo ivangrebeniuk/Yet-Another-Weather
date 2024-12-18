@@ -119,7 +119,7 @@ final class WeatherDetailsViewController: UIViewController {
 
         widgetsStackView.snp.makeConstraints {
             $0.top.equalTo(currentWeatherView.snp.bottom).offset(18)
-            $0.leading.trailing.equalToSuperview().inset(18)
+            $0.leading.trailing.equalToSuperview().inset(12)
             $0.bottom.equalToSuperview().inset(40)
         }
     }

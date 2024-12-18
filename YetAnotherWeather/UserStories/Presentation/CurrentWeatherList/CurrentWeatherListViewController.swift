@@ -87,6 +87,7 @@ final class CurrentWeatherListViewController: UIViewController {
         tableView.snp.makeConstraints {
             $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 15, left: 0, bottom: 40, right: 20))
         }
+        tableView.showsVerticalScrollIndicator = false
     }
     
     private func setUpNavigationBar() {
