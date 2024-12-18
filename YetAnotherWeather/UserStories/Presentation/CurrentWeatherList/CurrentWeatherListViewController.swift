@@ -7,18 +7,37 @@
 
 import Foundation
 import SnapKit
+import UIKit
 
 private extension String {
+    
     static let weatherHeaderText = "Weather"
     static let searchFielPlaceholderText = "Type location to search"
+    static let currentWeatherCellIdentifier = "CurrentWeatherCellIdentifier"
+    static let spacerCellIdentifier = "SpacerCellIdentifier"
+}
+
+private extension CGFloat {
+    
+    static let weatherCellHeight: CGFloat = 128
+    static let spacerCellHeight: CGFloat = 10
 }
 
 protocol ICurrentWeatherListView: AnyObject {
     
+    func update(with items: [CurrentWeatherCell.Model])
+    
     func hideSearchResults()
 }
 
-class CurrentWeatherListViewController: UIViewController {
+final class CurrentWeatherListViewController: UIViewController {
+    
+    private enum Section {
+        case main
+    }
+    private typealias Item = CurrentWeatherCellType
+    private typealias DataSource = UITableViewDiffableDataSource<Section, Item>
+    private typealias Snapshot = NSDiffableDataSourceSnapshot<Section, Item>
     
     // Dependencies
     private let resultsViewController: UIViewController
@@ -26,21 +45,12 @@ class CurrentWeatherListViewController: UIViewController {
     private lazy var searchController = UISearchController(searchResultsController: resultsViewController)
 
     
-    // MARK: - UI
+    // UI
+    private lazy var tableView = UITableView()
+    private lazy var dataSource = makeDataSourcre()
     
-    private lazy var button: UIButton = {
-        let button = UIButton()
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.setTitle("Кнопка", for: .normal)
-        
-        button.layer.cornerRadius = 18
-        button.backgroundColor = .systemBlue
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 24, weight: .medium)
-        
-        button.addAction(.init(handler: { [weak self] _ in self?.buttonTapped() }), for: .touchUpInside)
-        return button
-    }()
-    
+    // Models
+    private var itemsArray = [CurrentWeatherCellType]()
     
     // MARK: - Init
     
@@ -60,38 +70,78 @@ class CurrentWeatherListViewController: UIViewController {
     // MARK: - Lifecicle
     
     override func viewDidLoad() {
+        super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        setUpNavigationBar()
-        setUpConstraints()
+        tableView.delegate = self
+        tableView.register(CurrentWeatherCell.self, forCellReuseIdentifier: .currentWeatherCellIdentifier)
+        tableView.register(SpacerCell.self, forCellReuseIdentifier: .spacerCellIdentifier)
+        setUpUI()
+        presenter.viewDidLoad()
     }
     
     // MARK: - Private
+    
+    private func setUpUI() {
+        setUpNavigationBar()
+        view.addSubview(tableView)
+        tableView.snp.makeConstraints {
+            $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 15, left: 0, bottom: 40, right: 20))
+        }
+        tableView.showsVerticalScrollIndicator = false
+    }
     
     private func setUpNavigationBar() {
         navigationItem.title = .weatherHeaderText
         navigationController?.navigationBar.prefersLargeTitles = true
         
         searchController.searchResultsUpdater = resultsViewController as? UISearchResultsUpdating
-        searchController.obscuresBackgroundDuringPresentation = false
-        
         searchController.searchBar.placeholder = .searchFielPlaceholderText
         
         navigationItem.searchController = searchController
-        definesPresentationContext = true
     }
     
-    private func setUpConstraints() {
-        view.addSubview(button)
-        
-        button.snp.makeConstraints {
-            $0.center.equalToSuperview()
-            $0.width.equalTo(200)
+    private func makeDataSourcre() -> DataSource {
+        DataSource(tableView: tableView) { tableView, indexPath, item in
+            switch item {
+            case .weather(let model):
+                guard let weatherCell = tableView.dequeueReusableCell(
+                    withIdentifier: .currentWeatherCellIdentifier,
+                    for: indexPath
+                ) as? CurrentWeatherCell else { return UITableViewCell() }
+                weatherCell.configure(with: model)
+                return weatherCell
+            case .spacer:
+                guard let spacerCell = tableView.dequeueReusableCell(
+                    withIdentifier: .spacerCellIdentifier,
+                    for: indexPath
+                ) as? SpacerCell else { return UITableViewCell() }
+                return spacerCell
+            }
         }
     }
+}
+
+// MARK: - UITableViewDelegate
+
+extension CurrentWeatherListViewController: UITableViewDelegate {
     
-    private func buttonTapped() {
-        print("YO!")
-        presenter.getOrderedWeatherItems()
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        indexPath.row % 2 == 0 ? .weatherCellHeight : .spacerCellHeight
+    }
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let deleteAction = UIContextualAction(style: .destructive, title: "") { [weak self] (_, _, completionHandler) in
+            self?.presenter.deleteLocation(atIndex: indexPath)
+            completionHandler(true)
+        }
+        
+        deleteAction.image = UIImage.init(systemName: "trash")
+        return UISwipeActionsConfiguration(actions: [deleteAction])
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        presenter.didSelectRowAt(indexPath: indexPath)
     }
 }
 
@@ -101,5 +151,24 @@ extension CurrentWeatherListViewController: ICurrentWeatherListView {
     
     func hideSearchResults() {
         searchController.isActive = false
+    }
+    
+    func update(with items: [CurrentWeatherCell.Model]) {
+        
+        itemsArray.removeAll()
+                
+        for (index, item) in items.enumerated() {
+            itemsArray.append(.weather(item))
+            if index < items.count - 1 {
+                let id = UUID()
+                itemsArray.append(.spacer(id))
+            }
+        }
+        
+        var snapshot = Snapshot()
+        snapshot.appendSections([.main])
+        snapshot.appendItems(itemsArray, toSection: .main)
+        
+        dataSource.apply(snapshot, animatingDifferences: true)
     }
 }

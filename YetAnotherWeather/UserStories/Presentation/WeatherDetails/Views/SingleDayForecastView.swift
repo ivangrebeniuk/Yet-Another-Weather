@@ -17,9 +17,9 @@ private extension String {
 
 private extension CGFloat {
     static let dayLabelMultiplier = 0.35
-    static let iconAndRainMultiplier = 0.2
-    static let lowTempLabelMultiplier = 0.125
-    static let highTempLabelMultiplier = 0.125
+    static let iconAndRainMultiplier = 0.15
+    static let lowTempLabelMultiplier = 0.15
+    static let highTempLabelMultiplier = 0.15
     static let lowLetterLabelMultiplier = 0.1
     static let hightLetterLabelMultiplier = 0.1
 }
@@ -29,7 +29,7 @@ final class SingleDayForecastView: UIView {
     // UI
     private let dayLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: CGFloat(22), weight: .regular)
+        label.font = UIFont.systemFont(ofSize: CGFloat(18), weight: .regular)
         label.textColor = .white
         label.textAlignment = .left
         return label
@@ -50,33 +50,37 @@ final class SingleDayForecastView: UIView {
     
     private let lowLetterLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: CGFloat(22), weight: .regular)
+        label.font = UIFont.systemFont(ofSize: CGFloat(18), weight: .regular)
         label.alpha = 0.6
         label.textColor = .white
         label.text = .lowTempLetter
+        label.textAlignment = .center
         return label
     }()
     
     private let highLetterLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: CGFloat(22), weight: .regular)
+        label.font = UIFont.systemFont(ofSize: CGFloat(18), weight: .regular)
         label.textColor = .white
         label.text = .highTempLetter
+        label.textAlignment = .center
         return label
     }()
     
     private let lowTempLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: CGFloat(22), weight: .regular)
+        label.font = UIFont.systemFont(ofSize: CGFloat(18), weight: .regular)
         label.alpha = 0.5
         label.textColor = .white
+        label.textAlignment = .center
         return label
     }()
     
     private let highTempLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: CGFloat(22), weight: .regular)
+        label.font = UIFont.systemFont(ofSize: CGFloat(18), weight: .regular)
         label.textColor = .white
+        label.textAlignment = .center
         return label
     }()
     
