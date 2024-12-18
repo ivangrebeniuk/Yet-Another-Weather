@@ -7,16 +7,26 @@
 
 import Foundation
 import SnapKit
+import UIKit
 
 private extension String {
+    
     static let weatherHeaderText = "Weather"
     static let searchFielPlaceholderText = "Type location to search"
-    static let cellIdentifier = "CurrentWeatherCellIdentifier"
+    static let currentWeatherCellIdentifier = "CurrentWeatherCellIdentifier"
+    static let spacerCellIdentifier = "SpacerCellIdentifier"
+}
+
+private extension CGFloat {
+    
+    static let weatherCellHeight: CGFloat = 128
+    static let spacerCellHeight: CGFloat = 10
 }
 
 protocol ICurrentWeatherListView: AnyObject {
     
     func update(with items: [CurrentWeatherCell.Model])
+    
     func hideSearchResults()
 }
 
@@ -25,7 +35,7 @@ final class CurrentWeatherListViewController: UIViewController {
     private enum Section {
         case main
     }
-    private typealias Item = CurrentWeatherCell.Model
+    private typealias Item = CurrentWeatherCellType
     private typealias DataSource = UITableViewDiffableDataSource<Section, Item>
     private typealias Snapshot = NSDiffableDataSourceSnapshot<Section, Item>
     
@@ -38,6 +48,9 @@ final class CurrentWeatherListViewController: UIViewController {
     // UI
     private lazy var tableView = UITableView()
     private lazy var dataSource = makeDataSourcre()
+    
+    // Models
+    private var itemsArray = [CurrentWeatherCellType]()
     
     // MARK: - Init
     
@@ -60,7 +73,8 @@ final class CurrentWeatherListViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         tableView.delegate = self
-        tableView.register(CurrentWeatherCell.self, forCellReuseIdentifier: .cellIdentifier)
+        tableView.register(CurrentWeatherCell.self, forCellReuseIdentifier: .currentWeatherCellIdentifier)
+        tableView.register(SpacerCell.self, forCellReuseIdentifier: .spacerCellIdentifier)
         setUpUI()
         presenter.viewDidLoad()
     }
@@ -71,7 +85,7 @@ final class CurrentWeatherListViewController: UIViewController {
         setUpNavigationBar()
         view.addSubview(tableView)
         tableView.snp.makeConstraints {
-            $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 15, left: 20, bottom: 40, right: 20))
+            $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 15, left: 0, bottom: 40, right: 20))
         }
     }
     
@@ -87,13 +101,21 @@ final class CurrentWeatherListViewController: UIViewController {
     
     private func makeDataSourcre() -> DataSource {
         DataSource(tableView: tableView) { tableView, indexPath, item in
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: .cellIdentifier, for: indexPath) as? CurrentWeatherCell else {
-                return UITableViewCell()
-            }            
-            cell.configure(with: item)
-            cell.layer.cornerRadius = 12
-            cell.layer.masksToBounds = true
-            return cell
+            switch item {
+            case .weather(let model):
+                guard let weatherCell = tableView.dequeueReusableCell(
+                    withIdentifier: .currentWeatherCellIdentifier,
+                    for: indexPath
+                ) as? CurrentWeatherCell else { return UITableViewCell() }
+                weatherCell.configure(with: model)
+                return weatherCell
+            case .spacer:
+                guard let spacerCell = tableView.dequeueReusableCell(
+                    withIdentifier: .spacerCellIdentifier,
+                    for: indexPath
+                ) as? SpacerCell else { return UITableViewCell() }
+                return spacerCell
+            }
         }
     }
 }
@@ -103,17 +125,16 @@ final class CurrentWeatherListViewController: UIViewController {
 extension CurrentWeatherListViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 128
+        indexPath.row % 2 == 0 ? .weatherCellHeight : .spacerCellHeight
     }
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let deleteAction = UIContextualAction(style: .destructive, title: "") { [weak self] (_, _, completionHandler) in
-            self?.presenter.deleteLocation(atIndex: indexPath.row)
+            self?.presenter.deleteLocation(atIndex: indexPath)
             completionHandler(true)
         }
         
         deleteAction.image = UIImage.init(systemName: "trash")
-        deleteAction.backgroundColor = .red
         return UISwipeActionsConfiguration(actions: [deleteAction])
     }
     
@@ -132,9 +153,20 @@ extension CurrentWeatherListViewController: ICurrentWeatherListView {
     }
     
     func update(with items: [CurrentWeatherCell.Model]) {
+        
+        itemsArray.removeAll()
+                
+        for (index, item) in items.enumerated() {
+            itemsArray.append(.weather(item))
+            if index < items.count - 1 {
+                let id = UUID()
+                itemsArray.append(.spacer(id))
+            }
+        }
+        
         var snapshot = Snapshot()
         snapshot.appendSections([.main])
-        snapshot.appendItems(items, toSection: .main)
+        snapshot.appendItems(itemsArray, toSection: .main)
         
         dataSource.apply(snapshot, animatingDifferences: true)
     }

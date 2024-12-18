@@ -17,7 +17,7 @@ protocol CurrentWeatherListOutput: AnyObject {
 
 protocol ICurrentWeatherListPresenter {
     func viewDidLoad()
-    func deleteLocation(atIndex index: Int)
+    func deleteLocation(atIndex indexPath: IndexPath)
     func didSelectRowAt(indexPath: IndexPath)
 }
 
@@ -78,7 +78,8 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
     func viewDidLoad() {
         getSortedCurrentWeatherItems()
     }
-    func deleteLocation(atIndex index: Int) {
+    func deleteLocation(atIndex indexPath: IndexPath) {
+        let index = calculateIndex(from: indexPath)
         // дропаем из списка вью модель чтобы перерисовать таблицу
         currentWeatherViewModels.remove(at: index)
         // дропаем id локации из списка избранных городов
@@ -88,8 +89,11 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
     }
     
     func didSelectRowAt(indexPath: IndexPath) {
-        let location = favouriteLocationsIDs[indexPath.row]
-        output?.didSelectLocation(location, isAddedToFavourites: true)
+        let index = calculateIndex(from: indexPath)
+        output?.didSelectLocation(
+            favouriteLocationsIDs[index],
+            isAddedToFavourites: true
+        )
     }
     
     func getOrderedWeatherItems() {
@@ -108,6 +112,10 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
                 }
             }
         }
+    }
+    
+    private func calculateIndex(from indexPath: IndexPath) -> Int {
+        indexPath.row / 2
     }
 }
 

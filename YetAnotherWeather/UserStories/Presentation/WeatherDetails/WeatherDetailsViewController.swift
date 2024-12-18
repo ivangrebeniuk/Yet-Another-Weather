@@ -79,10 +79,10 @@ final class WeatherDetailsViewController: UIViewController {
         
         view.addSubview(backgroundImageView)
         view.addSubview(scrollView)
+        view.addSubview(loader)
         
         scrollView.addSubview(contentView)
         
-        contentView.addSubview(loader)
         contentView.addSubview(currentWeatherView)
         contentView.addSubview(widgetsStackView)
         widgetsStackView.addArrangedSubview(blurredForecastContainer)

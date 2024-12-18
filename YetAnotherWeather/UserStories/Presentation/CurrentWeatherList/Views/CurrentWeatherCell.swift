@@ -72,7 +72,7 @@ final class CurrentWeatherCell: UITableViewCell {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        layer.cornerRadius = 12
+        containerView.layer.cornerRadius = 12
         layer.masksToBounds = true
     }
     
@@ -83,8 +83,8 @@ final class CurrentWeatherCell: UITableViewCell {
         timeLabel.text = nil
         conditionsLabel.text = nil
         feelsLikeLabel.text = nil
-        layer.cornerRadius = 0
-        backgroundColor = .clear
+        containerView.layer.cornerRadius = 0
+        containerView.backgroundColor = .clear
     }
     
     // MARK: - Private
@@ -92,12 +92,12 @@ final class CurrentWeatherCell: UITableViewCell {
     private func setUpUI() {
         addSubview(containerView)
         containerView.snp.makeConstraints {
-            $0.edges.equalToSuperview()
+            $0.leading.equalToSuperview().inset(20)
+            $0.top.bottom.trailing.equalToSuperview()
         }
         
         let horizontalStackView = UIStackView()
         horizontalStackView.axis = .horizontal
-        
         containerView.addSubview(horizontalStackView)
         horizontalStackView.snp.makeConstraints {
             $0.top.bottom.equalToSuperview()
@@ -133,7 +133,7 @@ final class CurrentWeatherCell: UITableViewCell {
         
         leftSideContainer.addSubview(conditionsLabel)
         conditionsLabel.snp.makeConstraints {
-//            $0.top.greaterThanOrEqualTo(cityAndTimeStackView).inset(10)
+            $0.top.greaterThanOrEqualTo(cityAndTimeStackView.snp.bottom).inset(10)
             $0.bottom.equalToSuperview().inset(12)
             $0.leading.trailing.equalToSuperview()
         }
@@ -146,7 +146,7 @@ final class CurrentWeatherCell: UITableViewCell {
             $0.leading.trailing.equalToSuperview()
         }
         feelsLikeLabel.snp.makeConstraints {
-//            $0.top.greaterThanOrEqualTo(temperatureLabel.snp.bottom).inset(19)
+            $0.top.greaterThanOrEqualTo(temperatureLabel.snp.bottom).inset(19)
             $0.bottom.equalToSuperview().inset(12)
             $0.leading.trailing.equalToSuperview()
         }
@@ -173,6 +173,6 @@ extension CurrentWeatherCell: ConfigurableView {
         conditionsLabel.text = model.conditions
         feelsLikeLabel.text = model.feelsLike
 
-        backgroundColor = model.isDay ? UIColor.daySkyBlue : UIColor.nightSkyBlue
+        containerView.backgroundColor = model.isDay ? UIColor.daySkyBlue : UIColor.nightSkyBlue
     }
 }
