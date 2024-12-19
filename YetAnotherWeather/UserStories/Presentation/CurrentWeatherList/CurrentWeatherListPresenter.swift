@@ -53,7 +53,7 @@ class CurrentWeatherListPresenter {
         }
     }
     
-    func getSortedCurrentWeatherItems() {
+    private func getSortedCurrentWeatherItems() {
         currentWeatherService.getSortedCurrentWeatherItems(
             for: favouriteLocationsIDs
         ) { result in
@@ -78,6 +78,7 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
     func viewDidLoad() {
         getSortedCurrentWeatherItems()
     }
+    
     func deleteLocation(atIndex indexPath: IndexPath) {
         let index = calculateIndex(from: indexPath)
         // дропаем из списка вью модель чтобы перерисовать таблицу

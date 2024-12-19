@@ -26,7 +26,6 @@ private extension CGFloat {
 protocol ICurrentWeatherListView: AnyObject {
     
     func update(with items: [CurrentWeatherCell.Model])
-    
     func hideSearchResults()
 }
 
@@ -48,6 +47,7 @@ final class CurrentWeatherListViewController: UIViewController {
     // UI
     private lazy var tableView = UITableView()
     private lazy var dataSource = makeDataSourcre()
+    private lazy var refreshControl = UIRefreshControl()
     
     // Models
     private var itemsArray = [CurrentWeatherCellType]()
@@ -88,6 +88,7 @@ final class CurrentWeatherListViewController: UIViewController {
             $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 15, left: 0, bottom: 40, right: 20))
         }
         tableView.showsVerticalScrollIndicator = false
+        setUpRefreshControl()
     }
     
     private func setUpNavigationBar() {
@@ -117,6 +118,18 @@ final class CurrentWeatherListViewController: UIViewController {
                 ) as? SpacerCell else { return UITableViewCell() }
                 return spacerCell
             }
+        }
+    }
+    
+    private func setUpRefreshControl() {
+        tableView.refreshControl = refreshControl
+        tableView.refreshControl?.addTarget(self, action: #selector(handleRefreshControl), for: .valueChanged)
+    }
+    
+    @objc private func handleRefreshControl() {
+        presenter.viewDidLoad()
+        DispatchQueue.main.async { [weak self] in
+            self?.refreshControl.endRefreshing()
         }
     }
 }
