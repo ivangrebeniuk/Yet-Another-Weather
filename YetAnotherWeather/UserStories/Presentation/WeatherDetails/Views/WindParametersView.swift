@@ -22,7 +22,7 @@ final class WindParametersView: UIView {
     
     private let valueLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: CGFloat(14), weight: .regular)
+        label.font = UIFont.systemFont(ofSize: CGFloat(16), weight: .regular)
         label.alpha = 0.6
         label.textColor = .white
         label.textAlignment = .right
