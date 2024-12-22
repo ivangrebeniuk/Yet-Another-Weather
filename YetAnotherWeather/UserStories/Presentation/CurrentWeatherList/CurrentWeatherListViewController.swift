@@ -27,6 +27,7 @@ protocol ICurrentWeatherListView: AnyObject {
     
     func update(with items: [CurrentWeatherCell.Model])
     func hideSearchResults()
+    func endRefreshing()
 }
 
 final class CurrentWeatherListViewController: UIViewController {
@@ -72,9 +73,6 @@ final class CurrentWeatherListViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        tableView.delegate = self
-        tableView.register(CurrentWeatherCell.self, forCellReuseIdentifier: .currentWeatherCellIdentifier)
-        tableView.register(SpacerCell.self, forCellReuseIdentifier: .spacerCellIdentifier)
         setUpUI()
         presenter.viewDidLoad()
     }
@@ -83,11 +81,7 @@ final class CurrentWeatherListViewController: UIViewController {
     
     private func setUpUI() {
         setUpNavigationBar()
-        view.addSubview(tableView)
-        tableView.snp.makeConstraints {
-            $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 15, left: 0, bottom: 40, right: 20))
-        }
-        tableView.showsVerticalScrollIndicator = false
+        setUpTableView()
         setUpRefreshControl()
     }
     
@@ -99,6 +93,22 @@ final class CurrentWeatherListViewController: UIViewController {
         searchController.searchBar.placeholder = .searchFielPlaceholderText
         
         navigationItem.searchController = searchController
+    }
+    
+    private func setUpTableView() {
+        view.addSubview(tableView)
+        tableView.snp.makeConstraints {
+            $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 15, left: 0, bottom: 40, right: 20))
+        }
+        tableView.delegate = self
+        tableView.register(CurrentWeatherCell.self, forCellReuseIdentifier: .currentWeatherCellIdentifier)
+        tableView.register(SpacerCell.self, forCellReuseIdentifier: .spacerCellIdentifier)
+        tableView.showsVerticalScrollIndicator = false
+        tableView.separatorStyle = .none
+    }
+    
+    private func calculateIndex(from indexPath: IndexPath) {
+        guard indexPath.row % 2 == 0 else { return }
     }
     
     private func makeDataSourcre() -> DataSource {
@@ -116,6 +126,7 @@ final class CurrentWeatherListViewController: UIViewController {
                     withIdentifier: .spacerCellIdentifier,
                     for: indexPath
                 ) as? SpacerCell else { return UITableViewCell() }
+                spacerCell.selectionStyle = .none
                 return spacerCell
             }
         }
@@ -127,10 +138,7 @@ final class CurrentWeatherListViewController: UIViewController {
     }
     
     @objc private func handleRefreshControl() {
-        presenter.viewDidLoad()
-        DispatchQueue.main.async { [weak self] in
-            self?.refreshControl.endRefreshing()
-        }
+        presenter.didPullToRefresh()
     }
 }
 
@@ -143,8 +151,9 @@ extension CurrentWeatherListViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        guard indexPath.row % 2 == 0 else { return nil }
         let deleteAction = UIContextualAction(style: .destructive, title: "") { [weak self] (_, _, completionHandler) in
-            self?.presenter.deleteLocation(atIndex: indexPath)
+            self?.presenter.deleteLocation(atIndex: indexPath.row / 2)
             completionHandler(true)
         }
         
@@ -153,8 +162,10 @@ extension CurrentWeatherListViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard indexPath.row % 2 == 0 else { return }
+        
         tableView.deselectRow(at: indexPath, animated: true)
-        presenter.didSelectRowAt(indexPath: indexPath)
+        presenter.didSelectRowAt(atIndex: indexPath.row / 2)
     }
 }
 
@@ -173,8 +184,7 @@ extension CurrentWeatherListViewController: ICurrentWeatherListView {
         for (index, item) in items.enumerated() {
             itemsArray.append(.weather(item))
             if index < items.count - 1 {
-                let id = UUID()
-                itemsArray.append(.spacer(id))
+                itemsArray.append(.spacer(UUID()))
             }
         }
         
@@ -183,5 +193,9 @@ extension CurrentWeatherListViewController: ICurrentWeatherListView {
         snapshot.appendItems(itemsArray, toSection: .main)
         
         dataSource.apply(snapshot, animatingDifferences: true)
+    }
+    
+    func endRefreshing() {
+        refreshControl.endRefreshing()
     }
 }

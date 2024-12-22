@@ -17,8 +17,9 @@ protocol CurrentWeatherListOutput: AnyObject {
 
 protocol ICurrentWeatherListPresenter {
     func viewDidLoad()
-    func deleteLocation(atIndex indexPath: IndexPath)
-    func didSelectRowAt(indexPath: IndexPath)
+    func deleteLocation(atIndex index: Int)
+    func didSelectRowAt(atIndex index: Int)
+    func didPullToRefresh()
 }
 
 class CurrentWeatherListPresenter {
@@ -26,6 +27,7 @@ class CurrentWeatherListPresenter {
     // Dependencies
     private let currentWeatherService: ICurrentWeatherService
     private let viewModelFactory: ICurrentWeatherCellViewModelFactory
+    private let feedbackGenerator: IFeedbackGeneratorService
     weak var output: CurrentWeatherListOutput?
     weak var view: ICurrentWeatherListView?
     
@@ -38,10 +40,12 @@ class CurrentWeatherListPresenter {
     init(
         currentWeatherService: ICurrentWeatherService,
         viewModelFactory: ICurrentWeatherCellViewModelFactory,
+        feedbackGenerator: IFeedbackGeneratorService,
         output: CurrentWeatherListOutput?
     ) {
         self.currentWeatherService = currentWeatherService
         self.viewModelFactory = viewModelFactory
+        self.feedbackGenerator = feedbackGenerator
         self.output = output
     }
     
@@ -53,7 +57,7 @@ class CurrentWeatherListPresenter {
         }
     }
     
-    private func getSortedCurrentWeatherItems() {
+    private func getSortedCurrentWeatherItems(completionHandler: @escaping (() -> Void)) {
         currentWeatherService.getSortedCurrentWeatherItems(
             for: favouriteLocationsIDs
         ) { result in
@@ -63,6 +67,7 @@ class CurrentWeatherListPresenter {
                     guard let self else { return }
                     currentWeatherViewModels = makeViewModels(from: results)
                     view?.update(with: currentWeatherViewModels)
+                    completionHandler()
                 case .failure(let error):
                     print("Ошибочка: \(error.localizedDescription)")
                 }
@@ -76,25 +81,36 @@ class CurrentWeatherListPresenter {
 extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
     
     func viewDidLoad() {
-        getSortedCurrentWeatherItems()
+        getSortedCurrentWeatherItems() {}
     }
     
-    func deleteLocation(atIndex indexPath: IndexPath) {
-        let index = calculateIndex(from: indexPath)
+    func didPullToRefresh() {
+        guard !favouriteLocationsIDs.isEmpty else {
+            view?.endRefreshing()
+            return
+        }
+        feedbackGenerator.generateFeedback(ofType: .impact(.medium))
+        getSortedCurrentWeatherItems() { [weak self] in
+            self?.view?.endRefreshing()
+        }
+    }
+    
+    func deleteLocation(atIndex index: Int) {
         // дропаем из списка вью модель чтобы перерисовать таблицу
         currentWeatherViewModels.remove(at: index)
         // дропаем id локации из списка избранных городов
         // иначе при добавлении новой локиции появится удаленный город
         favouriteLocationsIDs.remove(at: index)
         view?.update(with: currentWeatherViewModels)
+        feedbackGenerator.generateFeedback(ofType: .notification(.success))
     }
     
-    func didSelectRowAt(indexPath: IndexPath) {
-        let index = calculateIndex(from: indexPath)
+    func didSelectRowAt(atIndex index: Int) {
         output?.didSelectLocation(
             favouriteLocationsIDs[index],
             isAddedToFavourites: true
         )
+        feedbackGenerator.generateFeedback(ofType: .selectionChanged)
     }
     
     func getOrderedWeatherItems() {
@@ -113,10 +129,6 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
                 }
             }
         }
-    }
-    
-    private func calculateIndex(from indexPath: IndexPath) -> Int {
-        indexPath.row / 2
     }
 }
 
@@ -140,6 +152,6 @@ extension CurrentWeatherListPresenter: CurrentWeatherListInput {
     func addToFavourites(location: String) {
         view?.hideSearchResults()
         favouriteLocationsIDs.append(location)
-        getSortedCurrentWeatherItems()
+        getSortedCurrentWeatherItems() {}
     }
 }

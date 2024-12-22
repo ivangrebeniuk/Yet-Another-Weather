@@ -34,14 +34,16 @@ final class AppAssembly {
         CurrentWeatherListAssembly(
             dateFormatter: dateFormatter,
             weatherNetworkService: currentWeatherService,
-            searchResultAssembly: searchResultsAssembly
+            searchResultAssembly: searchResultsAssembly,
+            feedbackGeneratorService: feedbackGeneratorService
         )
     }
     
     private var searchResultsAssembly: SearchResultsAssembly {
         SearchResultsAssembly(
             searchLocationsService: searchLocationsService,
-            forecastService: forecastService
+            forecastService: forecastService,
+            feedbackGeneratorService: feedbackGeneratorService
         )
     }
     
@@ -49,7 +51,8 @@ final class AppAssembly {
         WeatherDetailsAssembly(
             beaufortScaleResolver: beaufortScaleResolver,
             dateFormatter: dateFormatter,
-            forecastService: forecastService
+            forecastService: forecastService,
+            feedbackGeneratorService: feedbackGeneratorService
         )
     }
     
@@ -79,5 +82,9 @@ final class AppAssembly {
             networkService: networkService,
             urlRequestsFactory: urlRequestsFactory
         )
+    }
+    
+    private var feedbackGeneratorService: IFeedbackGeneratorService {
+        FeedbackGeneratorService()
     }
 }

@@ -50,6 +50,7 @@
 		E2717F362D105BC40020D40A /* SpacerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2717F352D105BC40020D40A /* SpacerCell.swift */; };
 		E280DAFB2C31740F00D683CD /* IJSONParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = E280DAFA2C31740F00D683CD /* IJSONParser.swift */; };
 		E280DAFD2C31750F00D683CD /* CurrentWeatherParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = E280DAFC2C31750F00D683CD /* CurrentWeatherParser.swift */; };
+		E298BCAC2D16DAB80049D88C /* FeedbackGeneratorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E298BCAB2D16DAB80049D88C /* FeedbackGeneratorService.swift */; };
 		E2AD19592C19A7E20038F6FC /* CurrentWeatherModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AD19582C19A7E20038F6FC /* CurrentWeatherModel.swift */; };
 		E2AD339E2C1479DD0038F6FC /* URLRequestFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AD339D2C1479DD0038F6FC /* URLRequestFactory.swift */; };
 		E2AD33A02C1479F00038F6FC /* IURLRequestFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AD339F2C1479F00038F6FC /* IURLRequestFactory.swift */; };
@@ -117,6 +118,7 @@
 		E2717F352D105BC40020D40A /* SpacerCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpacerCell.swift; sourceTree = "<group>"; };
 		E280DAFA2C31740F00D683CD /* IJSONParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IJSONParser.swift; sourceTree = "<group>"; };
 		E280DAFC2C31750F00D683CD /* CurrentWeatherParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentWeatherParser.swift; sourceTree = "<group>"; };
+		E298BCAB2D16DAB80049D88C /* FeedbackGeneratorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackGeneratorService.swift; sourceTree = "<group>"; };
 		E2AD19582C19A7E20038F6FC /* CurrentWeatherModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentWeatherModel.swift; sourceTree = "<group>"; };
 		E2AD339D2C1479DD0038F6FC /* URLRequestFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLRequestFactory.swift; sourceTree = "<group>"; };
 		E2AD339F2C1479F00038F6FC /* IURLRequestFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IURLRequestFactory.swift; sourceTree = "<group>"; };
@@ -439,6 +441,14 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		E298BCAA2D16DAA00049D88C /* FeedbackGeneratorService */ = {
+			isa = PBXGroup;
+			children = (
+				E298BCAB2D16DAB80049D88C /* FeedbackGeneratorService.swift */,
+			);
+			path = FeedbackGeneratorService;
+			sourceTree = "<group>";
+		};
 		E2AD19572C19A7C00038F6FC /* Models */ = {
 			isa = PBXGroup;
 			children = (
@@ -497,6 +507,7 @@
 		E2D18D892CA2DDC000008AD6 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				E298BCAA2D16DAA00049D88C /* FeedbackGeneratorService */,
 				E23D815C2CA564E400CCEEA7 /* SearchLocationsService */,
 				E2419D1D2C0B73E200342DA8 /* CurrentWeatherService */,
 				E20DD1F22C58F36D009A4C1F /* ForecastService */,
@@ -686,6 +697,7 @@
 				E22ECF842CBA878D0039AEC5 /* CurrentWeatherView.swift in Sources */,
 				E2F692DA2CE0AC4E00B57BB6 /* UIAlertController+Alert.swift in Sources */,
 				E280DAFD2C31750F00D683CD /* CurrentWeatherParser.swift in Sources */,
+				E298BCAC2D16DAB80049D88C /* FeedbackGeneratorService.swift in Sources */,
 				E20EECFA2C4AA16200B48F16 /* SearchResultsPresenter.swift in Sources */,
 				E20EECF82C4AA14800B48F16 /* SearchResultCellView.swift in Sources */,
 				E2E926942CFDF9A400DFB00C /* BeaufortScaleResolver.swift in Sources */,

@@ -25,6 +25,7 @@ final class WeatherDetailsPresenter {
     private let alertViewModelFactory: IAlertViewModelFactory
     private let forecastService: IForecastService
     private let viewModelFactory: IWeatherDetailsViewModelFactory
+    private let feedbackGenerator: IFeedbackGeneratorService
     private let location: String
     internal let isAddedToFavourites: Bool
     private weak var output: WeatherDetailsOutput?
@@ -40,6 +41,7 @@ final class WeatherDetailsPresenter {
         alertViewModelFactory: IAlertViewModelFactory,
         forecastService: IForecastService,
         viewModelFactory: IWeatherDetailsViewModelFactory,
+        feedbackGenerator: IFeedbackGeneratorService,
         location: String,
         isAddedToFavourites: Bool,
         output: WeatherDetailsOutput
@@ -47,6 +49,7 @@ final class WeatherDetailsPresenter {
         self.alertViewModelFactory = alertViewModelFactory
         self.forecastService = forecastService
         self.viewModelFactory = viewModelFactory
+        self.feedbackGenerator = feedbackGenerator
         self.location = location
         self.isAddedToFavourites = isAddedToFavourites
         self.output = output
@@ -68,6 +71,7 @@ final class WeatherDetailsPresenter {
                     let alertModel = alertViewModelFactory.makeSingleButtonErrorAlert { [weak self] in
                         self?.didRequestToDismiss()
                     }
+                    feedbackGenerator.generateFeedback(ofType: .notification(.error))
                     view?.showAlert(withModel: alertModel)
                     print("Ошибочка: \(error.localizedDescription)")
                 }
@@ -86,6 +90,7 @@ extension WeatherDetailsPresenter: IWeatherDetailsPresenter {
     }
 
     func didTapAddButton() {
+        feedbackGenerator.generateFeedback(ofType: .notification(.success))
         output?.didAddLocationToFavourites(location: location)
     }
     

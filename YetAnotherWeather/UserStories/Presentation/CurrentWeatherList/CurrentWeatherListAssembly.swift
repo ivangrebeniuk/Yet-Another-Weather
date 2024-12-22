@@ -13,17 +13,20 @@ class CurrentWeatherListAssembly {
     private let dateFormatter: ICustomDateFormatter
     private let currentWeatherService: ICurrentWeatherService
     private let searchResultAssembly: SearchResultsAssembly
+    private let feedbackGeneratorService: IFeedbackGeneratorService
     
     // MARK: - Init
     
     init(
         dateFormatter: ICustomDateFormatter,
         weatherNetworkService: ICurrentWeatherService,
-        searchResultAssembly: SearchResultsAssembly
+        searchResultAssembly: SearchResultsAssembly,
+        feedbackGeneratorService: IFeedbackGeneratorService
     ) {
         self.dateFormatter = dateFormatter
         self.currentWeatherService = weatherNetworkService
         self.searchResultAssembly = searchResultAssembly
+        self.feedbackGeneratorService = feedbackGeneratorService
     }
     
     func assemble(output: CurrentWeatherListOutput?) -> Module<CurrentWeatherListInput> {
@@ -33,6 +36,7 @@ class CurrentWeatherListAssembly {
         let presenter = CurrentWeatherListPresenter(
             currentWeatherService: currentWeatherService,
             viewModelFactory: viewModelFactory,
+            feedbackGenerator: feedbackGeneratorService,
             output: output
         )
         
