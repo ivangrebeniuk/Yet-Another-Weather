@@ -25,6 +25,7 @@ protocol ICurrentWeatherListPresenter {
 class CurrentWeatherListPresenter {
     
     // Dependencies
+    private let alertViewModelFactory: IAlertViewModelFactory
     private let currentWeatherService: ICurrentWeatherService
     private let viewModelFactory: ICurrentWeatherCellViewModelFactory
     private let feedbackGenerator: IFeedbackGeneratorService
@@ -38,11 +39,13 @@ class CurrentWeatherListPresenter {
     // MARK: - Init
     
     init(
+        alertViewModelFactory: IAlertViewModelFactory,
         currentWeatherService: ICurrentWeatherService,
         viewModelFactory: ICurrentWeatherCellViewModelFactory,
         feedbackGenerator: IFeedbackGeneratorService,
         output: CurrentWeatherListOutput?
     ) {
+        self.alertViewModelFactory = alertViewModelFactory
         self.currentWeatherService = currentWeatherService
         self.viewModelFactory = viewModelFactory
         self.feedbackGenerator = feedbackGenerator
@@ -118,14 +121,16 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
             for: favouriteLocationsIDs
         ) { result in
             DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
                 switch result {
                 case .success(let results):
-                    let viewModels = self?.makeViewModels(from: results)
-                    viewModels?.forEach {
+                    let viewModels = makeViewModels(from: results)
+                    viewModels.forEach {
                         print($0.location)
                     }
                 case .failure(let error):
-                    print("Ошибочка: \(error.localizedDescription)")
+                    let alertModel = alertViewModelFactory.makeSingleButtonErrorAlert {}
+                    view?.showAlert(with: alertModel)
                 }
             }
         }

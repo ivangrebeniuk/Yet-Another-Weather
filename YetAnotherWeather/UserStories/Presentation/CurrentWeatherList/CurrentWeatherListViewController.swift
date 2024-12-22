@@ -28,6 +28,7 @@ protocol ICurrentWeatherListView: AnyObject {
     func update(with items: [CurrentWeatherCell.Model])
     func hideSearchResults()
     func endRefreshing()
+    func showAlert(with model: SingleButtonAlertViewModel)
 }
 
 final class CurrentWeatherListViewController: UIViewController {
@@ -120,6 +121,7 @@ final class CurrentWeatherListViewController: UIViewController {
                     for: indexPath
                 ) as? CurrentWeatherCell else { return UITableViewCell() }
                 weatherCell.configure(with: model)
+                weatherCell.selectionStyle = .none
                 return weatherCell
             case .spacer:
                 guard let spacerCell = tableView.dequeueReusableCell(
@@ -197,5 +199,10 @@ extension CurrentWeatherListViewController: ICurrentWeatherListView {
     
     func endRefreshing() {
         refreshControl.endRefreshing()
+    }
+    
+    func showAlert(with model: SingleButtonAlertViewModel) {
+        let alertController = UIAlertController.makeSingleButtonAlert(model: model)
+        present(alertController, animated: true)
     }
 }

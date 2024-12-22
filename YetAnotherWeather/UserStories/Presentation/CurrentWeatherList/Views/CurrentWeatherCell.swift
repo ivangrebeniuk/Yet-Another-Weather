@@ -58,6 +58,9 @@ final class CurrentWeatherCell: UITableViewCell {
         label.textAlignment = .right
         return label
     }()
+    
+    // Private
+    private var containerViewBackgroundColor: UIColor?
         
     // MARK: - Init
 
@@ -91,6 +94,7 @@ final class CurrentWeatherCell: UITableViewCell {
     
     private func setUpUI() {
         addSubview(containerView)
+        addGestureToContainerView()
         containerView.snp.makeConstraints {
             $0.leading.equalToSuperview().inset(20)
             $0.top.bottom.trailing.equalToSuperview()
@@ -151,6 +155,26 @@ final class CurrentWeatherCell: UITableViewCell {
             $0.leading.trailing.equalToSuperview()
         }
     }
+    
+    private func addGestureToContainerView() {
+            let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleContainerViewTap))
+            containerView.addGestureRecognizer(tapGesture)
+        }
+        
+        @objc private func handleContainerViewTap() {}
+    
+    override func setHighlighted(_ highlighted: Bool, animated: Bool) {
+        super.setHighlighted(highlighted, animated: animated)
+        UIView.animate(withDuration: 0.1) {
+            if highlighted {
+                self.containerView.transform = CGAffineTransform(scaleX: 0.95, y: 0.95)
+                self.containerView.backgroundColor = UIColor.gray.withAlphaComponent(0.5)
+            } else {
+                self.containerView.transform = CGAffineTransform.identity
+                self.containerView.backgroundColor = self.containerViewBackgroundColor
+            }
+        }
+    }
 }
 
 // MARK: - ConfigurableView
@@ -172,7 +196,7 @@ extension CurrentWeatherCell: ConfigurableView {
         temperatureLabel.text = model.temperature
         conditionsLabel.text = model.conditions
         feelsLikeLabel.text = model.feelsLike
-
-        containerView.backgroundColor = model.isDay ? UIColor.daySkyBlue : UIColor.nightSkyBlue
+        containerViewBackgroundColor = model.isDay ? UIColor.daySkyBlue : UIColor.nightSkyBlue
+        containerView.backgroundColor = containerViewBackgroundColor
     }
 }
