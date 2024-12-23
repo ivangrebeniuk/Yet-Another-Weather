@@ -61,9 +61,7 @@ class CurrentWeatherListPresenter {
     }
     
     private func getSortedCurrentWeatherItems(completionHandler: @escaping (() -> Void)) {
-        currentWeatherService.getSortedCurrentWeatherItems(
-            for: favouriteLocationsIDs
-        ) { result in
+        currentWeatherService.getSortedCurrentWeatherItems() { result in
             DispatchQueue.main.async { [weak self] in
                 switch result {
                 case .success(let results):
@@ -88,7 +86,7 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
     }
     
     func didPullToRefresh() {
-        guard !favouriteLocationsIDs.isEmpty else {
+        guard !currentWeatherService.cachedFavourites.isEmpty else {
             view?.endRefreshing()
             return
         }
@@ -103,23 +101,21 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
         currentWeatherViewModels.remove(at: index)
         // дропаем id локации из списка избранных городов
         // иначе при добавлении новой локиции появится удаленный город
-        favouriteLocationsIDs.remove(at: index)
+        currentWeatherService.deleteFromFavourites(atIndex: index)
         view?.update(with: currentWeatherViewModels)
         feedbackGenerator.generateFeedback(ofType: .notification(.success))
     }
     
     func didSelectRowAt(atIndex index: Int) {
         output?.didSelectLocation(
-            favouriteLocationsIDs[index],
+            currentWeatherService.cachedFavourites[index],
             isAddedToFavourites: true
         )
         feedbackGenerator.generateFeedback(ofType: .selectionChanged)
     }
     
     func getOrderedWeatherItems() {
-        currentWeatherService.getOrderedCurrentWeatherItems(
-            for: favouriteLocationsIDs
-        ) { result in
+        currentWeatherService.getOrderedCurrentWeatherItems() { result in
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
                 switch result {
@@ -145,7 +141,7 @@ extension CurrentWeatherListPresenter: SearchResultsOutput {
         print("Search Results output сработал")
         output?.didSelectLocation(
             location,
-            isAddedToFavourites: favouriteLocationsIDs.contains(location)
+            isAddedToFavourites: currentWeatherService.isAlreadyAddedToFavourite(location)
         )
     }
 }
@@ -156,7 +152,7 @@ extension CurrentWeatherListPresenter: CurrentWeatherListInput {
     
     func addToFavourites(location: String) {
         view?.hideSearchResults()
-        favouriteLocationsIDs.append(location)
+        currentWeatherService.saveToFavourites(location)
         getSortedCurrentWeatherItems() {}
     }
 }

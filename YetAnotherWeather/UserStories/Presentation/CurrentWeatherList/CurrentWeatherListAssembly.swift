@@ -32,8 +32,9 @@ class CurrentWeatherListAssembly {
     func assemble(output: CurrentWeatherListOutput?) -> Module<CurrentWeatherListInput> {
         
         let viewModelFactory = CurrentWeatherCellViewModelFactory(dateFormatter: dateFormatter)
-        
+        let alertViewModelFactory = AlertViewModelFactory()
         let presenter = CurrentWeatherListPresenter(
+            alertViewModelFactory: alertViewModelFactory,
             currentWeatherService: currentWeatherService,
             viewModelFactory: viewModelFactory,
             feedbackGenerator: feedbackGeneratorService,

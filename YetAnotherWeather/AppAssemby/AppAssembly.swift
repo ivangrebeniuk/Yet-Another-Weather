@@ -15,8 +15,10 @@ final class AppAssembly {
     private lazy var urlRequestsFactory = URLRequestFactory()
     private lazy var networkService = NetworkService(session: URLSession.shared)
     private lazy var networkQueue = DispatchQueue(label: "ru.i.grebeniuk.serialNetworkQueue")
+    private lazy var dataBaseQueue = DispatchQueue(label: "ru.i.grebeniuk.dataBaseQueue", qos: .userInitiated)
     private lazy var dateFormatter = CustomDateFormatter()
     private lazy var beaufortScaleResolver = BeaufortScaleResolver()
+    private lazy var userDefaults = UserDefaults.standard
         
     // MARK: - FlowCoordinators
     
@@ -64,9 +66,11 @@ final class AppAssembly {
     
     private var currentWeatherService: ICurrentWeatherService {
         CurrentWeatherService(
+            dataBaseQueue: dataBaseQueue,
             networkQueue: networkQueue,
             networkService: networkService,
-            urlRequestsFactory: urlRequestsFactory
+            urlRequestsFactory: urlRequestsFactory,
+            userDefaults: userDefaults
         )
     }
     
