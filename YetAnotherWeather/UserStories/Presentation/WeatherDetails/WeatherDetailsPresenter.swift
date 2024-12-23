@@ -26,8 +26,8 @@ final class WeatherDetailsPresenter {
     private let forecastService: IForecastService
     private let viewModelFactory: IWeatherDetailsViewModelFactory
     private let feedbackGenerator: IFeedbackGeneratorService
+    private let currentWeatherService: ICurrentWeatherService
     private let location: String
-    internal let isAddedToFavourites: Bool
     private weak var output: WeatherDetailsOutput?
 
     weak var view: IWeatherDetailsView?
@@ -42,16 +42,16 @@ final class WeatherDetailsPresenter {
         forecastService: IForecastService,
         viewModelFactory: IWeatherDetailsViewModelFactory,
         feedbackGenerator: IFeedbackGeneratorService,
+        currentWeatherService: ICurrentWeatherService,
         location: String,
-        isAddedToFavourites: Bool,
         output: WeatherDetailsOutput
     ) {
         self.alertViewModelFactory = alertViewModelFactory
         self.forecastService = forecastService
         self.viewModelFactory = viewModelFactory
         self.feedbackGenerator = feedbackGenerator
+        self.currentWeatherService = currentWeatherService
         self.location = location
-        self.isAddedToFavourites = isAddedToFavourites
         self.output = output
     }
     
@@ -84,6 +84,10 @@ final class WeatherDetailsPresenter {
 // MARK: - IWeatherDetailsPresenter
 
 extension WeatherDetailsPresenter: IWeatherDetailsPresenter {
+    
+    var isAddedToFavourites: Bool {
+        currentWeatherService.isAlreadyAddedToFavourite(location)
+    }
     
     func viewDidLoad() {
         getWeatherForecast()

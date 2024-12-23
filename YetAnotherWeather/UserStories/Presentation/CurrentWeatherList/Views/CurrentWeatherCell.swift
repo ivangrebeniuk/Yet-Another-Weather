@@ -9,8 +9,10 @@ import SnapKit
 import UIKit
 
 private extension UIColor {
+    
     static let daySkyBlue = UIColor(red: 0.53, green: 0.81, blue: 0.92, alpha: 1.00)
     static let nightSkyBlue = UIColor(red: 0.18, green: 0.27, blue: 0.51, alpha: 1.00)
+    static let highlightSkyBlue = UIColor(red: 0.68, green: 0.85, blue: 0.90, alpha: 1.00)
 }
 
 final class CurrentWeatherCell: UITableViewCell {
@@ -167,8 +169,8 @@ final class CurrentWeatherCell: UITableViewCell {
         super.setHighlighted(highlighted, animated: animated)
         UIView.animate(withDuration: 0.1) {
             if highlighted {
-                self.containerView.transform = CGAffineTransform(scaleX: 0.95, y: 0.95)
-                self.containerView.backgroundColor = UIColor.gray.withAlphaComponent(0.5)
+                self.containerView.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
+                self.containerView.backgroundColor = .systemGray2.withAlphaComponent(0.5)
             } else {
                 self.containerView.transform = CGAffineTransform.identity
                 self.containerView.backgroundColor = self.containerViewBackgroundColor

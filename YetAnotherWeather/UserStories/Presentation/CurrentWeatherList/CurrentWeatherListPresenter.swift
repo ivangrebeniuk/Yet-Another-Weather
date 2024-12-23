@@ -12,7 +12,7 @@ protocol CurrentWeatherListInput: AnyObject {
 }
 
 protocol CurrentWeatherListOutput: AnyObject {
-    func didSelectLocation(_ location: String, isAddedToFavourites: Bool)
+    func didSelectLocation(_ location: String)
 }
 
 protocol ICurrentWeatherListPresenter {
@@ -108,8 +108,7 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
     
     func didSelectRowAt(atIndex index: Int) {
         output?.didSelectLocation(
-            currentWeatherService.cachedFavourites[index],
-            isAddedToFavourites: true
+            currentWeatherService.cachedFavourites[index]
         )
         feedbackGenerator.generateFeedback(ofType: .selectionChanged)
     }
@@ -139,10 +138,7 @@ extension CurrentWeatherListPresenter: SearchResultsOutput {
     
     func didSelectLocation(_ location: String) {
         print("Search Results output сработал")
-        output?.didSelectLocation(
-            location,
-            isAddedToFavourites: currentWeatherService.isAlreadyAddedToFavourite(location)
-        )
+        output?.didSelectLocation(location)
     }
 }
 
