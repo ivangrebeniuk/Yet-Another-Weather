@@ -54,7 +54,8 @@ final class AppAssembly {
             beaufortScaleResolver: beaufortScaleResolver,
             dateFormatter: dateFormatter,
             forecastService: forecastService,
-            feedbackGeneratorService: feedbackGeneratorService
+            feedbackGeneratorService: feedbackGeneratorService,
+            currentWeatherService: currentWeatherService
         )
     }
     
