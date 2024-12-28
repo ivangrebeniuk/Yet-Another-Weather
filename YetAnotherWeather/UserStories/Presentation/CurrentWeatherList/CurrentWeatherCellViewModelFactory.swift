@@ -40,7 +40,7 @@ final class CurrentWeatherCellViewModelFactory {
             ) else {
             return ""
         }
-        let onlyTimeString = dateFormatter.localTime(from: date)
+        let onlyTimeString = dateFormatter.timeString(from: date, mask: "HH:mm")
         return onlyTimeString
     }
     

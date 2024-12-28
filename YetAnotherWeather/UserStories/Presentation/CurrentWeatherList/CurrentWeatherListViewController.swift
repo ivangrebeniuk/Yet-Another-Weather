@@ -103,7 +103,6 @@ final class CurrentWeatherListViewController: UIViewController {
         }
         tableView.delegate = self
         tableView.register(CurrentWeatherCell.self, forCellReuseIdentifier: .currentWeatherCellIdentifier)
-        tableView.register(SpacerCell.self, forCellReuseIdentifier: .spacerCellIdentifier)
         tableView.showsVerticalScrollIndicator = false
         tableView.separatorStyle = .none
     }
@@ -124,10 +123,7 @@ final class CurrentWeatherListViewController: UIViewController {
                 weatherCell.selectionStyle = .none
                 return weatherCell
             case .spacer:
-                guard let spacerCell = tableView.dequeueReusableCell(
-                    withIdentifier: .spacerCellIdentifier,
-                    for: indexPath
-                ) as? SpacerCell else { return UITableViewCell() }
+                let spacerCell = UITableViewCell()
                 spacerCell.selectionStyle = .none
                 return spacerCell
             }
@@ -155,7 +151,7 @@ extension CurrentWeatherListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         guard indexPath.row % 2 == 0 else { return nil }
         let deleteAction = UIContextualAction(style: .destructive, title: "") { [weak self] (_, _, completionHandler) in
-            self?.presenter.deleteLocation(atIndex: indexPath.row / 2)
+            self?.presenter.deleteItem(atIndex: indexPath.row / 2)
             completionHandler(true)
         }
         

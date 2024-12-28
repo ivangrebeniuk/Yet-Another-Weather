@@ -26,7 +26,6 @@ final class FeedbackGeneratorService: IFeedbackGeneratorService {
     private lazy var impactGenerator = UIImpactFeedbackGenerator(style: .medium)
     private lazy var selectionGenerator = UISelectionFeedbackGenerator()
 
-    
     // MARK: -  IFeedbackGeneratorService
     
     func generateFeedback(ofType type: FeedbackType) {

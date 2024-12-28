@@ -86,7 +86,7 @@ final class WeatherDetailsPresenter {
 extension WeatherDetailsPresenter: IWeatherDetailsPresenter {
     
     var isAddedToFavourites: Bool {
-        currentWeatherService.isAlreadyAddedToFavourite(location)
+        currentWeatherService.cachedFavourites.contains(location)
     }
     
     func viewDidLoad() {

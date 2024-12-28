@@ -16,9 +16,13 @@ protocol CurrentWeatherListOutput: AnyObject {
 }
 
 protocol ICurrentWeatherListPresenter {
+    
     func viewDidLoad()
-    func deleteLocation(atIndex index: Int)
+    
+    func deleteItem(atIndex index: Int)
+    
     func didSelectRowAt(atIndex index: Int)
+    
     func didPullToRefresh()
 }
 
@@ -33,7 +37,6 @@ class CurrentWeatherListPresenter {
     weak var view: ICurrentWeatherListView?
     
     // Models
-    private var favouriteLocationsIDs = [String]()
     private var currentWeatherViewModels = [CurrentWeatherCell.Model]()
 
     // MARK: - Init
@@ -60,8 +63,8 @@ class CurrentWeatherListPresenter {
         }
     }
     
-    private func getSortedCurrentWeatherItems(completionHandler: @escaping (() -> Void)) {
-        currentWeatherService.getSortedCurrentWeatherItems() { result in
+    private func getSortedCurrentWeatherItems(completionHandler: @escaping () -> Void) {
+        currentWeatherService.getSortedCurrentWeatherItems { result in
             DispatchQueue.main.async { [weak self] in
                 switch result {
                 case .success(let results):
@@ -82,7 +85,7 @@ class CurrentWeatherListPresenter {
 extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
     
     func viewDidLoad() {
-        getSortedCurrentWeatherItems() {}
+        getSortedCurrentWeatherItems {}
     }
     
     func didPullToRefresh() {
@@ -91,17 +94,17 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
             return
         }
         feedbackGenerator.generateFeedback(ofType: .impact(.medium))
-        getSortedCurrentWeatherItems() { [weak self] in
+        getSortedCurrentWeatherItems { [weak self] in
             self?.view?.endRefreshing()
         }
     }
     
-    func deleteLocation(atIndex index: Int) {
+    func deleteItem(atIndex index: Int) {
         // дропаем из списка вью модель чтобы перерисовать таблицу
         currentWeatherViewModels.remove(at: index)
         // дропаем id локации из списка избранных городов
         // иначе при добавлении новой локиции появится удаленный город
-        currentWeatherService.deleteFromFavourites(atIndex: index)
+        currentWeatherService.deleteFromFavourites(index)
         view?.update(with: currentWeatherViewModels)
         feedbackGenerator.generateFeedback(ofType: .notification(.success))
     }
@@ -123,7 +126,7 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
                     viewModels.forEach {
                         print($0.location)
                     }
-                case .failure(let error):
+                case .failure(_):
                     let alertModel = alertViewModelFactory.makeSingleButtonErrorAlert {}
                     view?.showAlert(with: alertModel)
                 }

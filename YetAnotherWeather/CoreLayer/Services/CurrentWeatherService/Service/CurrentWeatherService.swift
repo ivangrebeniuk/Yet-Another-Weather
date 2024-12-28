@@ -15,12 +15,10 @@ private extension String {
 protocol ICurrentWeatherService {
     
     var cachedFavourites: [String] { get }
-    
-    func isAlreadyAddedToFavourite(_ location: String) -> Bool
-    
+        
     func saveToFavourites(_ location: String)
     
-    func deleteFromFavourites(atIndex index: Int)
+    func deleteFromFavourites(_ index: Int)
     
     func getSortedCurrentWeatherItems(
         completion: @escaping (Result<[CurrentWeatherModel], Error>) -> Void
@@ -104,12 +102,8 @@ extension CurrentWeatherService: ICurrentWeatherService {
     
     var cachedFavourites: [String] {
         dataBaseQueue.sync {
-            return userDefaults.array(forKey: .userDefaultsKey) as? [String] ?? [String]()
+            return userDefaults.array(forKey: .userDefaultsKey) as? [String] ?? []
         }
-    }
-    
-    func isAlreadyAddedToFavourite(_ location: String) -> Bool {
-        cachedFavourites.contains(location)
     }
 
     func saveToFavourites(_ location: String) {
@@ -120,7 +114,7 @@ extension CurrentWeatherService: ICurrentWeatherService {
         updateFavourites(cached)
     }
     
-    func deleteFromFavourites(atIndex index: Int) {
+    func deleteFromFavourites(_ index: Int) {
         var cached = cachedFavourites
         guard index < cached.count else { return }
         cached.remove(at: index)
@@ -150,7 +144,10 @@ extension CurrentWeatherService: ICurrentWeatherService {
         }
         group.notify(queue: .main) { [weak self] in
             guard let self else { return }
-            guard locations.count != errors.count else {
+            guard
+                locations.count != 0,
+                locations.count != errors.count
+            else {
                 if let error = errors.first {
                     completion(.failure(error))
                 }

@@ -11,7 +11,7 @@ protocol ICustomDateFormatter {
 
     func localDate(from dateString: String, mask: String, timeZone: TimeZone) -> Date?
     
-    func localTime(from date: Date) -> String
+    func timeString(from date: Date, mask: String) -> String
 }
 
 final class CustomDateFormatter: ICustomDateFormatter {
@@ -28,8 +28,8 @@ final class CustomDateFormatter: ICustomDateFormatter {
         return date
     }
     
-    func localTime(from date: Date) -> String {
-        dateFormatter.dateFormat = "HH:mm"
+    func timeString(from date: Date, mask: String) -> String {
+        dateFormatter.dateFormat = mask
         return dateFormatter.string(from: date)
     }
 }
