@@ -27,7 +27,7 @@ final class WindView: UIView {
         
     private let summaryStatusLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: CGFloat(22), weight: .medium)
+        label.font = UIFont.systemFont(ofSize: CGFloat(18), weight: .medium)
         label.textColor = .white
         label.textAlignment = .center
         label.numberOfLines = 0

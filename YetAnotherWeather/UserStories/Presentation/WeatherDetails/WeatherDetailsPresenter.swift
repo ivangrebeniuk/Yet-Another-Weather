@@ -13,6 +13,7 @@ protocol WeatherDetailsOutput: AnyObject {
 }
 
 protocol IWeatherDetailsPresenter {
+    var isAddedToFavourites: Bool { get }
     func viewDidLoad()
     func didTapAddButton()
     func didRequestToDismiss()
@@ -24,6 +25,8 @@ final class WeatherDetailsPresenter {
     private let alertViewModelFactory: IAlertViewModelFactory
     private let forecastService: IForecastService
     private let viewModelFactory: IWeatherDetailsViewModelFactory
+    private let feedbackGenerator: IFeedbackGeneratorService
+    private let currentWeatherService: ICurrentWeatherService
     private let location: String
     private weak var output: WeatherDetailsOutput?
 
@@ -38,12 +41,16 @@ final class WeatherDetailsPresenter {
         alertViewModelFactory: IAlertViewModelFactory,
         forecastService: IForecastService,
         viewModelFactory: IWeatherDetailsViewModelFactory,
+        feedbackGenerator: IFeedbackGeneratorService,
+        currentWeatherService: ICurrentWeatherService,
         location: String,
         output: WeatherDetailsOutput
     ) {
         self.alertViewModelFactory = alertViewModelFactory
         self.forecastService = forecastService
         self.viewModelFactory = viewModelFactory
+        self.feedbackGenerator = feedbackGenerator
+        self.currentWeatherService = currentWeatherService
         self.location = location
         self.output = output
     }
@@ -64,6 +71,7 @@ final class WeatherDetailsPresenter {
                     let alertModel = alertViewModelFactory.makeSingleButtonErrorAlert { [weak self] in
                         self?.didRequestToDismiss()
                     }
+                    feedbackGenerator.generateFeedback(ofType: .notification(.error))
                     view?.showAlert(withModel: alertModel)
                     print("Ошибочка: \(error.localizedDescription)")
                 }
@@ -77,11 +85,16 @@ final class WeatherDetailsPresenter {
 
 extension WeatherDetailsPresenter: IWeatherDetailsPresenter {
     
+    var isAddedToFavourites: Bool {
+        currentWeatherService.cachedFavourites.contains(location)
+    }
+    
     func viewDidLoad() {
         getWeatherForecast()
     }
 
     func didTapAddButton() {
+        feedbackGenerator.generateFeedback(ofType: .notification(.success))
         output?.didAddLocationToFavourites(location: location)
     }
     

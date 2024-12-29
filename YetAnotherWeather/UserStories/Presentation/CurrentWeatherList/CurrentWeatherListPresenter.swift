@@ -12,37 +12,73 @@ protocol CurrentWeatherListInput: AnyObject {
 }
 
 protocol CurrentWeatherListOutput: AnyObject {
-    
     func didSelectLocation(_ location: String)
 }
 
 protocol ICurrentWeatherListPresenter {
-            
-    func getSortedCurrentWeatherItems()
     
-    func getOrderedWeatherItems()
+    func viewDidLoad()
+    
+    func deleteItem(atIndex index: Int)
+    
+    func didSelectRowAt(atIndex index: Int)
+    
+    func didPullToRefresh()
+    
+    func emptyState() -> Bool
 }
 
 class CurrentWeatherListPresenter {
     
     // Dependencies
+    private let alertViewModelFactory: IAlertViewModelFactory
     private let currentWeatherService: ICurrentWeatherService
+    private let viewModelFactory: ICurrentWeatherCellViewModelFactory
+    private let feedbackGenerator: IFeedbackGeneratorService
     weak var output: CurrentWeatherListOutput?
     weak var view: ICurrentWeatherListView?
     
     // Models
-    private var weatherToShow: [CurrentWeatherModel] = []
-    private var searchResults = [SearchResultModel]()
-    private var favouriteLocations = [String]()
+    private var currentWeatherViewModels = [CurrentWeatherCell.Model]()
 
     // MARK: - Init
     
     init(
+        alertViewModelFactory: IAlertViewModelFactory,
         currentWeatherService: ICurrentWeatherService,
+        viewModelFactory: ICurrentWeatherCellViewModelFactory,
+        feedbackGenerator: IFeedbackGeneratorService,
         output: CurrentWeatherListOutput?
     ) {
+        self.alertViewModelFactory = alertViewModelFactory
         self.currentWeatherService = currentWeatherService
+        self.viewModelFactory = viewModelFactory
+        self.feedbackGenerator = feedbackGenerator
         self.output = output
+    }
+    
+    // MARK: - Private
+    
+    private func makeViewModels(from models: [CurrentWeatherModel]) -> [CurrentWeatherCell.Model] {
+        models.map {
+            viewModelFactory.makeViewModel(model: $0)
+        }
+    }
+    
+    private func getSortedCurrentWeatherItems(completionHandler: @escaping () -> Void) {
+        currentWeatherService.getSortedCurrentWeatherItems { result in
+            DispatchQueue.main.async { [weak self] in
+                switch result {
+                case .success(let results):
+                    guard let self else { return }
+                    currentWeatherViewModels = makeViewModels(from: results)
+                    view?.update(with: currentWeatherViewModels)
+                    completionHandler()
+                case .failure(let error):
+                    print("Ошибочка: \(error.localizedDescription)")
+                }
+            }
+        }
     }
 }
 
@@ -50,48 +86,65 @@ class CurrentWeatherListPresenter {
 
 extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
     
-    func getSortedCurrentWeatherItems() {
-        currentWeatherService.getSortedCurrentWeatherItems(
-            for: favouriteLocations
-        ) { result in
+    func viewDidLoad() {
+        getSortedCurrentWeatherItems {}
+    }
+    
+    func didPullToRefresh() {
+        guard !currentWeatherService.cachedFavourites.isEmpty else {
+            view?.endRefreshing()
+            return
+        }
+        feedbackGenerator.generateFeedback(ofType: .impact(.medium))
+        getSortedCurrentWeatherItems { [weak self] in
+            self?.view?.endRefreshing()
+        }
+    }
+    
+    func deleteItem(atIndex index: Int) {
+        // дропаем из списка вью модель чтобы перерисовать таблицу
+        currentWeatherViewModels.remove(at: index)
+        // дропаем id локации из списка избранных городов
+        // иначе при добавлении новой локиции появится удаленный город
+        currentWeatherService.deleteFromFavourites(index)
+        view?.update(with: currentWeatherViewModels)
+        feedbackGenerator.generateFeedback(ofType: .notification(.success))
+    }
+    
+    func didSelectRowAt(atIndex index: Int) {
+        output?.didSelectLocation(
+            currentWeatherService.cachedFavourites[index]
+        )
+        feedbackGenerator.generateFeedback(ofType: .selectionChanged)
+    }
+    
+    func getOrderedWeatherItems() {
+        currentWeatherService.getOrderedCurrentWeatherItems() { result in
             DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
                 switch result {
                 case .success(let results):
-                    self?.weatherToShow = results
-                    self?.weatherToShow.forEach {
-                        print("!!!", $0.location.name)
-                        print("!!!", $0.temperature)
+                    let viewModels = makeViewModels(from: results)
+                    viewModels.forEach {
+                        print($0.location)
                     }
-                case .failure(let error):
-                    print("Ошибочка: \(error.localizedDescription)")
+                case .failure(_):
+                    let alertModel = alertViewModelFactory.makeSingleButtonErrorAlert {}
+                    view?.showAlert(with: alertModel)
                 }
             }
         }
     }
     
-    func getOrderedWeatherItems() {
-        currentWeatherService.getOrderedCurrentWeatherItems(
-            for: favouriteLocations
-        ) { result in
-            DispatchQueue.main.async { [weak self] in
-                switch result {
-                case .success(let results):
-                    self?.weatherToShow = results
-                    self?.weatherToShow.forEach {
-                        print("!!!", $0.location.name)
-                        print("!!! time: \($0.location.localTime)")
-                    }
-                case .failure(let error):
-                    print("Ошибочка: \(error.localizedDescription)")
-                }
-            }
-        }
+    func emptyState() -> Bool {
+        return currentWeatherService.cachedFavourites.isEmpty
     }
 }
 
 // MARK: - SearchResultsOutput
 
 extension CurrentWeatherListPresenter: SearchResultsOutput {
+    
     func didSelectLocation(_ location: String) {
         print("Search Results output сработал")
         output?.didSelectLocation(location)
@@ -104,10 +157,7 @@ extension CurrentWeatherListPresenter: CurrentWeatherListInput {
     
     func addToFavourites(location: String) {
         view?.hideSearchResults()
-        favouriteLocations.append(location)
-        print("!!! Локация \(location) была добавлена в массив")
-        favouriteLocations.forEach {
-            print("!!!", $0)
-        }
+        currentWeatherService.saveToFavourites(location)
+        getSortedCurrentWeatherItems() {}
     }
 }

@@ -21,7 +21,7 @@ final class SearchResultsViewController: UIViewController {
     
     // Models
     private let cellIdentifier = SearchResultCellView.description()
-    private (set) var searchQuerry: String?
+    private(set) var searchQuerry: String?
 
     // UI
     private lazy var tableView: UITableView = {

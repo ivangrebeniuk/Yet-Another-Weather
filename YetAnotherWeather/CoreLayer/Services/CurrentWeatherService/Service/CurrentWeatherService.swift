@@ -8,15 +8,23 @@
 import Foundation
 import SwiftyJSON
 
+private extension String {
+    static let userDefaultsKey = "FavouriteLocations"
+}
+
 protocol ICurrentWeatherService {
     
+    var cachedFavourites: [String] { get }
+        
+    func saveToFavourites(_ location: String)
+    
+    func deleteFromFavourites(_ index: Int)
+    
     func getSortedCurrentWeatherItems(
-        for locations: [String],
         completion: @escaping (Result<[CurrentWeatherModel], Error>) -> Void
     )
     
     func getOrderedCurrentWeatherItems(
-        for locations: [String],
         completion: @escaping (Result<[CurrentWeatherModel], Error>) -> Void
     )
 }
@@ -24,20 +32,26 @@ protocol ICurrentWeatherService {
 final class CurrentWeatherService {
     
     // Dependencies
+    let dataBaseQueue: DispatchQueue
     let networkQueue: DispatchQueue
     let networkService: INetworkService
     let urlRequestsFactory: IURLRequestFactory
+    let userDefaults: UserDefaults
     
     // MARK: - Init
     
     init(
+        dataBaseQueue: DispatchQueue,
         networkQueue: DispatchQueue,
         networkService: INetworkService,
-        urlRequestsFactory: URLRequestFactory
+        urlRequestsFactory: URLRequestFactory,
+        userDefaults: UserDefaults
     ) {
+        self.dataBaseQueue = dataBaseQueue
         self.networkQueue = networkQueue
         self.networkService = networkService
         self.urlRequestsFactory = urlRequestsFactory
+        self.userDefaults = userDefaults
     }
     
     // MARK: - Private
@@ -72,20 +86,48 @@ final class CurrentWeatherService {
         
         return locations
     }
+    
+    // MARK: - Private
+    
+    private func updateFavourites(_ favourites: [String]) {
+        dataBaseQueue.async { [weak self] in
+            self?.userDefaults.set(favourites, forKey: .userDefaultsKey)
+        }
+    }
 }
 
 // MARK: - ICurrentWeatherService
 
 extension CurrentWeatherService: ICurrentWeatherService {
     
+    var cachedFavourites: [String] {
+        dataBaseQueue.sync {
+            return userDefaults.array(forKey: .userDefaultsKey) as? [String] ?? []
+        }
+    }
+
+    func saveToFavourites(_ location: String) {
+        var cached = cachedFavourites
+        guard !cached.contains(location) else { return }
+    
+        cached.append(location)
+        updateFavourites(cached)
+    }
+    
+    func deleteFromFavourites(_ index: Int) {
+        var cached = cachedFavourites
+        guard index < cached.count else { return }
+        cached.remove(at: index)
+        updateFavourites(cached)
+    }
+    
     func getSortedCurrentWeatherItems(
-        for locations: [String],
         completion: @escaping (Result<[CurrentWeatherModel], Error>) -> Void
     ) {
         var locationsWeather = [Int: CurrentWeatherModel]()
         var errors = [Error]()
         let group = DispatchGroup()
-        
+        let locations = cachedFavourites
         locations.enumerated().forEach { [weak self] (index, location) in
             group.enter()
             self?.networkQueue.async {
@@ -102,7 +144,10 @@ extension CurrentWeatherService: ICurrentWeatherService {
         }
         group.notify(queue: .main) { [weak self] in
             guard let self else { return }
-            guard locations.count != errors.count else {
+            guard
+                locations.count != 0,
+                locations.count != errors.count
+            else {
                 if let error = errors.first {
                     completion(.failure(error))
                 }
@@ -114,14 +159,13 @@ extension CurrentWeatherService: ICurrentWeatherService {
     }
     
     func getOrderedCurrentWeatherItems(
-        for locations: [String],
         completion: @escaping (Result<[CurrentWeatherModel], Error>) -> Void
     ) {
         var locationsWeather = [CurrentWeatherModel]()
         var errors = [Error]()
         let group = DispatchGroup()
         let semaphore = DispatchSemaphore(value: 1)
-
+        let locations = cachedFavourites
         for location in locations {
             group.enter()
             networkQueue.async { [weak self] in

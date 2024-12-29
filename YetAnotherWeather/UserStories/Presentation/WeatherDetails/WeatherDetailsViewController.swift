@@ -79,10 +79,10 @@ final class WeatherDetailsViewController: UIViewController {
         
         view.addSubview(backgroundImageView)
         view.addSubview(scrollView)
+        view.addSubview(loader)
         
         scrollView.addSubview(contentView)
         
-        contentView.addSubview(loader)
         contentView.addSubview(currentWeatherView)
         contentView.addSubview(widgetsStackView)
         widgetsStackView.addArrangedSubview(blurredForecastContainer)
@@ -90,8 +90,8 @@ final class WeatherDetailsViewController: UIViewController {
         
         setUpNavigationBar()
         loader.color = .darkGray
-        blurredForecastContainer.layer.cornerRadius = 12
-        blurredWindContainerView.layer.cornerRadius = 12
+        blurredForecastContainer.layer.cornerRadius = 16
+        blurredWindContainerView.layer.cornerRadius = 16
     }
     
     private func setUpConstraints() {
@@ -119,7 +119,7 @@ final class WeatherDetailsViewController: UIViewController {
 
         widgetsStackView.snp.makeConstraints {
             $0.top.equalTo(currentWeatherView.snp.bottom).offset(18)
-            $0.leading.trailing.equalToSuperview().inset(18)
+            $0.leading.trailing.equalToSuperview().inset(12)
             $0.bottom.equalToSuperview().inset(40)
         }
     }
@@ -137,13 +137,15 @@ final class WeatherDetailsViewController: UIViewController {
             target: self,
             action: #selector(cancelButtonTapped)
         )
+        if !presenter.isAddedToFavourites {
+            navigationItem.rightBarButtonItem = UIBarButtonItem(
+                title: "Add",
+                style: .done,
+                target: self,
+                action: #selector(addButtonTapped)
+            )
+        }
         
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            title: "Add",
-            style: .done,
-            target: self,
-            action: #selector(addButtonTapped)
-        )
         navigationController?.navigationBar.tintColor = .white
         navigationController?.navigationBar.isTranslucent = true
     }

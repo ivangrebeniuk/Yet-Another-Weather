@@ -7,18 +7,43 @@
 
 import Foundation
 import SnapKit
+import UIKit
 
 private extension String {
+    
     static let weatherHeaderText = "Weather"
     static let searchFielPlaceholderText = "Type location to search"
+    static let currentWeatherCellIdentifier = "CurrentWeatherCellIdentifier"
+    static let spacerCellIdentifier = "SpacerCellIdentifier"
+}
+
+private extension CGFloat {
+    
+    static let weatherCellHeight: CGFloat = 128
+    static let spacerCellHeight: CGFloat = 10
+}
+
+private extension UIColor {
+    
+    static let backgroundColor = UIColor.systemBackground
 }
 
 protocol ICurrentWeatherListView: AnyObject {
     
+    func update(with items: [CurrentWeatherCell.Model])
     func hideSearchResults()
+    func endRefreshing()
+    func showAlert(with model: SingleButtonAlertViewModel)
 }
 
-class CurrentWeatherListViewController: UIViewController {
+final class CurrentWeatherListViewController: UIViewController {
+    
+    private enum Section {
+        case main
+    }
+    private typealias Item = CurrentWeatherCellType
+    private typealias DataSource = UITableViewDiffableDataSource<Section, Item>
+    private typealias Snapshot = NSDiffableDataSourceSnapshot<Section, Item>
     
     // Dependencies
     private let resultsViewController: UIViewController
@@ -26,21 +51,15 @@ class CurrentWeatherListViewController: UIViewController {
     private lazy var searchController = UISearchController(searchResultsController: resultsViewController)
 
     
-    // MARK: - UI
+    // UI
+    private lazy var tableView = UITableView()
+    private lazy var dataSource = makeDataSourcre()
+    private lazy var refreshControl = UIRefreshControl()
+    private lazy var emptyStateView = EmptyStateView()
+    private lazy var wrappedEmptyStateView = emptyStateView.wrappedInBlurred()
     
-    private lazy var button: UIButton = {
-        let button = UIButton()
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.setTitle("Кнопка", for: .normal)
-        
-        button.layer.cornerRadius = 18
-        button.backgroundColor = .systemBlue
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 24, weight: .medium)
-        
-        button.addAction(.init(handler: { [weak self] _ in self?.buttonTapped() }), for: .touchUpInside)
-        return button
-    }()
-    
+    // Models
+    private var itemsArray = [CurrentWeatherCellType]()
     
     // MARK: - Init
     
@@ -57,41 +76,124 @@ class CurrentWeatherListViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // MARK: - Lifecicle
+    // MARK: - Lifecycle
     
     override func viewDidLoad() {
+        super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        setUpNavigationBar()
-        setUpConstraints()
+        setUpUI()
+        presenter.viewDidLoad()
     }
     
     // MARK: - Private
+    
+    private func setUpUI() {
+        view.backgroundColor = .backgroundColor
+        view.addSubview(tableView)
+        tableView.snp.makeConstraints {
+            $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 15, left: 0, bottom: 40, right: 20))
+        }
+        
+        view.addSubview(wrappedEmptyStateView)
+        wrappedEmptyStateView.snp.makeConstraints {
+            $0.top.equalToSuperview().offset(200)
+            $0.leading.trailing.equalToSuperview().inset(12)
+        }
+        
+        updateState()
+        setUpNavigationBar()
+        setUpTableView()
+        setUpRefreshControl()
+    }
     
     private func setUpNavigationBar() {
         navigationItem.title = .weatherHeaderText
         navigationController?.navigationBar.prefersLargeTitles = true
         
         searchController.searchResultsUpdater = resultsViewController as? UISearchResultsUpdating
-        searchController.obscuresBackgroundDuringPresentation = false
-        
         searchController.searchBar.placeholder = .searchFielPlaceholderText
         
         navigationItem.searchController = searchController
-        definesPresentationContext = true
     }
     
-    private func setUpConstraints() {
-        view.addSubview(button)
-        
-        button.snp.makeConstraints {
-            $0.center.equalToSuperview()
-            $0.width.equalTo(200)
+    private func setUpTableView() {
+        tableView.backgroundColor = .backgroundColor
+        tableView.delegate = self
+        tableView.register(CurrentWeatherCell.self, forCellReuseIdentifier: .currentWeatherCellIdentifier)
+        tableView.showsVerticalScrollIndicator = false
+        tableView.separatorStyle = .none
+    }
+    
+    private func calculateIndex(from indexPath: IndexPath) {
+        guard indexPath.row % 2 == 0 else { return }
+    }
+    
+    private func makeDataSourcre() -> DataSource {
+        DataSource(tableView: tableView) { tableView, indexPath, item in
+            switch item {
+            case .weather(let model):
+                guard let weatherCell = tableView.dequeueReusableCell(
+                    withIdentifier: .currentWeatherCellIdentifier,
+                    for: indexPath
+                ) as? CurrentWeatherCell else { return UITableViewCell() }
+                weatherCell.configure(with: model)
+                weatherCell.selectionStyle = .none
+                weatherCell.backgroundColor = .backgroundColor
+                return weatherCell
+            case .spacer:
+                let spacerCell = UITableViewCell()
+                spacerCell.selectionStyle = .none
+                spacerCell.backgroundColor = .backgroundColor
+                return spacerCell
+            }
         }
     }
     
-    private func buttonTapped() {
-        print("YO!")
-        presenter.getOrderedWeatherItems()
+    private func setUpRefreshControl() {
+        tableView.refreshControl = refreshControl
+        tableView.refreshControl?.addTarget(self, action: #selector(handleRefreshControl), for: .valueChanged)
+    }
+    
+    @objc private func handleRefreshControl() {
+        presenter.didPullToRefresh()
+    }
+    
+    private func updateState() {
+        wrappedEmptyStateView.layer.cornerRadius = 16
+        if presenter.emptyState() {
+            wrappedEmptyStateView.isHidden = false
+            tableView.isHidden = true
+        } else {
+            wrappedEmptyStateView.isHidden = true
+            tableView.isHidden = false
+        }
+    }
+}
+
+// MARK: - UITableViewDelegate
+
+extension CurrentWeatherListViewController: UITableViewDelegate {
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        indexPath.row % 2 == 0 ? .weatherCellHeight : .spacerCellHeight
+    }
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        guard indexPath.row % 2 == 0 else { return nil }
+        let deleteAction = UIContextualAction(style: .destructive, title: "") { [weak self] (_, _, completionHandler) in
+            self?.presenter.deleteItem(atIndex: indexPath.row / 2)
+            completionHandler(true)
+        }
+        
+        deleteAction.image = UIImage.init(systemName: "trash")
+        return UISwipeActionsConfiguration(actions: [deleteAction])
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard indexPath.row % 2 == 0 else { return }
+        
+        tableView.deselectRow(at: indexPath, animated: true)
+        presenter.didSelectRowAt(atIndex: indexPath.row / 2)
     }
 }
 
@@ -101,5 +203,34 @@ extension CurrentWeatherListViewController: ICurrentWeatherListView {
     
     func hideSearchResults() {
         searchController.isActive = false
+    }
+    
+    func update(with items: [CurrentWeatherCell.Model]) {
+        
+        updateState()
+        
+        itemsArray.removeAll()
+                
+        for (index, item) in items.enumerated() {
+            itemsArray.append(.weather(item))
+            if index < items.count - 1 {
+                itemsArray.append(.spacer(UUID()))
+            }
+        }
+        
+        var snapshot = Snapshot()
+        snapshot.appendSections([.main])
+        snapshot.appendItems(itemsArray, toSection: .main)
+        
+        dataSource.apply(snapshot, animatingDifferences: true)
+    }
+    
+    func endRefreshing() {
+        refreshControl.endRefreshing()
+    }
+    
+    func showAlert(with model: SingleButtonAlertViewModel) {
+        let alertController = UIAlertController.makeSingleButtonAlert(model: model)
+        present(alertController, animated: true)
     }
 }

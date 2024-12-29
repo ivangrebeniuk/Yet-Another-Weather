@@ -53,7 +53,6 @@ final class CurrentWeatherListFlowCoordinator {
 // MARK: - CurrentWeatherListOutput
 
 extension CurrentWeatherListFlowCoordinator: CurrentWeatherListOutput {
-    
     func didSelectLocation(_ location: String) {
         openWeatherDetails(for: location)
     }

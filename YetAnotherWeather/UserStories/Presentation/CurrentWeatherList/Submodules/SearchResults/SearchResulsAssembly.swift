@@ -11,21 +11,25 @@ import UIKit
 final class SearchResultsAssembly {
     
     // Dependencies
-    let searchLocationsService: ISearchLocationsService
-    let forecastService: IForecastService
+    private let searchLocationsService: ISearchLocationsService
+    private let forecastService: IForecastService
+    private let feedbackGeneratorService: IFeedbackGeneratorService
     
     init(
         searchLocationsService: ISearchLocationsService,
-        forecastService: IForecastService
+        forecastService: IForecastService,
+        feedbackGeneratorService: IFeedbackGeneratorService
     ) {
         self.searchLocationsService = searchLocationsService
         self.forecastService = forecastService
+        self.feedbackGeneratorService = feedbackGeneratorService
     }
     
     func assemble(output: SearchResultsOutput?) -> UIViewController {
         
         let presenter = SearchResultsPresenter(
             searchLocationsService: searchLocationsService,
+            feedbackGeneratorService: feedbackGeneratorService,
             output: output
         )
         
