@@ -14,7 +14,7 @@ extension UIView {
     func wrappedInBlurred() -> UIVisualEffectView {
         
         let blurEffectView = UIVisualEffectView(
-            effect: UIBlurEffect(style: .dark)
+            effect: UIBlurEffect(style: .systemThinMaterialDark)
         )
         
         blurEffectView.contentView.addSubview(self)

@@ -23,6 +23,11 @@ private extension CGFloat {
     static let spacerCellHeight: CGFloat = 10
 }
 
+private extension UIColor {
+    
+    static let backgroundColor = UIColor.systemBackground
+}
+
 protocol ICurrentWeatherListView: AnyObject {
     
     func update(with items: [CurrentWeatherCell.Model])
@@ -50,6 +55,8 @@ final class CurrentWeatherListViewController: UIViewController {
     private lazy var tableView = UITableView()
     private lazy var dataSource = makeDataSourcre()
     private lazy var refreshControl = UIRefreshControl()
+    private lazy var emptyStateView = EmptyStateView()
+    private lazy var wrappedEmptyStateView = emptyStateView.wrappedInBlurred()
     
     // Models
     private var itemsArray = [CurrentWeatherCellType]()
@@ -69,7 +76,7 @@ final class CurrentWeatherListViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // MARK: - Lifecicle
+    // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -81,6 +88,19 @@ final class CurrentWeatherListViewController: UIViewController {
     // MARK: - Private
     
     private func setUpUI() {
+        view.backgroundColor = .backgroundColor
+        view.addSubview(tableView)
+        tableView.snp.makeConstraints {
+            $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 15, left: 0, bottom: 40, right: 20))
+        }
+        
+        view.addSubview(wrappedEmptyStateView)
+        wrappedEmptyStateView.snp.makeConstraints {
+            $0.top.equalToSuperview().offset(200)
+            $0.leading.trailing.equalToSuperview().inset(12)
+        }
+        
+        updateState()
         setUpNavigationBar()
         setUpTableView()
         setUpRefreshControl()
@@ -97,10 +117,7 @@ final class CurrentWeatherListViewController: UIViewController {
     }
     
     private func setUpTableView() {
-        view.addSubview(tableView)
-        tableView.snp.makeConstraints {
-            $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 15, left: 0, bottom: 40, right: 20))
-        }
+        tableView.backgroundColor = .backgroundColor
         tableView.delegate = self
         tableView.register(CurrentWeatherCell.self, forCellReuseIdentifier: .currentWeatherCellIdentifier)
         tableView.showsVerticalScrollIndicator = false
@@ -121,10 +138,12 @@ final class CurrentWeatherListViewController: UIViewController {
                 ) as? CurrentWeatherCell else { return UITableViewCell() }
                 weatherCell.configure(with: model)
                 weatherCell.selectionStyle = .none
+                weatherCell.backgroundColor = .backgroundColor
                 return weatherCell
             case .spacer:
                 let spacerCell = UITableViewCell()
                 spacerCell.selectionStyle = .none
+                spacerCell.backgroundColor = .backgroundColor
                 return spacerCell
             }
         }
@@ -137,6 +156,17 @@ final class CurrentWeatherListViewController: UIViewController {
     
     @objc private func handleRefreshControl() {
         presenter.didPullToRefresh()
+    }
+    
+    private func updateState() {
+        wrappedEmptyStateView.layer.cornerRadius = 16
+        if presenter.emptyState() {
+            wrappedEmptyStateView.isHidden = false
+            tableView.isHidden = true
+        } else {
+            wrappedEmptyStateView.isHidden = true
+            tableView.isHidden = false
+        }
     }
 }
 
@@ -176,6 +206,8 @@ extension CurrentWeatherListViewController: ICurrentWeatherListView {
     }
     
     func update(with items: [CurrentWeatherCell.Model]) {
+        
+        updateState()
         
         itemsArray.removeAll()
                 

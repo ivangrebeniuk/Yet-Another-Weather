@@ -24,6 +24,8 @@ protocol ICurrentWeatherListPresenter {
     func didSelectRowAt(atIndex index: Int)
     
     func didPullToRefresh()
+    
+    func emptyState() -> Bool
 }
 
 class CurrentWeatherListPresenter {
@@ -132,6 +134,10 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
                 }
             }
         }
+    }
+    
+    func emptyState() -> Bool {
+        return currentWeatherService.cachedFavourites.isEmpty
     }
 }
 

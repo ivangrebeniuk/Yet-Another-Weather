@@ -90,8 +90,8 @@ final class WeatherDetailsViewController: UIViewController {
         
         setUpNavigationBar()
         loader.color = .darkGray
-        blurredForecastContainer.layer.cornerRadius = 12
-        blurredWindContainerView.layer.cornerRadius = 12
+        blurredForecastContainer.layer.cornerRadius = 16
+        blurredWindContainerView.layer.cornerRadius = 16
     }
     
     private func setUpConstraints() {
