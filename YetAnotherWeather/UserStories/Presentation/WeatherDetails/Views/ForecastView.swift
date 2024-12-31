@@ -60,12 +60,7 @@ extension ForecastView: ConfigurableView {
     }
     
     func configure(with model: ForecastView.Model) {
-        headerView.configure(
-            with: .init(
-                imageTitle: model.forecastHeader.imageTitle,
-                headerTitleText: model.forecastHeader.headerTitleText
-            )
-        )
+        headerView.configure(with: model.forecastHeader)
         
         daysStackView.arrangedSubviews.forEach {
             $0.removeFromSuperview()

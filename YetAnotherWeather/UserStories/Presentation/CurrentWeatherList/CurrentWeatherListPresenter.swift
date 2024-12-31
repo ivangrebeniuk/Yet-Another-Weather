@@ -66,6 +66,7 @@ class CurrentWeatherListPresenter {
     }
     
     private func getSortedCurrentWeatherItems(completionHandler: @escaping () -> Void) {
+        view?.startActivityIndicator()
         currentWeatherService.getSortedCurrentWeatherItems { result in
             DispatchQueue.main.async { [weak self] in
                 switch result {
@@ -77,6 +78,7 @@ class CurrentWeatherListPresenter {
                 case .failure(let error):
                     print("Ошибочка: \(error.localizedDescription)")
                 }
+                self?.view?.stopActivityIndicator()
             }
         }
     }
@@ -146,7 +148,6 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
 extension CurrentWeatherListPresenter: SearchResultsOutput {
     
     func didSelectLocation(_ location: String) {
-        print("Search Results output сработал")
         output?.didSelectLocation(location)
     }
 }
