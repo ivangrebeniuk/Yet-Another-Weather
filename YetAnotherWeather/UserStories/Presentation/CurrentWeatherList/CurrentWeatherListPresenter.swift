@@ -69,16 +69,18 @@ class CurrentWeatherListPresenter {
         view?.startActivityIndicator()
         currentWeatherService.getSortedCurrentWeatherItems { result in
             DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
                 switch result {
                 case .success(let results):
-                    guard let self else { return }
                     currentWeatherViewModels = makeViewModels(from: results)
                     view?.update(with: currentWeatherViewModels)
                     completionHandler()
                 case .failure(let error):
                     print("Ошибочка: \(error.localizedDescription)")
+                    let alertModel = alertViewModelFactory.makeSingleButtonErrorAlert {}
+                    view?.showAlert(with: alertModel)
                 }
-                self?.view?.stopActivityIndicator()
+                view?.stopActivityIndicator()
             }
         }
     }
@@ -120,23 +122,23 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
         feedbackGenerator.generateFeedback(ofType: .selectionChanged)
     }
     
-    func getOrderedWeatherItems() {
-        currentWeatherService.getOrderedCurrentWeatherItems() { result in
-            DispatchQueue.main.async { [weak self] in
-                guard let self else { return }
-                switch result {
-                case .success(let results):
-                    let viewModels = makeViewModels(from: results)
-                    viewModels.forEach {
-                        print($0.location)
-                    }
-                case .failure(_):
-                    let alertModel = alertViewModelFactory.makeSingleButtonErrorAlert {}
-                    view?.showAlert(with: alertModel)
-                }
-            }
-        }
-    }
+//    func getOrderedWeatherItems() {
+//        currentWeatherService.getOrderedCurrentWeatherItems() { result in
+//            DispatchQueue.main.async { [weak self] in
+//                guard let self else { return }
+//                switch result {
+//                case .success(let results):
+//                    let viewModels = makeViewModels(from: results)
+//                    viewModels.forEach {
+//                        print($0.location)
+//                    }
+//                case .failure(_):
+//                    let alertModel = alertViewModelFactory.makeSingleButtonErrorAlert {}
+//                    view?.showAlert(with: alertModel)
+//                }
+//            }
+//        }
+//    }
     
     func emptyState() -> Bool {
         return currentWeatherService.cachedFavourites.isEmpty

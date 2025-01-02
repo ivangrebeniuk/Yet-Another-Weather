@@ -108,6 +108,11 @@ final class CurrentWeatherListViewController: UIViewController {
             $0.leading.trailing.equalToSuperview().inset(12)
         }
         
+        view.addSubview(activityIndicator)
+        activityIndicator.snp.makeConstraints {
+            $0.center.equalToSuperview()
+        }
+        
         updateState()
         setUpNavigationBar()
         setUpTableView()

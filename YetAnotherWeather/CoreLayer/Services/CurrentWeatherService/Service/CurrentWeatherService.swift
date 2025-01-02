@@ -128,6 +128,8 @@ extension CurrentWeatherService: ICurrentWeatherService {
         var errors = [Error]()
         let group = DispatchGroup()
         let locations = cachedFavourites
+        guard !cachedFavourites.isEmpty else { return completion(.success([]))}
+        
         locations.enumerated().forEach { [weak self] (index, location) in
             group.enter()
             self?.networkQueue.async {
@@ -145,7 +147,6 @@ extension CurrentWeatherService: ICurrentWeatherService {
         group.notify(queue: .main) { [weak self] in
             guard let self else { return }
             guard
-                locations.count != 0,
                 locations.count != errors.count
             else {
                 if let error = errors.first {

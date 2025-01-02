@@ -114,7 +114,7 @@ final class WeatherDetailsViewController: UIViewController {
         }
         
         currentWeatherView.snp.makeConstraints {
-            $0.top.equalToSuperview().offset(78)
+            $0.top.equalToSuperview().offset(34)
             $0.leading.trailing.equalToSuperview()
         }
         

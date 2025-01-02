@@ -116,7 +116,7 @@ private extension WeatherDetailsViewModelFactory {
         }
     }
     
-    func makeCurrentWeatherViewModel(from model: ForecastModel) -> CurrentWeatherModel {
+    private func makeCurrentWeatherViewModel(from model: ForecastModel) -> CurrentWeatherModel {
         CurrentWeatherModel(
             location: model.currentWeather.location.name,
             conditions: model.currentWeather.condition.text,
@@ -127,7 +127,7 @@ private extension WeatherDetailsViewModelFactory {
         )
     }
     
-    func makeForecastViewModel(from model: ForecastModel) -> ForecastViewModel {
+    private func makeForecastViewModel(from model: ForecastModel) -> ForecastViewModel {
         let titleLabel = "\(model.forecastDays.count)-DAY FORECAST"
         let timeZone = model.currentWeather.location.timeZone
         let forecastDays: [SingleDayForecastView.Model] = model.forecastDays.map { day in
@@ -166,7 +166,7 @@ private extension WeatherDetailsViewModelFactory {
         }
     }
     
-    func makeWindViewModel(from model: ForecastModel) -> WindViewModel {
+    private func makeWindViewModel(from model: ForecastModel) -> WindViewModel {
         let windSpeed = round(100 * model.currentWeather.wind.windSpeed) / 100
         let windGust = round(100 * model.currentWeather.wind.windGust) / 100
         let direction = model.currentWeather.wind.windDirection
@@ -185,7 +185,7 @@ private extension WeatherDetailsViewModelFactory {
         )
     }
     
-    func makeHourlyForecastViewModel(from model: ForecastModel) -> HourlyForecastViewModel {
+    private func makeHourlyForecastViewModel(from model: ForecastModel) -> HourlyForecastViewModel {
         let currentConditions = model.forecastDays[0].forecastHours[0].condition.text
         let widgetHeader = WidgetHeaderView.Model(
             imageTitle: "watch.analog",
