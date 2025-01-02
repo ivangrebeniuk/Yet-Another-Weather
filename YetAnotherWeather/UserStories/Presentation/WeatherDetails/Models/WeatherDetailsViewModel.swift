@@ -13,11 +13,13 @@ struct WeatherDetailsViewModel {
     typealias CurrentWeatherViewModel = CurrentWeatherView.Model
     typealias ForecastViewModel = ForecastView.Model
     typealias WindViewModel = WindView.Model
+    typealias HourlyForecastViewModel = HourlyForecastView.Model
     
     let currentWeatherViewModel: CurrentWeatherViewModel
     let backgroundImageTitle: String
     let forecastViewModel: ForecastViewModel
     let windViewModel: WindViewModel
+    let hourlyForecastModel: HourlyForecastViewModel
     
     // MARK: - Init
     
@@ -25,11 +27,13 @@ struct WeatherDetailsViewModel {
         currentWeatherViewModel: CurrentWeatherViewModel,
         backgroundImageTitle: String,
         forecastViewModel: ForecastViewModel,
-        windViewModel: WindViewModel
+        windViewModel: WindViewModel,
+        hourlyForecastModel: HourlyForecastViewModel
     ) {
         self.currentWeatherViewModel = currentWeatherViewModel
         self.backgroundImageTitle = backgroundImageTitle
         self.forecastViewModel = forecastViewModel
         self.windViewModel = windViewModel
+        self.hourlyForecastModel = hourlyForecastModel
     }
 }

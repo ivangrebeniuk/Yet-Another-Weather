@@ -16,6 +16,13 @@ struct ForecastModel {
         let avgTemp: Double
         let condition: Condition
         let chanceOfRain: Int
+        let forecastHours: [ForecastHour]
+    }
+    
+    struct ForecastHour {
+        let temp: Double
+        let time: String
+        let condition: Condition
     }
     
     let currentWeather: CurrentWeatherModel

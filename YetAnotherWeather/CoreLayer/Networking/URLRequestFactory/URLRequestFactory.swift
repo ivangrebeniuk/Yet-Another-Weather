@@ -28,7 +28,7 @@ final class URLRequestFactory {
             components.path = path
             components.queryItems = [
                 URLQueryItem(name: "key", value: URLRequestFactory.apiKey),
-                URLQueryItem(name: "lang", value: "ru")
+                URLQueryItem(name: "lang", value: "eng")
             ] + querryItems
             
             return components.url
