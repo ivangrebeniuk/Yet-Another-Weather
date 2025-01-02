@@ -191,43 +191,41 @@ private extension WeatherDetailsViewModelFactory {
             imageTitle: "watch.analog",
             headerTitleText: "It's currently: \(currentConditions)"
         )
-        let forecasts = makeHourlyForecasts(from: model)
+        let forecasts = makeHourlyForecastForNext24Hours(from: model)
         
         return HourlyForecastViewModel(headerModel: widgetHeader, forecasts: forecasts)
     }
-
-    func makeHourlyForecasts(from model: ForecastModel) -> [SingleHourView.Model] {
-        let timeZone = model.currentWeather.location.timeZone
-        var viewModels = [SingleHourView.Model]()
     
+    func makeHourlyForecastForNext24Hours(from model: ForecastModel) -> [SingleHourView.Model] {
         guard model.forecastDays.count > 2 else { return [] }
-    
-        let today = model.forecastDays[0]
-        let tomorrow = model.forecastDays[1]
-    
-        viewModels = makeSingleHourForecastModel(
-            from: today,
+        let timeZone = model.currentWeather.location.timeZone
+        
+        let todayForecasts = makeSingleHourForecastModel(
+            from: model.forecastDays[0],
             timeZone: timeZone,
             needToCompare: true
         )
         
-        guard viewModels.count < 24 else { return viewModels }
-
-        viewModels += makeSingleHourForecastModel(
-            from: tomorrow,
+        let tomorrowForecasts = makeSingleHourForecastModel(
+            from: model.forecastDays[1],
             timeZone: timeZone,
             needToCompare: false
         )
         
-        let currentHourItem = SingleHourView.Model(
-            temperature: viewModels[0].temperature,
-            time: "Now",
-            imageURL: viewModels[0].imageURL
-        )
+        var viewModels = todayForecasts.prefix(24)
+        if viewModels.count < 24 {
+            viewModels += tomorrowForecasts.prefix(24 - viewModels.count)
+        }
         
-        viewModels[0] = currentHourItem
+        if !viewModels.isEmpty {
+            viewModels[0] = SingleHourView.Model(
+                temperature: viewModels[0].temperature,
+                time: "Now",
+                imageURL: viewModels[0].imageURL
+            )
+        }
         
-        return Array(viewModels.prefix(24))
+        return Array(viewModels)
     }
     
     func makeSingleHourForecastModel(
@@ -235,9 +233,7 @@ private extension WeatherDetailsViewModelFactory {
         timeZone: String,
         needToCompare: Bool
     ) -> [SingleHourView.Model] {
-        var viewModels = [SingleHourView.Model]()
-        
-        forecastDay.forecastHours.forEach {
+        forecastDay.forecastHours.compactMap {
             guard
                 let hour = prepareHour(
                     from: $0.time,
@@ -246,14 +242,13 @@ private extension WeatherDetailsViewModelFactory {
                     needToCompare: needToCompare
                 ),
                 let temperature = makeTemperature($0.temp)
-            else { return }
-            let viewModel = SingleHourView.Model(
+            else { return nil }
+            let iconUrl = $0.condition.iconUrl
+            return SingleHourView.Model(
                 temperature: temperature,
                 time: hour,
-                imageURL: $0.condition.iconUrl
+                imageURL: iconUrl
             )
-            viewModels.append(viewModel)
         }
-        return viewModels
     }
 }

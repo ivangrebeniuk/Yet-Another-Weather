@@ -74,14 +74,13 @@ class CurrentWeatherListPresenter {
                 case .success(let results):
                     currentWeatherViewModels = makeViewModels(from: results)
                     view?.update(with: currentWeatherViewModels)
-                    completionHandler()
                 case .failure(let error):
                     print("Ошибочка: \(error.localizedDescription)")
                     let alertModel = alertViewModelFactory.makeSingleButtonErrorAlert {}
                     view?.showAlert(with: alertModel)
-                    completionHandler()
                 }
                 view?.stopActivityIndicator()
+                completionHandler()
             }
         }
     }
