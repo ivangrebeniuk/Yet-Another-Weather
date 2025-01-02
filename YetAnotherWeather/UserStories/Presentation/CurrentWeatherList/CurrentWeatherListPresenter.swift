@@ -79,6 +79,7 @@ class CurrentWeatherListPresenter {
                     print("Ошибочка: \(error.localizedDescription)")
                     let alertModel = alertViewModelFactory.makeSingleButtonErrorAlert {}
                     view?.showAlert(with: alertModel)
+                    completionHandler()
                 }
                 view?.stopActivityIndicator()
             }
@@ -121,24 +122,6 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
         )
         feedbackGenerator.generateFeedback(ofType: .selectionChanged)
     }
-    
-//    func getOrderedWeatherItems() {
-//        currentWeatherService.getOrderedCurrentWeatherItems() { result in
-//            DispatchQueue.main.async { [weak self] in
-//                guard let self else { return }
-//                switch result {
-//                case .success(let results):
-//                    let viewModels = makeViewModels(from: results)
-//                    viewModels.forEach {
-//                        print($0.location)
-//                    }
-//                case .failure(_):
-//                    let alertModel = alertViewModelFactory.makeSingleButtonErrorAlert {}
-//                    view?.showAlert(with: alertModel)
-//                }
-//            }
-//        }
-//    }
     
     func emptyState() -> Bool {
         return currentWeatherService.cachedFavourites.isEmpty

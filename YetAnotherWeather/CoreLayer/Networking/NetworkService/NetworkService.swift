@@ -52,6 +52,7 @@ final class NetworkService: INetworkService {
             
             if let error = error {
                 completion(.failure(error))
+                return
             }
 
             guard
@@ -97,6 +98,7 @@ final class NetworkService: INetworkService {
             
             if let error = error {
                 completion(.failure(error))
+                return
             }
             
             guard
@@ -112,6 +114,7 @@ final class NetworkService: INetworkService {
                 completion(.success(parsedData))
             } catch {
                 completion(.failure(error))
+                return
             }
         }.resume()
     }
