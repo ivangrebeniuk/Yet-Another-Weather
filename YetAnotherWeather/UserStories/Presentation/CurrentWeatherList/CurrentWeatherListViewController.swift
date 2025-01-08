@@ -13,6 +13,7 @@ private extension String {
     
     static let weatherHeaderText = "Weather"
     static let searchFielPlaceholderText = "Type location to search"
+    static let currentLocationCellIdentifier = "CurrentLocationCellIdentifier"
     static let currentWeatherCellIdentifier = "CurrentWeatherCellIdentifier"
     static let spacerCellIdentifier = "SpacerCellIdentifier"
 }
@@ -30,7 +31,11 @@ private extension UIColor {
 
 protocol ICurrentWeatherListView: AnyObject {
     
-    func update(with items: [CurrentWeatherCell.Model])
+//    func update(with items: [CurrentWeatherCell.Model])
+//    
+//    func updateCurrentLocation(with item: CurrentWeatherCell.Model)
+    
+    func updateSections(for dict: [CurrentWeatherListViewController.Section: [CurrentWeatherCell.Model]])
     
     func hideSearchResults()
     
@@ -45,7 +50,8 @@ protocol ICurrentWeatherListView: AnyObject {
 
 final class CurrentWeatherListViewController: UIViewController {
     
-    private enum Section {
+    enum Section {
+        case currentLocation
         case main
     }
     private typealias Item = CurrentWeatherCellType
@@ -67,6 +73,7 @@ final class CurrentWeatherListViewController: UIViewController {
     private lazy var wrappedEmptyStateView = emptyStateView.wrappedInBlurred()
     
     // Models
+    private var currentLocationItemArray = [CurrentWeatherCellType]()
     private var itemsArray = [CurrentWeatherCellType]()
     
     // MARK: - Init
@@ -181,6 +188,31 @@ final class CurrentWeatherListViewController: UIViewController {
             tableView.isHidden = false
         }
     }
+    
+    func updateMultipleSections() {
+        var snapshot = dataSource.snapshot()
+        snapshot.deleteSections(snapshot.sectionIdentifiers) // Удалить все существующие секции
+        snapshot.appendSections([.currentLocation, .main])
+        
+        snapshot.appendItems(currentLocationItemArray, toSection: .currentLocation)
+        snapshot.appendItems(itemsArray, toSection: .main)
+        
+        dataSource.apply(snapshot, animatingDifferences: true)
+    }
+    
+//    private func updateDataSource(for section: Section, with items: [CurrentWeatherCellType]) {
+//        var snapshot = Snapshot()
+//        snapshot.appendSections([.currentLocation, .main])
+//        
+//        switch section {
+//        case .currentLocation:
+//            snapshot.appendItems(currentLocationItemArray, toSection: .currentLocation)
+//        case .main:
+//            snapshot.appendItems(itemsArray, toSection: .main)
+//        }
+//        
+//        dataSource.apply(snapshot, animatingDifferences: true)
+//    }
 }
 
 // MARK: - UITableViewDelegate
@@ -218,24 +250,51 @@ extension CurrentWeatherListViewController: ICurrentWeatherListView {
         searchController.isActive = false
     }
     
-    func update(with items: [CurrentWeatherCell.Model]) {
-        
+//    func update(with items: [CurrentWeatherCell.Model]) {
+//        
+//        updateState()
+//        
+//        itemsArray.removeAll()
+//                
+//        for (index, item) in items.enumerated() {
+//            itemsArray.append(.weather(item))
+//            if index < items.count - 1 {
+//                itemsArray.append(.spacer(UUID()))
+//            }
+//        }
+//        updateDataSource(for: .main, with: itemsArray)
+//    }
+    
+//    func updateCurrentLocation(with item: CurrentWeatherCell.Model) {
+//        
+//        currentLocationItemArray.removeAll()
+//        currentLocationItemArray.append(.weather(item))
+//        updateDataSource(for: .currentLocation, with: currentLocationItemArray)
+//    }
+    
+    func updateSections(for dict: [Section: [CurrentWeatherCell.Model]]) {
         updateState()
         
+        currentLocationItemArray.removeAll()
         itemsArray.removeAll()
-                
-        for (index, item) in items.enumerated() {
-            itemsArray.append(.weather(item))
-            if index < items.count - 1 {
-                itemsArray.append(.spacer(UUID()))
+        
+        for (section, items) in dict {
+            switch section {
+            case .currentLocation:
+                currentLocationItemArray = items.map { .weather($0) }
+                currentLocationItemArray.append(.spacer(UUID()))
+            case .main:
+                for (index, item) in items.enumerated() {
+                    itemsArray.append(.weather(item))
+                    if index < items.count - 1 {
+                        itemsArray.append(.spacer(UUID()))
+                    }
+                }
             }
+            
         }
-        
-        var snapshot = Snapshot()
-        snapshot.appendSections([.main])
-        snapshot.appendItems(itemsArray, toSection: .main)
-        
-        dataSource.apply(snapshot, animatingDifferences: true)
+
+        updateMultipleSections()
     }
     
     func endRefreshing() {

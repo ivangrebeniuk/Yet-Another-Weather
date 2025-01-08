@@ -5,6 +5,7 @@
 //  Created by Ivan Grebenyuk on 09.08.2024.
 //
 
+import CoreLocation
 import Foundation
 import SwiftyJSON
 import SnapKit
@@ -37,7 +38,9 @@ final class AppAssembly {
             dateFormatter: dateFormatter,
             weatherNetworkService: currentWeatherService,
             searchResultAssembly: searchResultsAssembly,
-            feedbackGeneratorService: feedbackGeneratorService
+            feedbackGeneratorService: feedbackGeneratorService,
+            locationService: locationService,
+            searchService: searchLocationsService
         )
     }
     
@@ -91,5 +94,9 @@ final class AppAssembly {
     
     private var feedbackGeneratorService: IFeedbackGeneratorService {
         FeedbackGeneratorService()
+    }
+    
+    private var locationService: ILocationService {
+        LocationService()
     }
 }

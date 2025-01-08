@@ -20,6 +20,11 @@ protocol ICurrentWeatherService {
     
     func deleteFromFavourites(_ index: Int)
     
+    func getCurrentWeather(
+        for location: String,
+        completion: @escaping (Result<CurrentWeatherModel, Error>) -> Void
+    )
+    
     func getSortedCurrentWeatherItems(
         completion: @escaping (Result<[CurrentWeatherModel], Error>) -> Void
     )
@@ -55,26 +60,6 @@ final class CurrentWeatherService {
     }
     
     // MARK: - Private
-    
-    private func getCurrentWeather(
-        for location: String,
-        completion: @escaping (Result<CurrentWeatherModel, Error>) -> Void
-    ) {
-        do {
-            let request = try urlRequestsFactory.makeCurrentWeatherRequest(for: location)
-            let parser = CurrentWeatherParser()
-            networkService.load(request: request, parser: parser) { (result: Result<CurrentWeatherModel, Error>) in
-                switch result {
-                case .success(let model):
-                    completion(.success(model))
-                case .failure(let error):
-                    completion(.failure(error))
-                }
-            }
-        } catch {
-            completion(.failure(error))
-        }
-    }
     
     private func makeResultsArray(from dict: [Int: CurrentWeatherModel]) -> [CurrentWeatherModel] {
         var locations = [CurrentWeatherModel]()
@@ -121,6 +106,26 @@ extension CurrentWeatherService: ICurrentWeatherService {
         updateFavourites(cached)
     }
     
+    func getCurrentWeather(
+        for location: String,
+        completion: @escaping (Result<CurrentWeatherModel, Error>) -> Void
+    ) {
+        do {
+            let request = try urlRequestsFactory.makeCurrentWeatherRequest(for: location)
+            let parser = CurrentWeatherParser()
+            networkService.load(request: request, parser: parser) { (result: Result<CurrentWeatherModel, Error>) in
+                switch result {
+                case .success(let model):
+                    completion(.success(model))
+                case .failure(let error):
+                    completion(.failure(error))
+                }
+            }
+        } catch {
+            completion(.failure(error))
+        }
+    }
+    
     func getSortedCurrentWeatherItems(
         completion: @escaping (Result<[CurrentWeatherModel], Error>) -> Void
     ) {
@@ -128,6 +133,9 @@ extension CurrentWeatherService: ICurrentWeatherService {
         var errors = [Error]()
         let group = DispatchGroup()
         let locations = cachedFavourites
+        locations.forEach {
+            print($0)
+        }
         guard !cachedFavourites.isEmpty else { return completion(.success([]))}
         
         locations.enumerated().forEach { [weak self] (index, location) in
@@ -140,7 +148,6 @@ extension CurrentWeatherService: ICurrentWeatherService {
                     case .failure(let error):
                         errors.append(error)
                     }
-                    print("Leaving group for location: \(location)")
                     group.leave()
                 }
             }

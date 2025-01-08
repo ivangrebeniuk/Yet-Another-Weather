@@ -4,5 +4,7 @@
 <dict>
 	<key>API_KEY</key>
 	<string>37688fc7e552421091d183449240705</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>The app uses your location to get weather forecast in your current location.</string>
 </dict>
 </plist>

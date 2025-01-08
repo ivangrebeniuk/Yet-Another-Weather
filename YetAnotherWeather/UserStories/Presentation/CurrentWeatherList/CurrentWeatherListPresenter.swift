@@ -35,11 +35,14 @@ class CurrentWeatherListPresenter {
     private let currentWeatherService: ICurrentWeatherService
     private let viewModelFactory: ICurrentWeatherCellViewModelFactory
     private let feedbackGenerator: IFeedbackGeneratorService
+    private let locationService: ILocationService
+    private let searchService: ISearchLocationsService
     weak var output: CurrentWeatherListOutput?
     weak var view: ICurrentWeatherListView?
     
     // Models
     private var currentWeatherViewModels = [CurrentWeatherCell.Model]()
+    private var currentLocationModel = [CurrentWeatherCell.Model]()
 
     // MARK: - Init
     
@@ -48,13 +51,21 @@ class CurrentWeatherListPresenter {
         currentWeatherService: ICurrentWeatherService,
         viewModelFactory: ICurrentWeatherCellViewModelFactory,
         feedbackGenerator: IFeedbackGeneratorService,
+        locationService: ILocationService,
+        searchService: ISearchLocationsService,
         output: CurrentWeatherListOutput?
     ) {
         self.alertViewModelFactory = alertViewModelFactory
         self.currentWeatherService = currentWeatherService
         self.viewModelFactory = viewModelFactory
         self.feedbackGenerator = feedbackGenerator
+        self.locationService = locationService
+        self.searchService = searchService
         self.output = output
+    }
+    
+    deinit {
+        currentWeatherService.deleteFromFavourites(0)
     }
     
     // MARK: - Private
@@ -65,15 +76,38 @@ class CurrentWeatherListPresenter {
         }
     }
     
+//    private func getSortedCurrentWeatherItems(completionHandler: @escaping () -> Void) {
+//        currentWeatherService.getSortedCurrentWeatherItems { result in
+//            DispatchQueue.main.async { [weak self] in
+//                guard let self else { return }
+//                switch result {
+//                case .success(let results):
+//                    currentWeatherViewModels = makeViewModels(from: results)
+//                    view?.update(with: currentWeatherViewModels)
+//                case .failure(let error):
+//                    print("Ошибочка: \(error.localizedDescription)")
+//                    if error._code == NSURLErrorNotConnectedToInternet {
+//                        let alertModel = alertViewModelFactory.makeNoInternetConnectionAlert() {}
+//                        view?.showAlert(with: alertModel)
+//                    } else {
+//                        let alertModel = alertViewModelFactory.makeSingleButtonErrorAlert() {}
+//                        view?.showAlert(with: alertModel)
+//                    }
+//                }
+//                view?.stopActivityIndicator()
+//                completionHandler()
+//            }
+//        }
+//    }
+    
     private func getSortedCurrentWeatherItems(completionHandler: @escaping () -> Void) {
-        view?.startActivityIndicator()
         currentWeatherService.getSortedCurrentWeatherItems { result in
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
                 switch result {
                 case .success(let results):
                     currentWeatherViewModels = makeViewModels(from: results)
-                    view?.update(with: currentWeatherViewModels)
+//                    view?.update(with: currentWeatherViewModels)
                 case .failure(let error):
                     print("Ошибочка: \(error.localizedDescription)")
                     let alertModel = alertViewModelFactory.makeSingleButtonErrorAlert {}
@@ -84,6 +118,75 @@ class CurrentWeatherListPresenter {
             }
         }
     }
+    
+    private func searchCurrentLocation(completionHandler: @escaping () -> Void) {
+        locationService.getLocation { [weak self] result in
+            guard let self = self else { return completionHandler() }
+            
+            // Если не удалось получить местоположение
+            guard case .success(let location) = result else {
+                completionHandler() // Завершаем, если не удалось получить местоположение
+                return
+            }
+            
+            let coordinates = "\(location.coordinate.latitude),\(location.coordinate.longitude)"
+            
+            self.searchService.getSearchResults(for: coordinates) { searchResult in
+                switch searchResult {
+                case .success(let locations):
+                    guard !locations.isEmpty, let firstLocation = locations.last else {
+                        completionHandler() // Завершаем, если список местоположений пуст
+                        return
+                    }
+                    
+                    let currentLocationId = String(firstLocation.id)
+                    
+                    self.currentWeatherService.getCurrentWeather(for: currentLocationId) { result in
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return completionHandler() }
+                            
+                            switch result {
+                            case .success(let model):
+                                let viewModel = self.viewModelFactory.makeViewModel(model: model)
+                                self.currentLocationModel.append(viewModel)
+                            case .failure(_):
+                                let alertModel = self.alertViewModelFactory.makeSingleButtonErrorAlert() {}
+                                self.view?.showAlert(with: alertModel)
+                            }
+                            completionHandler() // Завершаем операцию по окончании всех запросов
+                        }
+                    }
+                    
+                case .failure(_):
+                    completionHandler() // Завершаем, если не удалось выполнить поиск
+                }
+            }
+        }
+    }
+
+    private func updateSections(completionHandler: @escaping () -> Void) {
+        let group = DispatchGroup()
+        
+        group.enter()
+        searchCurrentLocation() {
+            group.leave()
+        }
+        
+        group.enter()
+        getSortedCurrentWeatherItems() {
+            group.leave()
+        }
+        
+        group.notify(queue: .main) { [weak self] in
+            guard let self else { return }
+            view?.updateSections(
+                for: [
+                    .currentLocation: currentLocationModel,
+                    .main: currentWeatherViewModels
+                ]
+            )
+        }
+    }
 }
 
 // MARK: - ICurrentWeatherListPresenter
@@ -91,7 +194,7 @@ class CurrentWeatherListPresenter {
 extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
     
     func viewDidLoad() {
-        getSortedCurrentWeatherItems {}
+        updateSections() {}
     }
     
     func didPullToRefresh() {
@@ -111,7 +214,13 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
         // дропаем id локации из списка избранных городов
         // иначе при добавлении новой локиции появится удаленный город
         currentWeatherService.deleteFromFavourites(index)
-        view?.update(with: currentWeatherViewModels)
+//        view?.update(with: currentWeatherViewModels)
+        view?.updateSections(
+            for: [
+                .currentLocation: currentLocationModel,
+                .main: currentWeatherViewModels
+            ]
+        )
         feedbackGenerator.generateFeedback(ofType: .notification(.success))
     }
     
@@ -123,7 +232,7 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
     }
     
     func emptyState() -> Bool {
-        return currentWeatherService.cachedFavourites.isEmpty
+        return currentWeatherService.cachedFavourites.isEmpty && currentLocationModel.isEmpty
     }
 }
 
@@ -143,6 +252,6 @@ extension CurrentWeatherListPresenter: CurrentWeatherListInput {
     func addToFavourites(location: String) {
         view?.hideSearchResults()
         currentWeatherService.saveToFavourites(location)
-        getSortedCurrentWeatherItems() {}
+        updateSections {}
     }
 }
