@@ -30,11 +30,7 @@ private extension UIColor {
 }
 
 protocol ICurrentWeatherListView: AnyObject {
-    
-//    func update(with items: [CurrentWeatherCell.Model])
-//    
-//    func updateCurrentLocation(with item: CurrentWeatherCell.Model)
-    
+        
     func updateSections(for dict: [CurrentWeatherListViewController.Section: [CurrentWeatherCell.Model]])
     
     func hideSearchResults()
@@ -98,6 +94,10 @@ final class CurrentWeatherListViewController: UIViewController {
         view.backgroundColor = .systemBackground
         setUpUI()
         presenter.viewDidLoad()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        presenter.viewWillDisappear()
     }
     
     // MARK: - Private
@@ -224,6 +224,12 @@ extension CurrentWeatherListViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        
+        let section = dataSource.snapshot().sectionIdentifiers[indexPath.section]
+        guard section != .currentLocation else {
+            return nil
+        }
+            
         guard indexPath.row % 2 == 0 else { return nil }
         let deleteAction = UIContextualAction(style: .destructive, title: "") { [weak self] (_, _, completionHandler) in
             self?.presenter.deleteItem(atIndex: indexPath.row / 2)
@@ -236,9 +242,11 @@ extension CurrentWeatherListViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard indexPath.row % 2 == 0 else { return }
+        let section = dataSource.snapshot().sectionIdentifiers[indexPath.section]
+
         
         tableView.deselectRow(at: indexPath, animated: true)
-        presenter.didSelectRowAt(atIndex: indexPath.row / 2)
+        presenter.didSelectRowAt(atIndex: indexPath.row / 2, section: section)
     }
 }
 
