@@ -46,6 +46,9 @@ final class WeatherDetailsViewController: UIViewController {
         return stackView
     }()
     
+    private let hourlyForecastView = HourlyForecastView()
+    private lazy var blurredHourlyForecastView = hourlyForecastView.wrappedInBlurred()
+    
     private let forecastView = ForecastView()
     private lazy var blurredForecastContainer = forecastView.wrappedInBlurred()
     
@@ -85,11 +88,13 @@ final class WeatherDetailsViewController: UIViewController {
         
         contentView.addSubview(currentWeatherView)
         contentView.addSubview(widgetsStackView)
+        widgetsStackView.addArrangedSubview(blurredHourlyForecastView)
         widgetsStackView.addArrangedSubview(blurredForecastContainer)
         widgetsStackView.addArrangedSubview(blurredWindContainerView)
         
         setUpNavigationBar()
         loader.color = .darkGray
+        blurredHourlyForecastView.layer.cornerRadius = 16
         blurredForecastContainer.layer.cornerRadius = 16
         blurredWindContainerView.layer.cornerRadius = 16
     }
@@ -109,7 +114,7 @@ final class WeatherDetailsViewController: UIViewController {
         }
         
         currentWeatherView.snp.makeConstraints {
-            $0.top.equalToSuperview().offset(78)
+            $0.top.equalToSuperview().offset(34)
             $0.leading.trailing.equalToSuperview()
         }
         
@@ -168,11 +173,13 @@ extension WeatherDetailsViewController: IWeatherDetailsView {
         currentWeatherView.configure(with: model.currentWeatherViewModel)
         forecastView.configure(with: model.forecastViewModel)
         windView.configure(with: model.windViewModel)
+        hourlyForecastView.configure(with: model.hourlyForecastModel)
     }
     
     func startLoader() {
         loader.startAnimating()
         currentWeatherView.isHidden = true
+        blurredHourlyForecastView.isHidden = true
         blurredForecastContainer.isHidden = true
         blurredWindContainerView.isHidden = true
     }
@@ -180,6 +187,7 @@ extension WeatherDetailsViewController: IWeatherDetailsView {
     func stopLoader() {
         loader.stopAnimating()
         currentWeatherView.isHidden = false
+        blurredHourlyForecastView.isHidden = false
         blurredForecastContainer.isHidden = false
         blurredWindContainerView.isHidden = false
     }

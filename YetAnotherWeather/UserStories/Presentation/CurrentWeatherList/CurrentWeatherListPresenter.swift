@@ -66,17 +66,21 @@ class CurrentWeatherListPresenter {
     }
     
     private func getSortedCurrentWeatherItems(completionHandler: @escaping () -> Void) {
+        view?.startActivityIndicator()
         currentWeatherService.getSortedCurrentWeatherItems { result in
             DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
                 switch result {
                 case .success(let results):
-                    guard let self else { return }
                     currentWeatherViewModels = makeViewModels(from: results)
                     view?.update(with: currentWeatherViewModels)
-                    completionHandler()
                 case .failure(let error):
                     print("Ошибочка: \(error.localizedDescription)")
+                    let alertModel = alertViewModelFactory.makeSingleButtonErrorAlert {}
+                    view?.showAlert(with: alertModel)
                 }
+                view?.stopActivityIndicator()
+                completionHandler()
             }
         }
     }
@@ -118,24 +122,6 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
         feedbackGenerator.generateFeedback(ofType: .selectionChanged)
     }
     
-    func getOrderedWeatherItems() {
-        currentWeatherService.getOrderedCurrentWeatherItems() { result in
-            DispatchQueue.main.async { [weak self] in
-                guard let self else { return }
-                switch result {
-                case .success(let results):
-                    let viewModels = makeViewModels(from: results)
-                    viewModels.forEach {
-                        print($0.location)
-                    }
-                case .failure(_):
-                    let alertModel = alertViewModelFactory.makeSingleButtonErrorAlert {}
-                    view?.showAlert(with: alertModel)
-                }
-            }
-        }
-    }
-    
     func emptyState() -> Bool {
         return currentWeatherService.cachedFavourites.isEmpty
     }
@@ -146,7 +132,6 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
 extension CurrentWeatherListPresenter: SearchResultsOutput {
     
     func didSelectLocation(_ location: String) {
-        print("Search Results output сработал")
         output?.didSelectLocation(location)
     }
 }

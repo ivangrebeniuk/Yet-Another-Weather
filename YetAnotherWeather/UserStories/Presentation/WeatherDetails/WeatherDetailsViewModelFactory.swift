@@ -23,6 +23,7 @@ final class WeatherDetailsViewModelFactory {
     private typealias CurrentWeatherModel = WeatherDetailsViewModel.CurrentWeatherViewModel
     private typealias ForecastViewModel = WeatherDetailsViewModel.ForecastViewModel
     private typealias WindViewModel = WeatherDetailsViewModel.WindViewModel
+    private typealias HourlyForecastViewModel = WeatherDetailsViewModel.HourlyForecastViewModel
     
     // Dependencies
     private let beaufortScaleResolver: IBeaufortScaleResolver
@@ -48,11 +49,13 @@ extension WeatherDetailsViewModelFactory: IWeatherDetailsViewModelFactory {
         let imageTitle = makeBackgroundImageTitle(from: model)
         let forecastModel = makeForecastViewModel(from: model)
         let windModel = makeWindViewModel(from: model)
+        let hourlyForecastModel = makeHourlyForecastViewModel(from: model)
         return WeatherDetailsViewModel(
             currentWeatherViewModel: currenWeatherModel,
             backgroundImageTitle: imageTitle,
             forecastViewModel: forecastModel,
-            windViewModel: windModel
+            windViewModel: windModel,
+            hourlyForecastModel: hourlyForecastModel
         )
     }
 }
@@ -61,12 +64,12 @@ extension WeatherDetailsViewModelFactory: IWeatherDetailsViewModelFactory {
 
 private extension WeatherDetailsViewModelFactory {
     
-    private func makeTempreature(_ temp: Double?) -> String? {
+    func makeTemperature(_ temp: Double?) -> String? {
         guard let tempreture = temp else { return nil }
         return String(Int(tempreture)) + "°"
     }
     
-    private func getWeekday(from dateString: String, timeZone: String) -> String {
+    func getWeekday(from dateString: String, timeZone: String) -> String {
         guard
             let timeZone = TimeZone(identifier: timeZone),
             let date = dateFormatter.localDate(
@@ -89,14 +92,38 @@ private extension WeatherDetailsViewModelFactory {
         return weekDays[weekday - 1]
     }
     
+    func prepareHour(from dateString: String, mask: String, timeZone: String, needToCompare: Bool) -> String? {
+        guard
+            let timeZone = TimeZone(identifier: timeZone),
+            let date = dateFormatter.localDate(
+                from: dateString,
+                mask: "yyyy-MM-dd HH:mm",
+                timeZone: timeZone
+            )
+        else { return nil }
+        
+        var calendar = Calendar.current
+        calendar.timeZone = timeZone
+        
+        let currentHour = calendar.component(.hour, from: Date())
+        let hour = calendar.component(.hour, from: date)
+        
+        if needToCompare {
+            guard hour >= currentHour else { return nil }
+            return dateFormatter.timeString(from: date, mask: mask)
+        } else {
+            return dateFormatter.timeString(from: date, mask: mask)
+        }
+    }
+    
     private func makeCurrentWeatherViewModel(from model: ForecastModel) -> CurrentWeatherModel {
         CurrentWeatherModel(
             location: model.currentWeather.location.name,
             conditions: model.currentWeather.condition.text,
             isLightContent: model.currentWeather.isDay,
-            currentTemp: makeTempreature(model.currentWeather.temperature),
-            lowTemp: makeTempreature(model.forecastDays.first?.lowTemp),
-            highTemp: makeTempreature(model.forecastDays.first?.highTemp)
+            currentTemp: makeTemperature(model.currentWeather.temperature),
+            lowTemp: makeTemperature(model.forecastDays.first?.lowTemp),
+            highTemp: makeTemperature(model.forecastDays.first?.highTemp)
         )
     }
     
@@ -131,7 +158,7 @@ private extension WeatherDetailsViewModelFactory {
         )
     }
     
-    private func makeBackgroundImageTitle(from model: ForecastModel) -> String {
+    func makeBackgroundImageTitle(from model: ForecastModel) -> String {
         if model.currentWeather.isDay {
             return .isDayImageName
         } else {
@@ -156,5 +183,72 @@ private extension WeatherDetailsViewModelFactory {
             gusts: .init(title: "Gusts", value: "\(windGust) m/s"),
             windDirection: .init(title: "Direction", value: "\(degree)° \(direction)")
         )
+    }
+    
+    private func makeHourlyForecastViewModel(from model: ForecastModel) -> HourlyForecastViewModel {
+        let currentConditions = model.forecastDays[0].forecastHours[0].condition.text
+        let widgetHeader = WidgetHeaderView.Model(
+            imageTitle: "watch.analog",
+            headerTitleText: "It's currently: \(currentConditions)"
+        )
+        let forecasts = makeHourlyForecastForNext24Hours(from: model)
+        
+        return HourlyForecastViewModel(headerModel: widgetHeader, forecasts: forecasts)
+    }
+    
+    func makeHourlyForecastForNext24Hours(from model: ForecastModel) -> [SingleHourView.Model] {
+        guard model.forecastDays.count > 2 else { return [] }
+        let timeZone = model.currentWeather.location.timeZone
+        
+        let todayForecasts = makeSingleHourForecastModel(
+            from: model.forecastDays[0],
+            timeZone: timeZone,
+            needToCompare: true
+        )
+        
+        let tomorrowForecasts = makeSingleHourForecastModel(
+            from: model.forecastDays[1],
+            timeZone: timeZone,
+            needToCompare: false
+        )
+        
+        var viewModels = todayForecasts.prefix(24)
+        if viewModels.count < 24 {
+            viewModels += tomorrowForecasts.prefix(24 - viewModels.count)
+        }
+        
+        if !viewModels.isEmpty {
+            viewModels[0] = SingleHourView.Model(
+                temperature: viewModels[0].temperature,
+                time: "Now",
+                imageURL: viewModels[0].imageURL
+            )
+        }
+        
+        return Array(viewModels)
+    }
+    
+    func makeSingleHourForecastModel(
+        from forecastDay: ForecastModel.ForecastDay,
+        timeZone: String,
+        needToCompare: Bool
+    ) -> [SingleHourView.Model] {
+        forecastDay.forecastHours.compactMap {
+            guard
+                let hour = prepareHour(
+                    from: $0.time,
+                    mask: "HH:mm",
+                    timeZone: timeZone,
+                    needToCompare: needToCompare
+                ),
+                let temperature = makeTemperature($0.temp)
+            else { return nil }
+            let iconUrl = $0.condition.iconUrl
+            return SingleHourView.Model(
+                temperature: temperature,
+                time: hour,
+                imageURL: iconUrl
+            )
+        }
     }
 }

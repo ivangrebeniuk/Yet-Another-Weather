@@ -28,9 +28,28 @@ final class ForecastParser: IJSONParser {
                 let text = $0["day"]["condition"]["text"].string,
                 let icon = $0["day"]["condition"]["icon"].string,
                 let iconUrl = URL(string: "https:" + icon),
-                let daylyChanceOfRain = $0["day"]["daily_chance_of_rain"].int
+                let daylyChanceOfRain = $0["day"]["daily_chance_of_rain"].int,
+                let hours = $0["hour"].array
             else {
                 throw NetworkRequestError.modelParsingError(ForecastModel.self)
+            }
+            
+            let forecastHours: [ForecastModel.ForecastHour] = try hours.map {
+                guard
+                    let temp = $0["temp_c"].double,
+                    let time = $0["time"].string,
+                    let text = $0["condition"]["text"].string,
+                    let icon = $0["condition"]["icon"].string,
+                    let iconURL = URL(string: "https:" + icon)
+                else {
+                    throw NetworkRequestError.modelParsingError(ForecastModel.self)
+                }
+                
+                return ForecastModel.ForecastHour(
+                    temp: temp,
+                    time: time,
+                    condition: Condition(text: text, iconUrl: iconURL)
+                )
             }
 
             return ForecastModel.ForecastDay(
@@ -39,7 +58,8 @@ final class ForecastParser: IJSONParser {
                 highTemp: maxTemp,
                 avgTemp: avgTemp,
                 condition: .init(text: text, iconUrl: iconUrl),
-                chanceOfRain: daylyChanceOfRain
+                chanceOfRain: daylyChanceOfRain,
+                forecastHours: forecastHours
             )
         }
         return ForecastModel(

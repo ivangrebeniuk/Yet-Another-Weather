@@ -31,9 +31,16 @@ private extension UIColor {
 protocol ICurrentWeatherListView: AnyObject {
     
     func update(with items: [CurrentWeatherCell.Model])
+    
     func hideSearchResults()
+    
     func endRefreshing()
+    
     func showAlert(with model: SingleButtonAlertViewModel)
+    
+    func startActivityIndicator()
+    
+    func stopActivityIndicator()
 }
 
 final class CurrentWeatherListViewController: UIViewController {
@@ -52,6 +59,7 @@ final class CurrentWeatherListViewController: UIViewController {
 
     
     // UI
+    private lazy var activityIndicator = UIActivityIndicatorView(style: .medium)
     private lazy var tableView = UITableView()
     private lazy var dataSource = makeDataSourcre()
     private lazy var refreshControl = UIRefreshControl()
@@ -98,6 +106,11 @@ final class CurrentWeatherListViewController: UIViewController {
         wrappedEmptyStateView.snp.makeConstraints {
             $0.top.equalToSuperview().offset(200)
             $0.leading.trailing.equalToSuperview().inset(12)
+        }
+        
+        view.addSubview(activityIndicator)
+        activityIndicator.snp.makeConstraints {
+            $0.center.equalToSuperview()
         }
         
         updateState()
@@ -232,5 +245,15 @@ extension CurrentWeatherListViewController: ICurrentWeatherListView {
     func showAlert(with model: SingleButtonAlertViewModel) {
         let alertController = UIAlertController.makeSingleButtonAlert(model: model)
         present(alertController, animated: true)
+    }
+    
+    func startActivityIndicator() {
+        activityIndicator.startAnimating()
+        tableView.isHidden = true
+    }
+    
+    func stopActivityIndicator() {
+        activityIndicator.stopAnimating()
+        tableView.isHidden = false
     }
 }
