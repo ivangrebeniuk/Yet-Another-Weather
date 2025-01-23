@@ -13,6 +13,7 @@ import SnapKit
 final class AppAssembly {
     
     // Dependencies
+    private let appLifeCycleDelegate: AppLifeCycleDelegate
     private lazy var urlRequestsFactory = URLRequestFactory()
     private lazy var networkService = NetworkService(session: URLSession.shared)
     private lazy var networkQueue = DispatchQueue(label: "ru.i.grebeniuk.serialNetworkQueue")
@@ -20,7 +21,13 @@ final class AppAssembly {
     private lazy var dateFormatter = CustomDateFormatter()
     private lazy var beaufortScaleResolver = BeaufortScaleResolver()
     private lazy var userDefaults = UserDefaults.standard
-        
+    
+    // MARK: - Init
+    
+    init(appLifeCycleDelegate: AppLifeCycleDelegate) {
+        self.appLifeCycleDelegate = appLifeCycleDelegate
+    }
+    
     // MARK: - FlowCoordinators
     
     var currentWeatherListFlowCoordinator: CurrentWeatherListFlowCoordinator {
@@ -40,7 +47,8 @@ final class AppAssembly {
             searchResultAssembly: searchResultsAssembly,
             feedbackGeneratorService: feedbackGeneratorService,
             locationService: locationService,
-            searchService: searchLocationsService
+            searchService: searchLocationsService,
+            lifecCycleService: lifeCycleHandlingService
         )
     }
     
@@ -58,7 +66,8 @@ final class AppAssembly {
             dateFormatter: dateFormatter,
             forecastService: forecastService,
             feedbackGeneratorService: feedbackGeneratorService,
-            currentWeatherService: currentWeatherService
+            currentWeatherService: currentWeatherService,
+            lifecCycleService: lifeCycleHandlingService
         )
     }
     
@@ -98,5 +107,9 @@ final class AppAssembly {
     
     private var locationService: ILocationService {
         LocationService()
+    }
+    
+    private var lifeCycleHandlingService: ILifecycleHandlingService {
+        LifecycleHandlingService(appLifecycleDelegate: appLifeCycleDelegate)
     }
 }

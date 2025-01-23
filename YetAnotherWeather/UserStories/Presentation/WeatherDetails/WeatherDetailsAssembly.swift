@@ -16,7 +16,8 @@ final class WeatherDetailsAssembly {
     private let forecastService: IForecastService
     private let feedbackGeneratorService: IFeedbackGeneratorService
     private let currentWeatherService: ICurrentWeatherService
-    
+    private let lifecCycleService: ILifecycleHandlingService
+
     // MARK: - Init
     
     init(
@@ -24,16 +25,18 @@ final class WeatherDetailsAssembly {
         dateFormatter: ICustomDateFormatter,
         forecastService: IForecastService,
         feedbackGeneratorService: IFeedbackGeneratorService,
-        currentWeatherService: ICurrentWeatherService
+        currentWeatherService: ICurrentWeatherService,
+        lifecCycleService: ILifecycleHandlingService
     ) {
         self.beaufortScaleResolver = beaufortScaleResolver
         self.dateFormatter = dateFormatter
         self.forecastService = forecastService
         self.feedbackGeneratorService = feedbackGeneratorService
         self.currentWeatherService = currentWeatherService
+        self.lifecCycleService = lifecCycleService
     }
     
-    func assemble(location: String, output: WeatherDetailsOutput) -> UIViewController {
+    func assemble(location: String, isCurrentLocation: Bool, output: WeatherDetailsOutput) -> UIViewController {
         
         let viewModelFactory = WeatherDetailsViewModelFactory(
             beaufortScaleResolver: beaufortScaleResolver,
@@ -47,7 +50,9 @@ final class WeatherDetailsAssembly {
             viewModelFactory: viewModelFactory,
             feedbackGenerator: feedbackGeneratorService,
             currentWeatherService: currentWeatherService,
+            lifeCycleHandlingService: lifecCycleService,
             location: location,
+            isCurrentLocation: isCurrentLocation,
             output: output
         )
         

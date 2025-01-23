@@ -12,7 +12,7 @@ protocol CurrentWeatherListInput: AnyObject {
 }
 
 protocol CurrentWeatherListOutput: AnyObject {
-    func didSelectLocation(_ location: String)
+    func didSelectLocation(_ location: String, isCurrentLocation: Bool)
 }
 
 protocol ICurrentWeatherListPresenter {
@@ -26,8 +26,6 @@ protocol ICurrentWeatherListPresenter {
     func didPullToRefresh()
     
     func emptyState() -> Bool
-    
-    func viewWillDisappear()
 }
 
 class CurrentWeatherListPresenter {
@@ -39,12 +37,13 @@ class CurrentWeatherListPresenter {
     private let feedbackGenerator: IFeedbackGeneratorService
     private let locationService: ILocationService
     private let searchService: ISearchLocationsService
+    private let lifeCycleHandlingService: ILifecycleHandlingService
     weak var output: CurrentWeatherListOutput?
     weak var view: ICurrentWeatherListView?
     
     // Models
-    private var currentWeatherViewModels = [CurrentWeatherCell.Model]()
     private var currentLocationModel = [CurrentWeatherCell.Model]()
+    private var currentWeatherViewModels = [CurrentWeatherCell.Model]()
     private var currentLocationId: String?
 
     // MARK: - Init
@@ -56,6 +55,7 @@ class CurrentWeatherListPresenter {
         feedbackGenerator: IFeedbackGeneratorService,
         locationService: ILocationService,
         searchService: ISearchLocationsService,
+        lifeCycleHandlingService: ILifecycleHandlingService,
         output: CurrentWeatherListOutput?
     ) {
         self.alertViewModelFactory = alertViewModelFactory
@@ -64,6 +64,7 @@ class CurrentWeatherListPresenter {
         self.feedbackGenerator = feedbackGenerator
         self.locationService = locationService
         self.searchService = searchService
+        self.lifeCycleHandlingService = lifeCycleHandlingService
         self.output = output
     }
     
@@ -82,161 +83,144 @@ class CurrentWeatherListPresenter {
                 switch result {
                 case .success(let results):
                     currentWeatherViewModels = makeViewModels(from: results)
+                    completionHandler()
                 case .failure(let error):
                     print("Ошибочка: \(error.localizedDescription)")
                     let alertModel = alertViewModelFactory.makeSingleButtonErrorAlert {}
                     view?.showAlert(with: alertModel)
+                    completionHandler()
                 }
                 view?.stopActivityIndicator()
-                completionHandler()
             }
         }
     }
     
-//    private func searchCurrentLocation(completionHandler: @escaping () -> Void) {
-//        fetchCurrentLocation { [weak self] result in
-//            guard let self = self else { return completionHandler() }
-//
-//            switch result {
-//            case .success(let coordinates):
-//                self.fetchSearchResults(for: coordinates) { [weak self] searchResult in
-//                    guard let self = self else { return completionHandler() }
-//
-//                    switch searchResult {
-//                    case .success(let locationId):
-//                        self.saveAndFetchWeather(for: locationId, completionHandler: completionHandler)
-//                    case .failure:
-//                        completionHandler()
-//                    }
-//                }
-//            case .failure:
-//                completionHandler()
-//            }
-//        }
-//    }
-//
-//    private func fetchCurrentLocation(completion: @escaping (Result<String, Error>) -> Void) {
-//        locationService.getLocation { result in
-//            switch result {
-//            case .success(let location):
-//                let coordinates = "\(location.coordinate.latitude),\(location.coordinate.longitude)"
-//                completion(.success(coordinates))
-//            case .failure(let error):
-//                completion(.failure(error))
-//            }
-//        }
-//    }
-//
-//    private func fetchSearchResults(for coordinates: String, completion: @escaping (Result<String, Error>) -> Void) {
-//        searchService.getSearchResults(for: coordinates) { searchResult in
-//            switch searchResult {
-//            case .success(let locations):
-//                guard let location = locations.last else {
-//                    return completion(.failure(LocationError.locationNotAvailable))
-//                }
-//                completion(.success(String(location.id)))
-//            case .failure(let error):
-//                completion(.failure(error))
-//            }
-//        }
-//    }
-//
-//    private func saveAndFetchWeather(for locationId: String, completionHandler: @escaping () -> Void) {
-//        currentWeatherService.saveToFavourites(locationId, key: .currentLocationKey)
-//        currentWeatherService.getCurrentWeather(for: locationId) { [weak self] result in
-//            DispatchQueue.main.async {
-//                guard let self = self else { return completionHandler() }
-//
-//                switch result {
-//                case .success(let model):
-//                    let viewModel = self.viewModelFactory.makeViewModel(model: model)
-//                    if !self.currentLocationModel.contains(where: { $0.location == viewModel.location }) {
-//                        self.currentLocationModel.append(viewModel)
-//                    }
-//                case .failure:
-//                    let alertModel = self.alertViewModelFactory.makeSingleButtonErrorAlert() {}
-//                    self.view?.showAlert(with: alertModel)
-//                }
-//                completionHandler()
-//            }
-//        }
-//    }
-
-    
-    private func searchCurrentLocation(completionHandler: @escaping () -> Void) {
-        locationService.getLocation { [weak self] result in
-            guard let self = self else { return completionHandler() }
-
-            // Если не удалось получить местоположение
-            guard case .success(let location) = result else {
-                completionHandler() // Завершаем, если не удалось получить местоположение
-                return
-            }
-
-            let coordinates = "\(location.coordinate.latitude),\(location.coordinate.longitude)"
-
-            self.searchService.getSearchResults(for: coordinates) { [weak self] searchResult in
-                guard let self else { return }
-                switch searchResult {
-                case .success(let locations):
-                    guard !locations.isEmpty, let location = locations.last else {
-                        completionHandler()
-                        return
+    private func fetchCurrentCoordinates(completion: @escaping (Result<String, Error>) -> Void) {
+        DispatchQueue.global().async { [weak self] in
+            self?.locationService.getLocation { result in
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success(let currentLocation):
+                        completion(.success(currentLocation))
+                    case .failure(let error):
+                        completion(.failure(error))
                     }
-                    currentLocationId = String(location.id)
-                    guard let currentLocationId = currentLocationId else {
-                        completionHandler()
-                        return
-                    }
-
-                    currentWeatherService.saveToFavourites(currentLocationId, key: .currentLocationKey)
-
-                    currentWeatherService.getCurrentWeather(for: currentLocationId) { result in
-                        DispatchQueue.main.async { [weak self] in
-                            guard let self = self else { return completionHandler() }
-
-                            switch result {
-                            case .success(let model):
-                                let viewModel = self.viewModelFactory.makeViewModel(model: model)
-                                if !self.currentLocationModel.contains(where: { $0.location == viewModel.location }) {
-                                    self.currentLocationModel.append(viewModel)
-                                }
-                            case .failure(_):
-                                let alertModel = self.alertViewModelFactory.makeSingleButtonErrorAlert() {}
-                                self.view?.showAlert(with: alertModel)
-                            }
-                            completionHandler()
-                        }
-                    }
-
-                case .failure(_):
-                    completionHandler()
                 }
+            }
+        }
+    }
+    
+    private func searchCurrentLocation(
+        coordinates: String,
+        completion: @escaping (Result<[SearchResultModel], Error>) -> Void
+    ) {
+        searchService.getSearchResults(for: coordinates) { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let models):
+                    guard !models.isEmpty, let model = models.first else { return }
+                    self?.currentLocationId = String(model.id)
+                    completion(.success(models))
+                case .failure(let error):
+                    completion(.failure(error))
+                }
+            }
+        }
+    }
+    
+    private func getWeatherInCurrentLocation(
+        location: String,
+        completion: @escaping (Result<CurrentWeatherModel, Error>) -> Void
+    ) {
+        currentWeatherService.getCurrentWeather(for: location) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let model):
+                    completion(.success(model))
+                case .failure(let error):
+                    completion(.failure(error))
+                }
+            }
+        }
+    }
+    
+    func fetchWeatherForCurrentLocation(
+        completion: @escaping (Result<CurrentWeatherCell.Model, Error>) -> Void
+    ) {
+        fetchCurrentCoordinates { [weak self] result in
+            switch result {
+            case .success(let currentLocation):
+                self?.searchCurrentLocation(coordinates: currentLocation) { result in
+                    switch result {
+                    case .success(let searchResults):
+                        // Проверяем, есть ли результаты
+                        guard
+                            !searchResults.isEmpty,
+                            let currentLocation = searchResults.first
+                        else {
+                            completion(.failure(LocationError.locationNotAvailable))
+                            return
+                        }
+                        
+                        self?.getWeatherInCurrentLocation(location: String(currentLocation.id)) { [weak self] result in
+                            guard let self else { return }
+                            switch result {
+                            case .success(let currentLocationWeather):
+                                let viewModel = viewModelFactory.makeCurrentLocationViewModel(
+                                    model: currentLocationWeather
+                                )
+                                completion(.success(viewModel))
+                            case .failure(let error):
+                                completion(.failure(error))
+                            }
+                        }
+                    case .failure(let error):
+                        completion(.failure(error))
+                    }
+                }
+            case .failure(let error):
+                completion(.failure(error))
             }
         }
     }
 
     private func updateSections(completionHandler: @escaping () -> Void) {
-        let group = DispatchGroup()
+        lifeCycleHandlingService.add(delegate: self)
         
-        group.enter()
-        searchCurrentLocation() {
-            group.leave()
-        }
+        view?.startActivityIndicator()
         
-        group.enter()
-        getSortedCurrentWeatherItems() {
-            group.leave()
-        }
+        currentLocationModel.removeAll()
+        currentWeatherViewModels.removeAll()
         
-        group.notify(queue: .main) { [weak self] in
+        let dispatchGroup = DispatchGroup()
+        
+        dispatchGroup.enter()
+        fetchWeatherForCurrentLocation { [weak self] result in
             guard let self else { return }
-            view?.updateSections(
-                for: [
-                    .currentLocation: currentLocationModel,
-                    .main: currentWeatherViewModels
-                ]
-            )
+            switch result {
+            case .success(let currentLocationWeather):
+                currentLocationModel.append(currentLocationWeather)
+                DispatchQueue.main.async {
+                    self.view?.updateCurrentLocationSection(with: self.currentLocationModel)
+                }
+            case .failure(let error):
+                print("Ошибка при загрузке текущей локации: \(error)")
+            }
+            dispatchGroup.leave()
+        }
+        
+        dispatchGroup.enter()
+        getSortedCurrentWeatherItems {
+            dispatchGroup.leave()
+        }
+        
+        dispatchGroup.notify(queue: .main) { [weak self] in
+            guard let self else { return }
+            
+            view?.updateCurrentLocationSection(with: currentLocationModel)
+            view?.updateMainSection(with: currentWeatherViewModels)
+            view?.stopActivityIndicator()
+            completionHandler()
         }
     }
 }
@@ -250,12 +234,8 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
     }
     
     func didPullToRefresh() {
-        guard !currentWeatherService.cachedFavourites.isEmpty else {
-            view?.endRefreshing()
-            return
-        }
         feedbackGenerator.generateFeedback(ofType: .impact(.medium))
-        getSortedCurrentWeatherItems { [weak self] in
+        updateSections { [weak self] in
             self?.view?.endRefreshing()
         }
     }
@@ -265,13 +245,8 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
         currentWeatherViewModels.remove(at: index)
         // дропаем id локации из списка избранных городов
         // иначе при добавлении новой локиции появится удаленный город
-        currentWeatherService.deleteFromFavourites(index, key: .favouriteLocationKey)
-        view?.updateSections(
-            for: [
-                .currentLocation: currentLocationModel,
-                .main: currentWeatherViewModels
-            ]
-        )
+        currentWeatherService.deleteFromFavourites(index)
+        view?.updateMainSection(with: currentWeatherViewModels)
         feedbackGenerator.generateFeedback(ofType: .notification(.success))
     }
     
@@ -279,12 +254,12 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
         switch section {
         case .main:
             output?.didSelectLocation(
-                currentWeatherService.cachedFavourites[index]
+                currentWeatherService.cachedFavourites[index],
+                isCurrentLocation: false
             )
         case .currentLocation:
-            output?.didSelectLocation(
-                currentWeatherService.cachedCurrecntLocation[index]
-            )
+            guard let currentLocationId else { return }
+            output?.didSelectLocation(currentLocationId, isCurrentLocation: true)
         }
         
         feedbackGenerator.generateFeedback(ofType: .selectionChanged)
@@ -293,10 +268,6 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
     func emptyState() -> Bool {
         return currentWeatherService.cachedFavourites.isEmpty && currentLocationModel.isEmpty
     }
-    
-    func viewWillDisappear() {
-        currentWeatherService.deleteFromFavourites(0, key: .currentLocationKey)
-    }
 }
 
 // MARK: - SearchResultsOutput
@@ -304,7 +275,11 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
 extension CurrentWeatherListPresenter: SearchResultsOutput {
     
     func didSelectLocation(_ location: String) {
-        output?.didSelectLocation(location)
+        guard let currentLocationId, currentLocationId == location else {
+            output?.didSelectLocation(location, isCurrentLocation: false)
+            return
+        }
+        output?.didSelectLocation(location, isCurrentLocation: true)
     }
 }
 
@@ -314,7 +289,15 @@ extension CurrentWeatherListPresenter: CurrentWeatherListInput {
     
     func addToFavourites(location: String) {
         view?.hideSearchResults()
-        currentWeatherService.saveToFavourites(location, key: .favouriteLocationKey)
+        currentWeatherService.saveToFavourites(location)
         updateSections {}
+    }
+}
+
+// MARK: - ILifeCycleServiceDelegate
+
+extension CurrentWeatherListPresenter: ILifeCycleServiceDelegate {
+    func notifyEnteredForeground() {
+        updateSections() {}
     }
 }

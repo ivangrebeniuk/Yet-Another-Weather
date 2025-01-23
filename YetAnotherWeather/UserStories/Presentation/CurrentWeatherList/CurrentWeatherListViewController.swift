@@ -31,7 +31,9 @@ private extension UIColor {
 
 protocol ICurrentWeatherListView: AnyObject {
         
-    func updateSections(for dict: [CurrentWeatherListViewController.Section: [CurrentWeatherCell.Model]])
+    func updateCurrentLocationSection(with items: [CurrentWeatherCell.Model])
+    
+    func updateMainSection(with items: [CurrentWeatherCell.Model])
     
     func hideSearchResults()
     
@@ -66,6 +68,7 @@ final class CurrentWeatherListViewController: UIViewController {
     private lazy var dataSource = makeDataSourcre()
     private lazy var refreshControl = UIRefreshControl()
     private lazy var emptyStateView = EmptyStateView()
+    // УДАЛИТЬ wrappedEmptyStateView, лобавлять фон прямо во emptyStateView
     private lazy var wrappedEmptyStateView = emptyStateView.wrappedInBlurred()
     
     // Models
@@ -88,16 +91,12 @@ final class CurrentWeatherListViewController: UIViewController {
     }
     
     // MARK: - Lifecycle
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         setUpUI()
         presenter.viewDidLoad()
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        presenter.viewWillDisappear()
     }
     
     // MARK: - Private
@@ -109,10 +108,10 @@ final class CurrentWeatherListViewController: UIViewController {
             $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 15, left: 0, bottom: 40, right: 20))
         }
         
-        view.addSubview(wrappedEmptyStateView)
+        tableView.addSubview(wrappedEmptyStateView)
         wrappedEmptyStateView.snp.makeConstraints {
-            $0.top.equalToSuperview().offset(200)
-            $0.leading.trailing.equalToSuperview().inset(12)
+            $0.top.equalToSuperview().offset(50)
+            $0.leading.trailing.equalTo(view).inset(20)
         }
         
         view.addSubview(activityIndicator)
@@ -182,16 +181,16 @@ final class CurrentWeatherListViewController: UIViewController {
         wrappedEmptyStateView.layer.cornerRadius = 16
         if presenter.emptyState() {
             wrappedEmptyStateView.isHidden = false
-            tableView.isHidden = true
+            // tableView.isHidden = true
         } else {
             wrappedEmptyStateView.isHidden = true
-            tableView.isHidden = false
+            // tableView.isHidden = false
         }
     }
     
-    func updateMultipleSections() {
+    private func updateMultipleSections() {
         var snapshot = dataSource.snapshot()
-        snapshot.deleteSections(snapshot.sectionIdentifiers) // Удалить все существующие секции
+        snapshot.deleteSections(snapshot.sectionIdentifiers)
         snapshot.appendSections([.currentLocation, .main])
         
         snapshot.appendItems(currentLocationItemArray, toSection: .currentLocation)
@@ -199,20 +198,6 @@ final class CurrentWeatherListViewController: UIViewController {
         
         dataSource.apply(snapshot, animatingDifferences: true)
     }
-    
-//    private func updateDataSource(for section: Section, with items: [CurrentWeatherCellType]) {
-//        var snapshot = Snapshot()
-//        snapshot.appendSections([.currentLocation, .main])
-//        
-//        switch section {
-//        case .currentLocation:
-//            snapshot.appendItems(currentLocationItemArray, toSection: .currentLocation)
-//        case .main:
-//            snapshot.appendItems(itemsArray, toSection: .main)
-//        }
-//        
-//        dataSource.apply(snapshot, animatingDifferences: true)
-//    }
 }
 
 // MARK: - UITableViewDelegate
@@ -244,7 +229,6 @@ extension CurrentWeatherListViewController: UITableViewDelegate {
         guard indexPath.row % 2 == 0 else { return }
         let section = dataSource.snapshot().sectionIdentifiers[indexPath.section]
 
-        
         tableView.deselectRow(at: indexPath, animated: true)
         presenter.didSelectRowAt(atIndex: indexPath.row / 2, section: section)
     }
@@ -258,53 +242,57 @@ extension CurrentWeatherListViewController: ICurrentWeatherListView {
         searchController.isActive = false
     }
     
-//    func update(with items: [CurrentWeatherCell.Model]) {
-//        
-//        updateState()
-//        
-//        itemsArray.removeAll()
-//                
-//        for (index, item) in items.enumerated() {
-//            itemsArray.append(.weather(item))
-//            if index < items.count - 1 {
-//                itemsArray.append(.spacer(UUID()))
-//            }
-//        }
-//        updateDataSource(for: .main, with: itemsArray)
-//    }
+    func updateMainSection(with items: [CurrentWeatherCell.Model]) {
+            
+        updateState()
+        
+        itemsArray.removeAll()
+                
+        for (index, item) in items.enumerated() {
+            itemsArray.append(.weather(item))
+            if index < items.count - 1 {
+                itemsArray.append(.spacer(UUID()))
+            }
+        }
+
+        var snapshot = dataSource.snapshot()
+        
+        if !snapshot.sectionIdentifiers.contains(.main) {
+            snapshot.appendSections([.main])
+            
+        }
+        let favouriteLocationItems = snapshot.itemIdentifiers(inSection: .main)
+        snapshot.deleteItems(favouriteLocationItems)
+        
+        snapshot.appendItems(itemsArray, toSection: .main)
+        
+        dataSource.apply(snapshot, animatingDifferences: true)
+    }
     
-//    func updateCurrentLocation(with item: CurrentWeatherCell.Model) {
-//        
-//        currentLocationItemArray.removeAll()
-//        currentLocationItemArray.append(.weather(item))
-//        updateDataSource(for: .currentLocation, with: currentLocationItemArray)
-//    }
-    
-    func updateSections(for dict: [Section: [CurrentWeatherCell.Model]]) {
+    func updateCurrentLocationSection(with items: [CurrentWeatherCell.Model]) {
         updateState()
         
         currentLocationItemArray.removeAll()
-        itemsArray.removeAll()
-        
-        for (section, items) in dict {
-            switch section {
-            case .currentLocation:
-                currentLocationItemArray = items.map { .weather($0) }
-                currentLocationItemArray.append(.spacer(UUID()))
-            case .main:
-                for (index, item) in items.enumerated() {
-                    itemsArray.append(.weather(item))
-                    if index < items.count - 1 {
-                        itemsArray.append(.spacer(UUID()))
-                    }
-                }
-            }
-            
+                
+        for item in items {
+            currentLocationItemArray.append(.weather(item))
+            currentLocationItemArray.append(.spacer(UUID()))
         }
-
-        updateMultipleSections()
+        
+        var snapshot = dataSource.snapshot()
+        
+        if !snapshot.sectionIdentifiers.contains(.currentLocation) {
+            snapshot.appendSections([.currentLocation])
+        }
+        
+        let currentLocationItems = snapshot.itemIdentifiers(inSection: .currentLocation)
+        snapshot.deleteItems(currentLocationItems)
+        
+        snapshot.appendItems(currentLocationItemArray, toSection: .currentLocation)
+        
+        dataSource.apply(snapshot, animatingDifferences: true)
     }
-    
+
     func endRefreshing() {
         refreshControl.endRefreshing()
     }

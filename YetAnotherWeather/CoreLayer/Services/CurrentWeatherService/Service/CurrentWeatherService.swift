@@ -8,21 +8,17 @@
 import Foundation
 import SwiftyJSON
 
-enum UserDefaultsKey: String {
-    case favouriteLocationKey
-    case currentLocationKey
+private extension String {
+    static let userDefaultsKey = "FavouriteLocations"
 }
 
 protocol ICurrentWeatherService {
     
     var cachedFavourites: [String] { get }
+        
+    func saveToFavourites(_ location: String)
     
-    var cachedCurrecntLocation: [String] { get }
-    
-    func saveToFavourites(_ location: String, key: UserDefaultsKey)
-    
-    func deleteFromFavourites(_ index: Int, key: UserDefaultsKey
-    )
+    func deleteFromFavourites(_ index: Int)
     
     func getCurrentWeather(
         for location: String,
@@ -78,9 +74,9 @@ final class CurrentWeatherService {
     
     // MARK: - Private
     
-    private func updateFavourites(_ locations: [String], key: UserDefaultsKey) {
+    private func updateFavourites(_ favourites: [String]) {
         dataBaseQueue.async { [weak self] in
-            self?.userDefaults.set(locations, forKey: key.rawValue)
+            self?.userDefaults.set(favourites, forKey: .userDefaultsKey)
         }
     }
 }
@@ -91,43 +87,23 @@ extension CurrentWeatherService: ICurrentWeatherService {
     
     var cachedFavourites: [String] {
         dataBaseQueue.sync {
-            return userDefaults.array(forKey: UserDefaultsKey.favouriteLocationKey.rawValue) as? [String] ?? []
+            return userDefaults.array(forKey: .userDefaultsKey) as? [String] ?? []
         }
     }
-    
-    var cachedCurrecntLocation: [String] {
-        dataBaseQueue.sync {
-            return userDefaults.array(forKey: UserDefaultsKey.currentLocationKey.rawValue) as? [String] ?? []
-        }
-    }
-    
-    func saveToFavourites(_ location: String, key: UserDefaultsKey) {
-        var cached: [String]
-        switch key {
-        case .currentLocationKey:
-            cached = cachedCurrecntLocation
-        case .favouriteLocationKey:
-            cached = cachedFavourites
-        }
-        
+
+    func saveToFavourites(_ location: String) {
+        var cached = cachedFavourites
         guard !cached.contains(location) else { return }
     
         cached.append(location)
-        updateFavourites(cached, key: key)
+        updateFavourites(cached)
     }
     
-    func deleteFromFavourites(_ index: Int, key: UserDefaultsKey) {
-        var cached: [String]
-        switch key {
-        case .currentLocationKey:
-            cached = cachedCurrecntLocation
-        case .favouriteLocationKey:
-            cached = cachedFavourites
-        }
-        
+    func deleteFromFavourites(_ index: Int) {
+        var cached = cachedFavourites
         guard index < cached.count else { return }
         cached.remove(at: index)
-        updateFavourites(cached, key: key)
+        updateFavourites(cached)
     }
     
     func getCurrentWeather(
@@ -157,6 +133,7 @@ extension CurrentWeatherService: ICurrentWeatherService {
         var errors = [Error]()
         let group = DispatchGroup()
         let locations = cachedFavourites
+
         guard !cachedFavourites.isEmpty else { return completion(.success([]))}
         
         locations.enumerated().forEach { [weak self] (index, location) in

@@ -15,8 +15,7 @@ enum LocationError: Error {
 }
 
 protocol ILocationService: AnyObject {
-    func checkAuthorizationStatus()
-    func getLocation(completion: @escaping (Result<CLLocation, Error>) -> Void)
+    func getLocation(completion: @escaping (Result<String, Error>) -> Void)
 }
 
 final class LocationService: NSObject {
@@ -25,7 +24,7 @@ final class LocationService: NSObject {
     private let locationManager = CLLocationManager()
     
     // Models
-    private var currentLocationCompletion: ((Result<CLLocation, Error>) -> Void)?
+    private var currentLocationCompletion: ((Result<String, Error>) -> Void)?
     
     // MARK: - Init
     
@@ -35,7 +34,7 @@ final class LocationService: NSObject {
         locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
     }
     
-    // MARK: - Private Methods
+    // MARK: - Private
     
     private func requestLocationAccess() {
         locationManager.requestWhenInUseAuthorization()
@@ -44,18 +43,8 @@ final class LocationService: NSObject {
     private func requestLocation() {
         locationManager.requestLocation()
     }
-}
-
-// MARK: - ILocationService
-
-extension LocationService: ILocationService {
     
-    func getLocation(completion: @escaping (Result<CLLocation, Error>) -> Void) {
-        currentLocationCompletion = completion
-        checkAuthorizationStatus()
-    }
-    
-    func checkAuthorizationStatus() {
+    private func checkAuthorizationStatus() {
         switch locationManager.authorizationStatus {
         case .notDetermined:
             requestLocationAccess()
@@ -71,10 +60,18 @@ extension LocationService: ILocationService {
     }
     
     private func handleLocationError(_ error: LocationError) {
-        // Проверяем, что у нас есть completion для локации
-        if let completion = currentLocationCompletion {
-            completion(.failure(error))
-        }
+        currentLocationCompletion?(.failure(error))
+        currentLocationCompletion = nil
+    }
+}
+
+// MARK: - ILocationService
+
+extension LocationService: ILocationService {
+    
+    func getLocation(completion: @escaping (Result<String, Error>) -> Void) {
+        currentLocationCompletion = completion
+        checkAuthorizationStatus()
     }
 }
 
@@ -83,7 +80,7 @@ extension LocationService: ILocationService {
 extension LocationService: CLLocationManagerDelegate {
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        checkAuthorizationStatus() // Обновляем статус авторизации при его изменении
+        checkAuthorizationStatus()
     }
     
     func locationManager(
@@ -94,17 +91,17 @@ extension LocationService: CLLocationManagerDelegate {
             handleLocationError(.locationNotAvailable)
             return
         }
+        let locationString = "\(location.coordinate.latitude),\(location.coordinate.longitude)"
         
-        // Возвращаем успешно полученную локацию
         if let completion = currentLocationCompletion {
-            completion(.success(location))
+            completion(.success(locationString))
+            currentLocationCompletion = nil
         }
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print("Ошибка получения локации: \(error.localizedDescription)")
         
-        // Если локация не получена, передаем ошибку
         if let completion = currentLocationCompletion {
             completion(.failure(error))
         }

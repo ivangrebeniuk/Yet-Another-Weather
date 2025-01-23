@@ -31,6 +31,7 @@ final class WeatherDetailsFlowCoordinator {
     func start(
         from transitionHandler: UIViewController?,
         location: String,
+        isCurrentLocation: Bool,
         output: WeatherDetailsModuleOutput
     ) {
         self.transitionHandler = transitionHandler
@@ -38,6 +39,7 @@ final class WeatherDetailsFlowCoordinator {
         
         let viewController = weatherDetailsAssembly.assemble(
             location: location,
+            isCurrentLocation: isCurrentLocation,
             output: self
         )
         

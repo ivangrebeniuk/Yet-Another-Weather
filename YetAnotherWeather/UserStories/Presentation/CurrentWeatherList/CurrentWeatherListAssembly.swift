@@ -16,6 +16,7 @@ class CurrentWeatherListAssembly {
     private let feedbackGeneratorService: IFeedbackGeneratorService
     private let locationService: ILocationService
     private let searchService: ISearchLocationsService
+    private let lifecCycleService: ILifecycleHandlingService
     
     // MARK: - Init
     
@@ -25,8 +26,8 @@ class CurrentWeatherListAssembly {
         searchResultAssembly: SearchResultsAssembly,
         feedbackGeneratorService: IFeedbackGeneratorService,
         locationService: ILocationService,
-        searchService: ISearchLocationsService
-        
+        searchService: ISearchLocationsService,
+        lifecCycleService: ILifecycleHandlingService
     ) {
         self.dateFormatter = dateFormatter
         self.currentWeatherService = weatherNetworkService
@@ -34,6 +35,7 @@ class CurrentWeatherListAssembly {
         self.feedbackGeneratorService = feedbackGeneratorService
         self.locationService = locationService
         self.searchService = searchService
+        self.lifecCycleService = lifecCycleService
     }
     
     func assemble(output: CurrentWeatherListOutput?) -> Module<CurrentWeatherListInput> {
@@ -47,6 +49,7 @@ class CurrentWeatherListAssembly {
             feedbackGenerator: feedbackGeneratorService,
             locationService: locationService,
             searchService: searchService,
+            lifeCycleHandlingService: lifecCycleService,
             output: output
         )
         
