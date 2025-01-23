@@ -5,6 +5,7 @@
 //  Created by Ivan Grebenyuk on 09.08.2024.
 //
 
+import CoreLocation
 import Foundation
 import SwiftyJSON
 import SnapKit
@@ -12,6 +13,7 @@ import SnapKit
 final class AppAssembly {
     
     // Dependencies
+    private let appLifeCycleDelegate: AppLifeCycleDelegate
     private lazy var urlRequestsFactory = URLRequestFactory()
     private lazy var networkService = NetworkService(session: URLSession.shared)
     private lazy var networkQueue = DispatchQueue(label: "ru.i.grebeniuk.serialNetworkQueue")
@@ -19,7 +21,13 @@ final class AppAssembly {
     private lazy var dateFormatter = CustomDateFormatter()
     private lazy var beaufortScaleResolver = BeaufortScaleResolver()
     private lazy var userDefaults = UserDefaults.standard
-        
+    
+    // MARK: - Init
+    
+    init(appLifeCycleDelegate: AppLifeCycleDelegate) {
+        self.appLifeCycleDelegate = appLifeCycleDelegate
+    }
+    
     // MARK: - FlowCoordinators
     
     var currentWeatherListFlowCoordinator: CurrentWeatherListFlowCoordinator {
@@ -37,7 +45,10 @@ final class AppAssembly {
             dateFormatter: dateFormatter,
             weatherNetworkService: currentWeatherService,
             searchResultAssembly: searchResultsAssembly,
-            feedbackGeneratorService: feedbackGeneratorService
+            feedbackGeneratorService: feedbackGeneratorService,
+            locationService: locationService,
+            searchService: searchLocationsService,
+            lifecCycleService: lifeCycleHandlingService
         )
     }
     
@@ -55,7 +66,8 @@ final class AppAssembly {
             dateFormatter: dateFormatter,
             forecastService: forecastService,
             feedbackGeneratorService: feedbackGeneratorService,
-            currentWeatherService: currentWeatherService
+            currentWeatherService: currentWeatherService,
+            lifecCycleService: lifeCycleHandlingService
         )
     }
     
@@ -91,5 +103,13 @@ final class AppAssembly {
     
     private var feedbackGeneratorService: IFeedbackGeneratorService {
         FeedbackGeneratorService()
+    }
+    
+    private var locationService: ILocationService {
+        LocationService()
+    }
+    
+    private var lifeCycleHandlingService: ILifecycleHandlingService {
+        LifecycleHandlingService(appLifecycleDelegate: appLifeCycleDelegate)
     }
 }

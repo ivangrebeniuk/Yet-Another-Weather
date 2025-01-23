@@ -9,6 +9,7 @@ import Foundation
 
 protocol ICurrentWeatherCellViewModelFactory {
     
+    func makeCurrentLocationViewModel(model: CurrentWeatherModel) -> CurrentWeatherCell.Model
     func makeViewModel(model: CurrentWeatherModel) -> CurrentWeatherCell.Model
 }
 
@@ -53,6 +54,19 @@ final class CurrentWeatherCellViewModelFactory {
 // MARK: - ICurrentWeatherCellViewModelFactory
 
 extension CurrentWeatherCellViewModelFactory: ICurrentWeatherCellViewModelFactory {
+    
+    func makeCurrentLocationViewModel(model: CurrentWeatherModel) -> CurrentWeatherCell.Model {
+        CurrentWeatherCell.Model(
+            location: model.location.name,
+            temperature: makeTempreature(
+                model.temperature
+            ) ?? "",
+            localTime: "Current locaton📍",
+            isDay: model.isDay,
+            conditions: model.condition.text,
+            feelsLike: makeFeelsLikeLabel(from: model.feelsLike)
+        )
+    }
     
     func makeViewModel(model: CurrentWeatherModel) -> CurrentWeatherCell.Model {
         CurrentWeatherCell.Model(
