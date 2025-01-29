@@ -10,13 +10,17 @@ import UIKit
 
 final class AppCoordinator {
     
-    private let appAssembly = AppAssembly()
+    private let appAssembly: AppAssembly
     private lazy var currentWeatherListFlowCoordinator = appAssembly.currentWeatherListFlowCoordinator
         
     var window: UIWindow
     
-    init(window: UIWindow) {
+    init(
+        window: UIWindow,
+        appDelegate: IAppDelegate
+    ) {
         self.window = window
+        self.appAssembly = AppAssembly(appDelegate: appDelegate)
     }
     
     func start() {

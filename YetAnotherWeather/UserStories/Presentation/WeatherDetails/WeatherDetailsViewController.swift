@@ -68,12 +68,19 @@ final class WeatherDetailsViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         presenter.viewDidLoad()
         setUpUI()
         setUpConstraints()
         view.backgroundColor = .systemBackground
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        presenter.viewWillDisappear()
     }
     
     // MARK: - Private
