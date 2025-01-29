@@ -12,7 +12,7 @@ import UIKit
 private extension String {
     
     static let weatherHeaderText = "Weather"
-    static let searchFielPlaceholderText = "Type location to search"
+    static let searchFielPlaceholderText = "Search for a city or airport"
     static let currentLocationCellIdentifier = "CurrentLocationCellIdentifier"
     static let currentWeatherCellIdentifier = "CurrentWeatherCellIdentifier"
     static let spacerCellIdentifier = "SpacerCellIdentifier"
@@ -68,8 +68,6 @@ final class CurrentWeatherListViewController: UIViewController {
     private lazy var dataSource = makeDataSourcre()
     private lazy var refreshControl = UIRefreshControl()
     private lazy var emptyStateView = EmptyStateView()
-    // УДАЛИТЬ wrappedEmptyStateView, лобавлять фон прямо во emptyStateView
-    private lazy var wrappedEmptyStateView = emptyStateView.wrappedInBlurred()
     
     // Models
     private var currentLocationItemArray = [CurrentWeatherCellType]()
@@ -108,8 +106,8 @@ final class CurrentWeatherListViewController: UIViewController {
             $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 15, left: 0, bottom: 40, right: 20))
         }
         
-        tableView.addSubview(wrappedEmptyStateView)
-        wrappedEmptyStateView.snp.makeConstraints {
+        tableView.addSubview(emptyStateView)
+        emptyStateView.snp.makeConstraints {
             $0.top.equalToSuperview().offset(50)
             $0.leading.trailing.equalTo(view).inset(20)
         }
@@ -178,13 +176,11 @@ final class CurrentWeatherListViewController: UIViewController {
     }
     
     private func updateState() {
-        wrappedEmptyStateView.layer.cornerRadius = 16
+        emptyStateView.layer.cornerRadius = 16
         if presenter.emptyState() {
-            wrappedEmptyStateView.isHidden = false
-            // tableView.isHidden = true
+            emptyStateView.isHidden = false
         } else {
-            wrappedEmptyStateView.isHidden = true
-            // tableView.isHidden = false
+            emptyStateView.isHidden = true
         }
     }
     

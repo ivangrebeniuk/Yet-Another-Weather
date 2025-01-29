@@ -83,28 +83,25 @@ class CurrentWeatherListPresenter {
                 switch result {
                 case .success(let results):
                     currentWeatherViewModels = makeViewModels(from: results)
-                    completionHandler()
                 case .failure(let error):
                     print("Ошибочка: \(error.localizedDescription)")
                     let alertModel = alertViewModelFactory.makeSingleButtonErrorAlert {}
                     view?.showAlert(with: alertModel)
-                    completionHandler()
                 }
                 view?.stopActivityIndicator()
+                completionHandler()
             }
         }
     }
     
     private func fetchCurrentCoordinates(completion: @escaping (Result<String, Error>) -> Void) {
-        DispatchQueue.global().async { [weak self] in
-            self?.locationService.getLocation { result in
-                DispatchQueue.main.async {
-                    switch result {
-                    case .success(let currentLocation):
-                        completion(.success(currentLocation))
-                    case .failure(let error):
-                        completion(.failure(error))
-                    }
+        locationService.getLocation { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let currentLocation):
+                    completion(.success(currentLocation))
+                case .failure(let error):
+                    completion(.failure(error))
                 }
             }
         }

@@ -15,10 +15,12 @@ final class AppCoordinator {
         
     var window: UIWindow
     
-    init(window: UIWindow,
-         appLifeCycleDelegate: AppLifeCycleDelegate) {
+    init(
+        window: UIWindow,
+        appDelegate: IAppDelegate
+    ) {
         self.window = window
-        self.appAssembly = AppAssembly(appLifeCycleDelegate: appLifeCycleDelegate)
+        self.appAssembly = AppAssembly(appDelegate: appDelegate)
     }
     
     func start() {

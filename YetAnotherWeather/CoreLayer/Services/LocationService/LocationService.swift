@@ -70,8 +70,10 @@ final class LocationService: NSObject {
 extension LocationService: ILocationService {
     
     func getLocation(completion: @escaping (Result<String, Error>) -> Void) {
-        currentLocationCompletion = completion
-        checkAuthorizationStatus()
+        DispatchQueue.global().async { [weak self] in
+            self?.currentLocationCompletion = completion
+            self?.checkAuthorizationStatus()
+        }
     }
 }
 

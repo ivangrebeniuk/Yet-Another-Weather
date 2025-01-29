@@ -13,7 +13,6 @@ import SnapKit
 final class AppAssembly {
     
     // Dependencies
-    private let appLifeCycleDelegate: AppLifeCycleDelegate
     private lazy var urlRequestsFactory = URLRequestFactory()
     private lazy var networkService = NetworkService(session: URLSession.shared)
     private lazy var networkQueue = DispatchQueue(label: "ru.i.grebeniuk.serialNetworkQueue")
@@ -22,10 +21,14 @@ final class AppAssembly {
     private lazy var beaufortScaleResolver = BeaufortScaleResolver()
     private lazy var userDefaults = UserDefaults.standard
     
+    private let lifeCycleHandlingService: ILifecycleHandlingService
+    
     // MARK: - Init
     
-    init(appLifeCycleDelegate: AppLifeCycleDelegate) {
-        self.appLifeCycleDelegate = appLifeCycleDelegate
+    init(appDelegate: IAppDelegate) {
+        let lifeCycleHandlingService = LifecycleHandlingService()
+        appDelegate.delegate = lifeCycleHandlingService
+        self.lifeCycleHandlingService = lifeCycleHandlingService
     }
     
     // MARK: - FlowCoordinators
@@ -107,9 +110,5 @@ final class AppAssembly {
     
     private var locationService: ILocationService {
         LocationService()
-    }
-    
-    private var lifeCycleHandlingService: ILifecycleHandlingService {
-        LifecycleHandlingService(appLifecycleDelegate: appLifeCycleDelegate)
     }
 }

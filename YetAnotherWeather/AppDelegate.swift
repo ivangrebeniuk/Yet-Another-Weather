@@ -7,25 +7,32 @@
 
 import UIKit
 
-protocol AppLifeCycleDelegate: AnyObject {
+protocol IAppLifeCycleDelegate: AnyObject {
     
-    var willEnterForegroundNotification: (() -> Void)? { get set }
+    func appWillEnterForeground()
+}
+
+protocol IAppDelegate: AnyObject {
+    
+    var delegate: IAppLifeCycleDelegate? { get set }
 }
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate, AppLifeCycleDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, IAppDelegate {
 
     var window: UIWindow?
     private var appCoordinator: AppCoordinator?
     
-    var willEnterForegroundNotification: (() -> Void)?
+    // IAppDelegate
+    weak var delegate: IAppLifeCycleDelegate?
+    
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         let window = UIWindow(frame: UIScreen.main.bounds)
         
         appCoordinator = AppCoordinator(
             window: window,
-            appLifeCycleDelegate: self
+            appDelegate: self
         )
         
         appCoordinator?.start()
@@ -36,6 +43,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AppLifeCycleDelegate {
     }
     
     func applicationWillEnterForeground(_ application: UIApplication) {
-        willEnterForegroundNotification?()
+        delegate?.appWillEnterForeground()
     }
 }
