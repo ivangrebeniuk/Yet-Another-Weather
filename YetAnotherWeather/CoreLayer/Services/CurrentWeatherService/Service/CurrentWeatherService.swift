@@ -16,7 +16,7 @@ protocol ICurrentWeatherService {
     
     var cachedFavourites: [String] { get }
         
-    func saveToFavourites(_ location: String)
+    func saveToFavourites(_ location: Location)
     
     func deleteFromFavourites(_ index: Int)
     
@@ -91,11 +91,11 @@ extension CurrentWeatherService: ICurrentWeatherService {
         }
     }
 
-    func saveToFavourites(_ location: String) {
+    func saveToFavourites(_ location: Location) {
         var cached = cachedFavourites
-        guard !cached.contains(location) else { return }
+        guard !cached.contains(location.id) else { return }
     
-        cached.append(location)
+        cached.append(location.id)
         updateFavourites(cached)
     }
     

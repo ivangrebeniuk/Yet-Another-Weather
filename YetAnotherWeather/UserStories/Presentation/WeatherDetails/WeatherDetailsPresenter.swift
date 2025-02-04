@@ -8,7 +8,7 @@
 import Foundation
 
 protocol WeatherDetailsOutput: AnyObject {
-    func didAddLocationToFavourites(location: String?)
+    func didAddLocationToFavourites(location: Location?)
     func didRequestToDismiss()
 }
 
@@ -27,7 +27,7 @@ final class WeatherDetailsPresenter {
     private let viewModelFactory: IWeatherDetailsViewModelFactory
     private let feedbackGenerator: IFeedbackGeneratorService
     private let currentWeatherService: ICurrentWeatherService
-    private let location: String
+    private let location: Location
     private let isCurrentLocation: Bool
     private let lifeCycleHandlingService: ILifecycleHandlingService
     private weak var output: WeatherDetailsOutput?
@@ -46,7 +46,7 @@ final class WeatherDetailsPresenter {
         feedbackGenerator: IFeedbackGeneratorService,
         currentWeatherService: ICurrentWeatherService,
         lifeCycleHandlingService: ILifecycleHandlingService,
-        location: String,
+        location: Location,
         isCurrentLocation: Bool,
         output: WeatherDetailsOutput
     ) {
@@ -64,7 +64,7 @@ final class WeatherDetailsPresenter {
     // MARK: - Private
     func getWeatherForecast() {
         view?.startLoader()
-        forecastService.getWeatherForecast(for: location) { result in
+        forecastService.getWeatherForecast(for: location.id) { result in
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
                 switch result {
@@ -92,7 +92,7 @@ final class WeatherDetailsPresenter {
 extension WeatherDetailsPresenter: IWeatherDetailsPresenter {
     
     var isAddedToFavourites: Bool {
-        currentWeatherService.cachedFavourites.contains(location) || isCurrentLocation
+        currentWeatherService.cachedFavourites.contains(location.id) || isCurrentLocation
     }
     
     func viewDidLoad() {

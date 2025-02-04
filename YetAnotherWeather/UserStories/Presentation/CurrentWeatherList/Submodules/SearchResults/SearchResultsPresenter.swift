@@ -9,7 +9,7 @@ import Foundation
 
 protocol SearchResultsOutput: AnyObject {
     
-    func didSelectLocation(_ location: String)
+    func didSelectLocation(_ location: Location)
 }
 
 protocol ISearchResultsPresenter: AnyObject {
@@ -106,6 +106,8 @@ extension SearchResultsPresenter: ISearchResultsPresenter {
             return
             }
         let locationId = String(searchResults[index.row].id)
-        output?.didSelectLocation(locationId)
+        let locationName = String(searchResults[index.row].name)
+        let location = Location(id: locationId, name: locationName)
+        output?.didSelectLocation(location)
     }
 }

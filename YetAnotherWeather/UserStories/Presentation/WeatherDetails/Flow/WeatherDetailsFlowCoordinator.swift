@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 protocol WeatherDetailsModuleOutput: AnyObject {
-    func didAddLocationToFavourites(location: String?)
+    func didAddLocationToFavourites(location: Location?)
 }
 
 final class WeatherDetailsFlowCoordinator {
@@ -30,7 +30,7 @@ final class WeatherDetailsFlowCoordinator {
     
     func start(
         from transitionHandler: UIViewController?,
-        location: String,
+        location: Location,
         isCurrentLocation: Bool,
         output: WeatherDetailsModuleOutput
     ) {
@@ -55,7 +55,7 @@ extension WeatherDetailsFlowCoordinator: WeatherDetailsOutput {
         transitionHandler?.dismiss(animated: true)
     }
     
-    func didAddLocationToFavourites(location: String?) {
+    func didAddLocationToFavourites(location: Location?) {
         transitionHandler?.dismiss(animated: true)
         output?.didAddLocationToFavourites(location: location)
     }

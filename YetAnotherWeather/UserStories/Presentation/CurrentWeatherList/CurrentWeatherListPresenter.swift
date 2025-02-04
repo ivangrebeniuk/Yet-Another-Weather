@@ -8,11 +8,11 @@
 import Foundation
 
 protocol CurrentWeatherListInput: AnyObject {
-    func addToFavourites(location: String)
+    func addToFavourites(location: Location)
 }
 
 protocol CurrentWeatherListOutput: AnyObject {
-    func didSelectLocation(_ location: String, isCurrentLocation: Bool)
+    func didSelectLocation(_ location: Location, isCurrentLocation: Bool)
 }
 
 protocol ICurrentWeatherListPresenter {
@@ -249,13 +249,22 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
     func didSelectRowAt(atIndex index: Int, section: CurrentWeatherListViewController.Section) {
         switch section {
         case .main:
+            let location = Location(
+                id: currentWeatherService.cachedFavourites[index],
+                name: currentWeatherViewModels[index].location
+            )
+
             output?.didSelectLocation(
-                currentWeatherService.cachedFavourites[index],
+                location,
                 isCurrentLocation: false
             )
         case .currentLocation:
-            guard let currentLocationId else { return }
-            output?.didSelectLocation(currentLocationId, isCurrentLocation: true)
+            guard
+                let currentLocationId,
+                let currentLocationName = currentLocationModel.first?.location
+            else { return }
+            let currentLocation = Location(id: currentLocationId, name: currentLocationName)
+            output?.didSelectLocation(currentLocation, isCurrentLocation: true)
         }
         
         feedbackGenerator.generateFeedback(ofType: .selectionChanged)
@@ -270,8 +279,8 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
 
 extension CurrentWeatherListPresenter: SearchResultsOutput {
     
-    func didSelectLocation(_ location: String) {
-        guard let currentLocationId, currentLocationId == location else {
+    func didSelectLocation(_ location: Location) {
+        guard let currentLocationId, currentLocationId == location.id else {
             output?.didSelectLocation(location, isCurrentLocation: false)
             return
         }
@@ -283,7 +292,7 @@ extension CurrentWeatherListPresenter: SearchResultsOutput {
 
 extension CurrentWeatherListPresenter: CurrentWeatherListInput {
     
-    func addToFavourites(location: String) {
+    func addToFavourites(location: Location) {
         view?.hideSearchResults()
         currentWeatherService.saveToFavourites(location)
         updateSections {}

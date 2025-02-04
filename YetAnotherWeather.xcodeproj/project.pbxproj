@@ -13,6 +13,8 @@
 		4813DE262BF2802800800CCD /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4813DE242BF2802800800CCD /* LaunchScreen.storyboard */; };
 		48C9DBB82BFA7BF900001A57 /* CurrentWeatherListFlowCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48C9DBB72BFA7BF900001A57 /* CurrentWeatherListFlowCoordinator.swift */; };
 		48C9DBBB2BFA7C1900001A57 /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48C9DBBA2BFA7C1900001A57 /* AppCoordinator.swift */; };
+		E20A26FA2D525901002352CA /* Location.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20A26F92D525901002352CA /* Location.swift */; };
+		E20A95762D5203E2002352CA /* Location.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = E20A95742D5203E2002352CA /* Location.xcdatamodeld */; };
 		E20C58552CF70BF500DAFBA2 /* BeaufortScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20C58542CF70BF500DAFBA2 /* BeaufortScale.swift */; };
 		E20DD1FA2C59169C009A4C1F /* WeatherDetailsAssembly.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20DD1F92C59169C009A4C1F /* WeatherDetailsAssembly.swift */; };
 		E20DD1FC2C5916B0009A4C1F /* WeatherDetailsPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20DD1FB2C5916B0009A4C1F /* WeatherDetailsPresenter.swift */; };
@@ -86,6 +88,8 @@
 		48C9DBBA2BFA7C1900001A57 /* AppCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCoordinator.swift; sourceTree = "<group>"; };
 		BC3E558F7C4C055B6E3877E3 /* Pods-YetAnotherWeather.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YetAnotherWeather.release.xcconfig"; path = "Target Support Files/Pods-YetAnotherWeather/Pods-YetAnotherWeather.release.xcconfig"; sourceTree = "<group>"; };
 		DC9CB1FB3EE91488279642ED /* Pods-YetAnotherWeather.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YetAnotherWeather.debug.xcconfig"; path = "Target Support Files/Pods-YetAnotherWeather/Pods-YetAnotherWeather.debug.xcconfig"; sourceTree = "<group>"; };
+		E20A26F92D525901002352CA /* Location.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Location.swift; sourceTree = "<group>"; };
+		E20A95752D5203E2002352CA /* Location.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Location.xcdatamodel; sourceTree = "<group>"; };
 		E20C58542CF70BF500DAFBA2 /* BeaufortScale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeaufortScale.swift; sourceTree = "<group>"; };
 		E20DD1F92C59169C009A4C1F /* WeatherDetailsAssembly.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherDetailsAssembly.swift; sourceTree = "<group>"; };
 		E20DD1FB2C5916B0009A4C1F /* WeatherDetailsPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherDetailsPresenter.swift; sourceTree = "<group>"; };
@@ -198,6 +202,7 @@
 				4813DE222BF2802800800CCD /* Assets.xcassets */,
 				4813DE242BF2802800800CCD /* LaunchScreen.storyboard */,
 				4813DE272BF2802900800CCD /* Info.plist */,
+				E20A95742D5203E2002352CA /* Location.xcdatamodeld */,
 			);
 			path = YetAnotherWeather;
 			sourceTree = "<group>";
@@ -492,6 +497,7 @@
 				E2556D2D2CF24AF00002F056 /* Parsers */,
 				E2AD19582C19A7E20038F6FC /* CurrentWeatherModel.swift */,
 				E2D1AE642CA29BA700008AD6 /* ConditionModel.swift */,
+				E20A26F92D525901002352CA /* Location.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -734,12 +740,14 @@
 				E280DAFB2C31740F00D683CD /* IJSONParser.swift in Sources */,
 				E23D81682CA5684E00CCEEA7 /* WeatherDetailsFlowCoordinator.swift in Sources */,
 				E20EB73D2D21C624005C023E /* SingleHourView.swift in Sources */,
+				E20A26FA2D525901002352CA /* Location.swift in Sources */,
 				E250B1862CE89EFF005EDAE6 /* SingleDayForecastView.swift in Sources */,
 				E22ECF842CBA878D0039AEC5 /* CurrentWeatherView.swift in Sources */,
 				E2F692DA2CE0AC4E00B57BB6 /* UIAlertController+Alert.swift in Sources */,
 				E280DAFD2C31750F00D683CD /* CurrentWeatherParser.swift in Sources */,
 				E298BCAC2D16DAB80049D88C /* FeedbackGeneratorService.swift in Sources */,
 				E20EECFA2C4AA16200B48F16 /* SearchResultsPresenter.swift in Sources */,
+				E20A95762D5203E2002352CA /* Location.xcdatamodeld in Sources */,
 				E20EECF82C4AA14800B48F16 /* SearchResultCellView.swift in Sources */,
 				E2E926942CFDF9A400DFB00C /* BeaufortScaleResolver.swift in Sources */,
 				E2AD19592C19A7E20038F6FC /* CurrentWeatherModel.swift in Sources */,
@@ -986,6 +994,19 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		E20A95742D5203E2002352CA /* Location.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				E20A95752D5203E2002352CA /* Location.xcdatamodel */,
+			);
+			currentVersion = E20A95752D5203E2002352CA /* Location.xcdatamodel */;
+			path = Location.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 4813DE0E2BF2802300800CCD /* Project object */;
 }
