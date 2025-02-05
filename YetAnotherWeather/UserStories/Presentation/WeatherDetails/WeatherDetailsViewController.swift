@@ -78,11 +78,6 @@ final class WeatherDetailsViewController: UIViewController {
         view.backgroundColor = .systemBackground
     }
     
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        presenter.viewWillDisappear()
-    }
-    
     // MARK: - Private
     
     private func setUpUI() {

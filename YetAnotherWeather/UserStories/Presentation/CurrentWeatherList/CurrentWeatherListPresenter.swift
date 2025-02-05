@@ -88,7 +88,6 @@ class CurrentWeatherListPresenter {
                     let alertModel = alertViewModelFactory.makeSingleButtonErrorAlert {}
                     view?.showAlert(with: alertModel)
                 }
-                view?.stopActivityIndicator()
                 completionHandler()
             }
         }
@@ -294,7 +293,8 @@ extension CurrentWeatherListPresenter: CurrentWeatherListInput {
 // MARK: - ILifeCycleServiceDelegate
 
 extension CurrentWeatherListPresenter: ILifeCycleServiceDelegate {
-    func notifyEnteredForeground() {
+    
+    func didEnterForeground() {
         updateSections() {}
     }
 }

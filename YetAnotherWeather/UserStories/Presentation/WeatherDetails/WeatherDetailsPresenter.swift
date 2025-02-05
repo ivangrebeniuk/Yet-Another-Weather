@@ -15,7 +15,6 @@ protocol WeatherDetailsOutput: AnyObject {
 protocol IWeatherDetailsPresenter {
     var isAddedToFavourites: Bool { get }
     func viewDidLoad()
-    func viewWillDisappear()
     func didTapAddButton()
     func didRequestToDismiss()
 }
@@ -101,10 +100,6 @@ extension WeatherDetailsPresenter: IWeatherDetailsPresenter {
         
         getWeatherForecast()
     }
-    
-    func viewWillDisappear() {
-        lifeCycleHandlingService.remove(delegate: self)
-    }
 
     func didTapAddButton() {
         feedbackGenerator.generateFeedback(ofType: .notification(.success))
@@ -120,7 +115,7 @@ extension WeatherDetailsPresenter: IWeatherDetailsPresenter {
 
 extension WeatherDetailsPresenter: ILifeCycleServiceDelegate {
     
-    func notifyEnteredForeground() {
+    func didEnterForeground() {
         getWeatherForecast()
     }
 }

@@ -10,13 +10,11 @@ import Foundation
 protocol ILifecycleHandlingService: AnyObject {
         
     func add(delegate: some ILifeCycleServiceDelegate)
-    
-    func remove(delegate: ILifeCycleServiceDelegate)
 }
 
 protocol ILifeCycleServiceDelegate: AnyObject {
     
-    func notifyEnteredForeground()
+    func didEnterForeground()
 }
 
 final class LifecycleHandlingService: ILifecycleHandlingService {
@@ -28,17 +26,13 @@ final class LifecycleHandlingService: ILifecycleHandlingService {
     func add(delegate: some ILifeCycleServiceDelegate) {
         Self.delegatesList.addDelegate(weakify(delegate))
     }
-
-    func remove(delegate: ILifeCycleServiceDelegate) {
-        Self.delegatesList.removeDelegate(delegate)
-    }
     
     // MARK: - Private
 
     private func handleEventWillEneterForeground() {
         DispatchQueue.main.async {
             Self.delegatesList.forEach {
-                $0.notifyEnteredForeground()
+                $0.didEnterForeground()
             }
         }
     }
