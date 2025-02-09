@@ -51,6 +51,7 @@ final class EmptyStateView: UIView {
     // MARK: - Private
     
     private func setUpUI() {
+        backgroundColor = .darkGray
         let stackView = UIStackView()
         stackView.axis = .vertical
         stackView.alignment = .center

@@ -12,7 +12,8 @@ import UIKit
 private extension String {
     
     static let weatherHeaderText = "Weather"
-    static let searchFielPlaceholderText = "Type location to search"
+    static let searchFielPlaceholderText = "Search for a city or airport"
+    static let currentLocationCellIdentifier = "CurrentLocationCellIdentifier"
     static let currentWeatherCellIdentifier = "CurrentWeatherCellIdentifier"
     static let spacerCellIdentifier = "SpacerCellIdentifier"
 }
@@ -29,8 +30,10 @@ private extension UIColor {
 }
 
 protocol ICurrentWeatherListView: AnyObject {
+        
+    func updateCurrentLocationSection(with items: [CurrentWeatherCell.Model])
     
-    func update(with items: [CurrentWeatherCell.Model])
+    func updateMainSection(with items: [CurrentWeatherCell.Model])
     
     func hideSearchResults()
     
@@ -45,7 +48,8 @@ protocol ICurrentWeatherListView: AnyObject {
 
 final class CurrentWeatherListViewController: UIViewController {
     
-    private enum Section {
+    enum Section {
+        case currentLocation
         case main
     }
     private typealias Item = CurrentWeatherCellType
@@ -64,9 +68,9 @@ final class CurrentWeatherListViewController: UIViewController {
     private lazy var dataSource = makeDataSourcre()
     private lazy var refreshControl = UIRefreshControl()
     private lazy var emptyStateView = EmptyStateView()
-    private lazy var wrappedEmptyStateView = emptyStateView.wrappedInBlurred()
     
     // Models
+    private var currentLocationItemArray = [CurrentWeatherCellType]()
     private var itemsArray = [CurrentWeatherCellType]()
     
     // MARK: - Init
@@ -85,7 +89,7 @@ final class CurrentWeatherListViewController: UIViewController {
     }
     
     // MARK: - Lifecycle
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
@@ -102,10 +106,10 @@ final class CurrentWeatherListViewController: UIViewController {
             $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 15, left: 0, bottom: 40, right: 20))
         }
         
-        view.addSubview(wrappedEmptyStateView)
-        wrappedEmptyStateView.snp.makeConstraints {
-            $0.top.equalToSuperview().offset(200)
-            $0.leading.trailing.equalToSuperview().inset(12)
+        tableView.addSubview(emptyStateView)
+        emptyStateView.snp.makeConstraints {
+            $0.top.equalToSuperview().offset(50)
+            $0.leading.trailing.equalTo(view).inset(20)
         }
         
         view.addSubview(activityIndicator)
@@ -172,14 +176,23 @@ final class CurrentWeatherListViewController: UIViewController {
     }
     
     private func updateState() {
-        wrappedEmptyStateView.layer.cornerRadius = 16
+        emptyStateView.layer.cornerRadius = 16
         if presenter.emptyState() {
-            wrappedEmptyStateView.isHidden = false
-            tableView.isHidden = true
+            emptyStateView.isHidden = false
         } else {
-            wrappedEmptyStateView.isHidden = true
-            tableView.isHidden = false
+            emptyStateView.isHidden = true
         }
+    }
+    
+    private func updateMultipleSections() {
+        var snapshot = dataSource.snapshot()
+        snapshot.deleteSections(snapshot.sectionIdentifiers)
+        snapshot.appendSections([.currentLocation, .main])
+        
+        snapshot.appendItems(currentLocationItemArray, toSection: .currentLocation)
+        snapshot.appendItems(itemsArray, toSection: .main)
+        
+        dataSource.apply(snapshot, animatingDifferences: true)
     }
 }
 
@@ -192,6 +205,12 @@ extension CurrentWeatherListViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        
+        let section = dataSource.snapshot().sectionIdentifiers[indexPath.section]
+        guard section != .currentLocation else {
+            return nil
+        }
+            
         guard indexPath.row % 2 == 0 else { return nil }
         let deleteAction = UIContextualAction(style: .destructive, title: "") { [weak self] (_, _, completionHandler) in
             self?.presenter.deleteItem(atIndex: indexPath.row / 2)
@@ -204,9 +223,10 @@ extension CurrentWeatherListViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard indexPath.row % 2 == 0 else { return }
-        
+        let section = dataSource.snapshot().sectionIdentifiers[indexPath.section]
+
         tableView.deselectRow(at: indexPath, animated: true)
-        presenter.didSelectRowAt(atIndex: indexPath.row / 2)
+        presenter.didSelectRowAt(atIndex: indexPath.row / 2, section: section)
     }
 }
 
@@ -218,8 +238,8 @@ extension CurrentWeatherListViewController: ICurrentWeatherListView {
         searchController.isActive = false
     }
     
-    func update(with items: [CurrentWeatherCell.Model]) {
-        
+    func updateMainSection(with items: [CurrentWeatherCell.Model]) {
+            
         updateState()
         
         itemsArray.removeAll()
@@ -230,14 +250,45 @@ extension CurrentWeatherListViewController: ICurrentWeatherListView {
                 itemsArray.append(.spacer(UUID()))
             }
         }
+
+        var snapshot = dataSource.snapshot()
         
-        var snapshot = Snapshot()
-        snapshot.appendSections([.main])
+        if !snapshot.sectionIdentifiers.contains(.main) {
+            snapshot.appendSections([.main])
+            
+        }
+        let favouriteLocationItems = snapshot.itemIdentifiers(inSection: .main)
+        snapshot.deleteItems(favouriteLocationItems)
+        
         snapshot.appendItems(itemsArray, toSection: .main)
         
         dataSource.apply(snapshot, animatingDifferences: true)
     }
     
+    func updateCurrentLocationSection(with items: [CurrentWeatherCell.Model]) {
+        updateState()
+        
+        currentLocationItemArray.removeAll()
+                
+        for item in items {
+            currentLocationItemArray.append(.weather(item))
+            currentLocationItemArray.append(.spacer(UUID()))
+        }
+        
+        var snapshot = dataSource.snapshot()
+        
+        if !snapshot.sectionIdentifiers.contains(.currentLocation) {
+            snapshot.appendSections([.currentLocation])
+        }
+        
+        let currentLocationItems = snapshot.itemIdentifiers(inSection: .currentLocation)
+        snapshot.deleteItems(currentLocationItems)
+        
+        snapshot.appendItems(currentLocationItemArray, toSection: .currentLocation)
+        
+        dataSource.apply(snapshot, animatingDifferences: true)
+    }
+
     func endRefreshing() {
         refreshControl.endRefreshing()
     }

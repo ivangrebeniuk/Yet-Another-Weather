@@ -28,6 +28,8 @@ final class WeatherDetailsPresenter {
     private let feedbackGenerator: IFeedbackGeneratorService
     private let currentWeatherService: ICurrentWeatherService
     private let location: String
+    private let isCurrentLocation: Bool
+    private let lifeCycleHandlingService: ILifecycleHandlingService
     private weak var output: WeatherDetailsOutput?
 
     weak var view: IWeatherDetailsView?
@@ -43,7 +45,9 @@ final class WeatherDetailsPresenter {
         viewModelFactory: IWeatherDetailsViewModelFactory,
         feedbackGenerator: IFeedbackGeneratorService,
         currentWeatherService: ICurrentWeatherService,
+        lifeCycleHandlingService: ILifecycleHandlingService,
         location: String,
+        isCurrentLocation: Bool,
         output: WeatherDetailsOutput
     ) {
         self.alertViewModelFactory = alertViewModelFactory
@@ -51,7 +55,9 @@ final class WeatherDetailsPresenter {
         self.viewModelFactory = viewModelFactory
         self.feedbackGenerator = feedbackGenerator
         self.currentWeatherService = currentWeatherService
+        self.lifeCycleHandlingService = lifeCycleHandlingService
         self.location = location
+        self.isCurrentLocation = isCurrentLocation
         self.output = output
     }
     
@@ -86,10 +92,12 @@ final class WeatherDetailsPresenter {
 extension WeatherDetailsPresenter: IWeatherDetailsPresenter {
     
     var isAddedToFavourites: Bool {
-        currentWeatherService.cachedFavourites.contains(location)
+        currentWeatherService.cachedFavourites.contains(location) || isCurrentLocation
     }
     
     func viewDidLoad() {
+        lifeCycleHandlingService.add(delegate: self)
+        
         getWeatherForecast()
     }
 
@@ -100,5 +108,14 @@ extension WeatherDetailsPresenter: IWeatherDetailsPresenter {
     
     func didRequestToDismiss() {
         output?.didRequestToDismiss()
+    }
+}
+
+// MARK: - ILifeCycleServiceDelegate
+
+extension WeatherDetailsPresenter: ILifeCycleServiceDelegate {
+    
+    func didEnterForeground() {
+        getWeatherForecast()
     }
 }

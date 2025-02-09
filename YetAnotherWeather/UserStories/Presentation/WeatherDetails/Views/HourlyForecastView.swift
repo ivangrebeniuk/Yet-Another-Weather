@@ -41,7 +41,6 @@ final class HourlyForecastView: UIView {
     private func setUpScrollView() {
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = false
-        scrollView.isScrollEnabled = true
         scrollView.alwaysBounceVertical = false
     }
     
@@ -55,11 +54,11 @@ final class HourlyForecastView: UIView {
         scrollView.snp.makeConstraints {
             $0.top.equalTo(headerView.snp.bottom).offset(12)
             $0.bottom.leading.trailing.equalToSuperview().inset(12)
-            $0.height.greaterThanOrEqualTo(110)
         }
         
         scrollView.addSubview(stackView)
         stackView.snp.makeConstraints {
+            $0.height.equalToSuperview()
             $0.top.bottom.leading.trailing.equalToSuperview()
             $0.leading.trailing.equalToSuperview()
         }

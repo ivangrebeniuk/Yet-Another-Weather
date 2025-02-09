@@ -5,6 +5,7 @@
 //  Created by Ivan Grebenyuk on 09.08.2024.
 //
 
+import CoreLocation
 import Foundation
 import SwiftyJSON
 import SnapKit
@@ -19,7 +20,17 @@ final class AppAssembly {
     private lazy var dateFormatter = CustomDateFormatter()
     private lazy var beaufortScaleResolver = BeaufortScaleResolver()
     private lazy var userDefaults = UserDefaults.standard
-        
+    
+    private let lifeCycleHandlingService: ILifecycleHandlingService
+    
+    // MARK: - Init
+    
+    init(appDelegate: IAppDelegate) {
+        let lifeCycleHandlingService = LifecycleHandlingService()
+        appDelegate.delegate = lifeCycleHandlingService
+        self.lifeCycleHandlingService = lifeCycleHandlingService
+    }
+    
     // MARK: - FlowCoordinators
     
     var currentWeatherListFlowCoordinator: CurrentWeatherListFlowCoordinator {
@@ -37,7 +48,10 @@ final class AppAssembly {
             dateFormatter: dateFormatter,
             weatherNetworkService: currentWeatherService,
             searchResultAssembly: searchResultsAssembly,
-            feedbackGeneratorService: feedbackGeneratorService
+            feedbackGeneratorService: feedbackGeneratorService,
+            locationService: locationService,
+            searchService: searchLocationsService,
+            lifecCycleService: lifeCycleHandlingService
         )
     }
     
@@ -55,7 +69,8 @@ final class AppAssembly {
             dateFormatter: dateFormatter,
             forecastService: forecastService,
             feedbackGeneratorService: feedbackGeneratorService,
-            currentWeatherService: currentWeatherService
+            currentWeatherService: currentWeatherService,
+            lifecCycleService: lifeCycleHandlingService
         )
     }
     
@@ -91,5 +106,9 @@ final class AppAssembly {
     
     private var feedbackGeneratorService: IFeedbackGeneratorService {
         FeedbackGeneratorService()
+    }
+    
+    private var locationService: ILocationService {
+        LocationService()
     }
 }
