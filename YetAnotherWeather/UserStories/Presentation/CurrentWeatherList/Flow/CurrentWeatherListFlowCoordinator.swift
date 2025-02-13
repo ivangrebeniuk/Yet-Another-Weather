@@ -44,9 +44,9 @@ final class CurrentWeatherListFlowCoordinator {
     private func openWeatherDetails(for locationId: String, isCurrentLocation: Bool) {
         weatherDetailsFlowCoordinator.start(
             from: navigationController,
-            location: locationId,
+            locationId: locationId,
             isCurrentLocation: isCurrentLocation,
-            output: self
+            moduleOutput: self
         )
     }
 }
@@ -54,8 +54,8 @@ final class CurrentWeatherListFlowCoordinator {
 // MARK: - CurrentWeatherListOutput
 
 extension CurrentWeatherListFlowCoordinator: CurrentWeatherListOutput {
-    func didSelectLocation(_ location: String, isCurrentLocation: Bool) {
-        openWeatherDetails(for: location, isCurrentLocation: isCurrentLocation)
+    func didSelectLocation(_ locationId: String, isCurrentLocation: Bool) {
+        openWeatherDetails(for: locationId, isCurrentLocation: isCurrentLocation)
     }
 }
 
@@ -63,7 +63,7 @@ extension CurrentWeatherListFlowCoordinator: CurrentWeatherListOutput {
 
 extension CurrentWeatherListFlowCoordinator: WeatherDetailsModuleOutput {
     
-    func didAddLocationToFavourites(location: String?) {
+    func didAddLocationToFavourites(location: Location?) {
         if let location {
             currentWeatherListInput?.addToFavourites(location: location)
         }

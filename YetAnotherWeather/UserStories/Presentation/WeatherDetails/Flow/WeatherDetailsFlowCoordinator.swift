@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 protocol WeatherDetailsModuleOutput: AnyObject {
-    func didAddLocationToFavourites(location: String?)
+    func didAddLocationToFavourites(location: Location?)
 }
 
 final class WeatherDetailsFlowCoordinator {
@@ -17,7 +17,7 @@ final class WeatherDetailsFlowCoordinator {
     // Dependencies
     private let weatherDetailsAssembly: WeatherDetailsAssembly
     private weak var transitionHandler: UIViewController?
-    private weak var output: WeatherDetailsModuleOutput?
+    private weak var moduleOutput: WeatherDetailsModuleOutput?
 
     
     // MARK: - Init
@@ -30,15 +30,15 @@ final class WeatherDetailsFlowCoordinator {
     
     func start(
         from transitionHandler: UIViewController?,
-        location: String,
+        locationId: String,
         isCurrentLocation: Bool,
-        output: WeatherDetailsModuleOutput
+        moduleOutput: WeatherDetailsModuleOutput
     ) {
         self.transitionHandler = transitionHandler
-        self.output = output
+        self.moduleOutput = moduleOutput
         
         let viewController = weatherDetailsAssembly.assemble(
-            location: location,
+            locationId: locationId,
             isCurrentLocation: isCurrentLocation,
             output: self
         )
@@ -55,8 +55,8 @@ extension WeatherDetailsFlowCoordinator: WeatherDetailsOutput {
         transitionHandler?.dismiss(animated: true)
     }
     
-    func didAddLocationToFavourites(location: String?) {
+    func didAddLocationToFavourites(location: Location?) {
         transitionHandler?.dismiss(animated: true)
-        output?.didAddLocationToFavourites(location: location)
+        moduleOutput?.didAddLocationToFavourites(location: location)
     }
 }

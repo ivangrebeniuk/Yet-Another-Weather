@@ -8,28 +8,20 @@
 import Foundation
 import SwiftyJSON
 
-private extension String {
-    static let userDefaultsKey = "FavouriteLocations"
-}
-
 protocol ICurrentWeatherService {
     
-    var cachedFavourites: [String] { get }
-        
-    func saveToFavourites(_ location: String)
-    
-    func deleteFromFavourites(_ index: Int)
-    
     func getCurrentWeather(
-        for location: String,
+        for locationId: String,
         completion: @escaping (Result<CurrentWeatherModel, Error>) -> Void
     )
     
     func getSortedCurrentWeatherItems(
+        for locations: [Location],
         completion: @escaping (Result<[CurrentWeatherModel], Error>) -> Void
     )
     
     func getOrderedCurrentWeatherItems(
+        for locations: [Location],
         completion: @escaping (Result<[CurrentWeatherModel], Error>) -> Void
     )
 }
@@ -41,7 +33,6 @@ final class CurrentWeatherService {
     let networkQueue: DispatchQueue
     let networkService: INetworkService
     let urlRequestsFactory: IURLRequestFactory
-    let userDefaults: UserDefaults
     
     // MARK: - Init
     
@@ -49,14 +40,12 @@ final class CurrentWeatherService {
         dataBaseQueue: DispatchQueue,
         networkQueue: DispatchQueue,
         networkService: INetworkService,
-        urlRequestsFactory: URLRequestFactory,
-        userDefaults: UserDefaults
+        urlRequestsFactory: URLRequestFactory
     ) {
         self.dataBaseQueue = dataBaseQueue
         self.networkQueue = networkQueue
         self.networkService = networkService
         self.urlRequestsFactory = urlRequestsFactory
-        self.userDefaults = userDefaults
     }
     
     // MARK: - Private
@@ -71,47 +60,18 @@ final class CurrentWeatherService {
         
         return locations
     }
-    
-    // MARK: - Private
-    
-    private func updateFavourites(_ favourites: [String]) {
-        dataBaseQueue.async { [weak self] in
-            self?.userDefaults.set(favourites, forKey: .userDefaultsKey)
-        }
-    }
 }
 
 // MARK: - ICurrentWeatherService
 
 extension CurrentWeatherService: ICurrentWeatherService {
     
-    var cachedFavourites: [String] {
-        dataBaseQueue.sync {
-            return userDefaults.array(forKey: .userDefaultsKey) as? [String] ?? []
-        }
-    }
-
-    func saveToFavourites(_ location: String) {
-        var cached = cachedFavourites
-        guard !cached.contains(location) else { return }
-    
-        cached.append(location)
-        updateFavourites(cached)
-    }
-    
-    func deleteFromFavourites(_ index: Int) {
-        var cached = cachedFavourites
-        guard index < cached.count else { return }
-        cached.remove(at: index)
-        updateFavourites(cached)
-    }
-    
     func getCurrentWeather(
-        for location: String,
+        for locationId: String,
         completion: @escaping (Result<CurrentWeatherModel, Error>) -> Void
     ) {
         do {
-            let request = try urlRequestsFactory.makeCurrentWeatherRequest(for: location)
+            let request = try urlRequestsFactory.makeCurrentWeatherRequest(for: locationId)
             let parser = CurrentWeatherParser()
             networkService.load(request: request, parser: parser) { (result: Result<CurrentWeatherModel, Error>) in
                 switch result {
@@ -127,19 +87,19 @@ extension CurrentWeatherService: ICurrentWeatherService {
     }
     
     func getSortedCurrentWeatherItems(
+        for locations: [Location],
         completion: @escaping (Result<[CurrentWeatherModel], Error>) -> Void
     ) {
         var locationsWeather = [Int: CurrentWeatherModel]()
         var errors = [Error]()
         let group = DispatchGroup()
-        let locations = cachedFavourites
 
-        guard !cachedFavourites.isEmpty else { return completion(.success([]))}
+        guard !locations.isEmpty else { return completion(.success([]))}
         
         locations.enumerated().forEach { [weak self] (index, location) in
             group.enter()
             self?.networkQueue.async {
-                self?.getCurrentWeather(for: location) { result in
+                self?.getCurrentWeather(for: location.id) { result in
                     switch result {
                     case .success(let currentWeather):
                         locationsWeather[index] = currentWeather
@@ -166,18 +126,21 @@ extension CurrentWeatherService: ICurrentWeatherService {
     }
     
     func getOrderedCurrentWeatherItems(
+        for locations: [Location],
         completion: @escaping (Result<[CurrentWeatherModel], Error>) -> Void
     ) {
         var locationsWeather = [CurrentWeatherModel]()
         var errors = [Error]()
         let group = DispatchGroup()
         let semaphore = DispatchSemaphore(value: 1)
-        let locations = cachedFavourites
+        
+        guard !locations.isEmpty else { return completion(.success([]))}
+
         for location in locations {
             group.enter()
             networkQueue.async { [weak self] in
                 semaphore.wait()
-                self?.getCurrentWeather(for: location) { result in
+                self?.getCurrentWeather(for: location.id) { result in
                     switch result {
                     case .success(let currentWeather):
                         locationsWeather.append(currentWeather)
