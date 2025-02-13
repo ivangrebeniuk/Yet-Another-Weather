@@ -15,6 +15,7 @@ final class AppAssembly {
     // Dependencies
     private lazy var urlRequestsFactory = URLRequestFactory()
     private lazy var networkService = NetworkService(session: URLSession.shared)
+    private lazy var coreDataService = CoreDataService()
     private lazy var networkQueue = DispatchQueue(label: "ru.i.grebeniuk.serialNetworkQueue")
     private lazy var dataBaseQueue = DispatchQueue(label: "ru.i.grebeniuk.dataBaseQueue", qos: .userInitiated)
     private lazy var dateFormatter = CustomDateFormatter()
@@ -51,7 +52,8 @@ final class AppAssembly {
             feedbackGeneratorService: feedbackGeneratorService,
             locationService: locationService,
             searchService: searchLocationsService,
-            lifecCycleService: lifeCycleHandlingService
+            lifecCycleService: lifeCycleHandlingService,
+            favouritesService: favouritesService
         )
     }
     
@@ -69,7 +71,7 @@ final class AppAssembly {
             dateFormatter: dateFormatter,
             forecastService: forecastService,
             feedbackGeneratorService: feedbackGeneratorService,
-            currentWeatherService: currentWeatherService,
+            favouritesService: favouritesService,
             lifecCycleService: lifeCycleHandlingService
         )
     }
@@ -85,8 +87,7 @@ final class AppAssembly {
             dataBaseQueue: dataBaseQueue,
             networkQueue: networkQueue,
             networkService: networkService,
-            urlRequestsFactory: urlRequestsFactory,
-            userDefaults: userDefaults
+            urlRequestsFactory: urlRequestsFactory
         )
     }
     
@@ -110,5 +111,13 @@ final class AppAssembly {
     
     private var locationService: ILocationService {
         LocationService()
+    }
+    
+    private var favouritesService: IFavouritesService {
+        FavouritesService(
+            coreDataService: coreDataService,
+            dataBaseQueue: dataBaseQueue,
+            userDefaults: userDefaults
+        )
     }
 }
