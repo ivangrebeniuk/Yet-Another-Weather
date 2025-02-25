@@ -47,6 +47,7 @@ class CurrentWeatherListPresenter {
     private var currentLocationViewModel = [CurrentWeatherCell.Model]()
     private var currentWeatherViewModels = [CurrentWeatherCell.Model]()
     private var currentLocationId: String?
+    private var favouriteLocationsIDs = [Location]()
 
     // MARK: - Init
     
@@ -81,11 +82,11 @@ class CurrentWeatherListPresenter {
     }
     
     private func getSortedCurrentWeatherItems(completionHandler: @escaping () -> Void) {
-        let locations = favouritesService.cachedFavourites
-        guard !locations.isEmpty else {
+        favouriteLocationsIDs = favouritesService.cachedFavourites
+        guard !favouriteLocationsIDs.isEmpty else {
             return completionHandler()
         }
-        currentWeatherService.getSortedCurrentWeatherItems(for: locations) { result in
+        currentWeatherService.getSortedCurrentWeatherItems(for: favouriteLocationsIDs) { result in
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
                 switch result {
@@ -202,11 +203,13 @@ class CurrentWeatherListPresenter {
             switch result {
             case .success(let currentLocationWeather):
                 currentLocationViewModel.append(currentLocationWeather)
-                DispatchQueue.main.async {
-                    self.view?.updateCurrentLocationSection(with: self.currentLocationViewModel)
+                DispatchQueue.main.async { [weak self] in
+                    guard let self else { return }
+                    view?.updateCurrentLocationSection(with: currentLocationViewModel)
                 }
             case .failure(let error):
                 print("Ошибка при загрузке текущей локации: \(error)")
+                view?.updateCurrentLocationSection(with: [])
             }
             dispatchGroup.leave()
         }

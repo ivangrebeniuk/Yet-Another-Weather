@@ -17,7 +17,7 @@ protocol ICoreDataService: AnyObject {
         completion: @escaping (() -> Void)
     )
 
-    func delete(with id: String)
+    func delete(with id: String, completion: @escaping () -> Void)
 }
 
 final class CoreDataService {
@@ -60,31 +60,19 @@ extension CoreDataService: ICoreDataService {
         }
     }
     
-    func delete(with id: String) {
-        let fetchRequest = LocationDB.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "id == %@", id)
-        do {
-            let locations = try persistentContainer.viewContext.fetch(fetchRequest)
-            locations.forEach { persistentContainer.viewContext.delete($0) }
-            if persistentContainer.viewContext.hasChanges {
-                try persistentContainer.viewContext.save()
+    func delete(with id: String, completion: @escaping () -> Void) {
+        let backgroundContext = persistentContainer.newBackgroundContext()
+        backgroundContext.perform {
+            let fetchRequest = LocationDB.fetchRequest()
+            fetchRequest.predicate = NSPredicate(format: "id == %@", id)
+            do {
+                let locations = try backgroundContext.fetch(fetchRequest)
+                locations.forEach { backgroundContext.delete($0) }
+                try backgroundContext.save()
+            } catch {
+                print("!!! Error while deleting location from coreData")
             }
-        } catch {
-            print("!!! Error while deleting location from coreData")
+            completion()
         }
     }
-    
-//    func delete(with id: String) {
-//        let fetchRequest = LocationDB.fetchRequest()
-//        fetchRequest.predicate = NSPredicate(format: "id == %@", id)
-//        do {
-//            let locations = try persistentContainer.viewContext.fetch(fetchRequest)
-//            locations.forEach { persistentContainer.viewContext.delete($0) }
-//            if persistentContainer.viewContext.hasChanges {
-//                try persistentContainer.viewContext.save()
-//            }
-//        } catch {
-//            print("!!! Error while deleting location from coreData")
-//        }
-//    }
 }

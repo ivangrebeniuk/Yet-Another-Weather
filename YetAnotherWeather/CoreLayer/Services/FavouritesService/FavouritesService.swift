@@ -19,31 +19,29 @@ protocol IFavouritesService: AnyObject {
 final class FavouritesService {
     
     // Dependencies
+    private let accessQueue: DispatchQueue
     private let coreDataService: ICoreDataService
     private let dataBaseQueue: DispatchQueue
-    private let userDefaults: UserDefaults
+    
+    // Models
+    private lazy var locations: [Location] = fetchLocations()
 
     
     // MARK: - Init
     
     init(
+        accessQueue: DispatchQueue,
         coreDataService: ICoreDataService,
-        dataBaseQueue: DispatchQueue,
-        userDefaults: UserDefaults
+        dataBaseQueue: DispatchQueue
     ) {
+        self.accessQueue = accessQueue
         self.coreDataService = coreDataService
         self.dataBaseQueue = dataBaseQueue
-        self.userDefaults = userDefaults
     }
-}
-
-// MARK: - IFavouritesService
-
-extension FavouritesService: IFavouritesService {
     
-    //    2/ через делегат лист обновлять кэш в нужных презентерах из CurrentWeatherService
+    // MARK: - Private
     
-    var cachedFavourites: [Location] {
+    private func fetchLocations() -> [Location] {
         do {
             let fetchRequest = LocationDB.fetchRequest()
             let sortDescriptor = NSSortDescriptor(key: "timeStamp", ascending: true)
@@ -51,7 +49,7 @@ extension FavouritesService: IFavouritesService {
             
             let locationDBs = try coreDataService.fetch(fetchRequest: fetchRequest)
             
-            let locations: [Location] = locationDBs.compactMap { locationDB in
+            return locationDBs.compactMap { locationDB in
                 guard
                     let id = locationDB.id,
                     let name = locationDB.name
@@ -62,11 +60,19 @@ extension FavouritesService: IFavouritesService {
                 return Location(id: id, name: name, timeStamp: locationDB.timeStamp)
             }
             
-            return locations
-            
         } catch {
-            print(error)
             return []
+        }
+    }
+}
+
+// MARK: - IFavouritesService
+
+extension FavouritesService: IFavouritesService {
+    
+    var cachedFavourites: [Location] {
+        accessQueue.sync {
+            return locations
         }
     }
     
@@ -78,7 +84,7 @@ extension FavouritesService: IFavouritesService {
                 
                 let locationDBs = try context.fetch(fetchRequest)
                 
-                // Проверяем, если объект с таким id уже существует
+                // Проверяем, что объект с таким id не существует в контексте
                 if locationDBs.isEmpty {
                     // Объект с таким id не существует, создаем новый
                     let newLocationDB = LocationDB(context: context)
@@ -89,18 +95,27 @@ extension FavouritesService: IFavouritesService {
                     return
                 }
             }, completion: {
+                self?.accessQueue.sync {
+                    self?.locations.append(location)
+                }
                 completion()
             }
         )}
     }
     
     func deleteFromFavourites(_ index: Int) {
+        let cached = cachedFavourites
         dataBaseQueue.async { [weak self] in
             guard let self else { return }
-            let cached = cachedFavourites
             guard index < cached.count else { return }
             let locationId = cached[index].id
-            coreDataService.delete(with: locationId)
+            coreDataService.delete(with: locationId) { [weak self] in
+                self?.accessQueue.sync { [weak self] in
+                    self?.locations.removeAll {
+                        $0.id == locationId
+                    }
+                }
+            }
         }
     }
 }
