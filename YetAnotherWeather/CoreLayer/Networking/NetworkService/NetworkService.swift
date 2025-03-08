@@ -32,6 +32,7 @@ protocol INetworkService: AnyObject {
     ) where JSONParser.Model == Model
 }
 
+
 final class NetworkService: INetworkService {
     
     private let session: URLSession
@@ -51,18 +52,35 @@ final class NetworkService: INetworkService {
         session.dataTask(with: request) { (data, response, error) in
             
             if let error = error {
+                print("❌ Ошибка при сетевом запросе: \(error)")
                 completion(.failure(error))
                 return
             }
 
-            guard
-                let data = data,
-                let model = T.from(JSON(data)),
-                let response = response as? HTTPURLResponse,
-                response.statusCode == 200 else {
-                completion(.failure(NetworkRequestError.invalidURL))
+            guard let data = data else {
+                print("❌ Нет данных в ответе")
+                completion(.failure(NetworkRequestError.invalidData))
                 return
             }
+            
+            guard let response = response as? HTTPURLResponse else {
+                print("❌ Не удалось получить HTTPResponse")
+                completion(.failure(NetworkRequestError.unknown))
+                return
+            }
+            
+            guard response.statusCode == 200 else {
+                print("❌ Ошибка сервера с кодом \(response.statusCode)")
+                completion(.failure(NetworkRequestError.serverError))
+                return
+            }
+
+            guard let model = T.from(JSON(data)) else {
+                print("❌ Ошибка парсинга данных")
+                completion(.failure(NetworkRequestError.invalidData))
+                return
+            }
+
             completion(.success(model))
         }.resume()
     }
@@ -74,17 +92,35 @@ final class NetworkService: INetworkService {
         session.dataTask(with: request) { (data, response, error) in
             
             if let error = error {
+                print("❌ Ошибка при сетевом запросе: \(error)")
                 completion(.failure(error))
-            }
-            
-            guard
-                let data = data,
-                let models = T.fromArray(JSON(data)),
-                let response = response as? HTTPURLResponse,
-                response.statusCode == 200 else {
-                completion(.failure(NetworkRequestError.invalidURL))
                 return
             }
+
+            guard let data = data else {
+                print("❌ Нет данных в ответе")
+                completion(.failure(NetworkRequestError.invalidData))
+                return
+            }
+            
+            guard let response = response as? HTTPURLResponse else {
+                print("❌ Не удалось получить HTTPResponse")
+                completion(.failure(NetworkRequestError.unknown))
+                return
+            }
+            
+            guard response.statusCode == 200 else {
+                print("❌ Ошибка сервера с кодом \(response.statusCode)")
+                completion(.failure(NetworkRequestError.serverError))
+                return
+            }
+
+            guard let models = T.fromArray(JSON(data)) else {
+                print("❌ Ошибка парсинга массива данных")
+                completion(.failure(NetworkRequestError.invalidData))
+                return
+            }
+
             completion(.success(models))
         }.resume()
     }
@@ -97,15 +133,26 @@ final class NetworkService: INetworkService {
         session.dataTask(with: request) { (data, response, error) in
             
             if let error = error {
+                print("❌ Ошибка при сетевом запросе: \(error)")
                 completion(.failure(error))
                 return
             }
             
-            guard
-                let data = data,
-                let response = response as? HTTPURLResponse,
-                response.statusCode == 200 else {
-                completion(.failure(NetworkRequestError.invalidURL))
+            guard let data = data else {
+                print("❌ Нет данных в ответе")
+                completion(.failure(NetworkRequestError.invalidData))
+                return
+            }
+            
+            guard let response = response as? HTTPURLResponse else {
+                print("❌ Не удалось получить HTTPResponse")
+                completion(.failure(NetworkRequestError.unknown))
+                return
+            }
+            
+            guard response.statusCode == 200 else {
+                print("❌ Ошибка сервера с кодом \(response.statusCode)")
+                completion(.failure(NetworkRequestError.serverError))
                 return
             }
             
@@ -113,6 +160,7 @@ final class NetworkService: INetworkService {
                 let parsedData = try parser.parse(JSON(data))
                 completion(.success(parsedData))
             } catch {
+                print("❌ Ошибка парсинга данных: \(error)")
                 completion(.failure(error))
                 return
             }
