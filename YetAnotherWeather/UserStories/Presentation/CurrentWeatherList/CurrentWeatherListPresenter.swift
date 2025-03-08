@@ -107,8 +107,10 @@ class CurrentWeatherListPresenter {
             DispatchQueue.main.async {
                 switch result {
                 case .success(let currentLocation):
+                    print("✅ Получены координаты: \(currentLocation)")
                     completion(.success(currentLocation))
                 case .failure(let error):
+                    print("❌ Ошибка получения координат: \(error)")
                     completion(.failure(error))
                 }
             }
@@ -127,6 +129,7 @@ class CurrentWeatherListPresenter {
                     self?.currentLocationId = String(model.id)
                     completion(.success(models))
                 case .failure(let error):
+                    print("❌ Ошибка поиска локации: \(error)")
                     completion(.failure(error))
                 }
             }
@@ -153,41 +156,48 @@ class CurrentWeatherListPresenter {
         completion: @escaping (Result<CurrentWeatherCell.Model, Error>) -> Void
     ) {
         fetchCurrentCoordinates { [weak self] result in
+            guard let self else {
+                completion(.failure(LocationError.deniedError))
+                return
+            }
+            
             switch result {
             case .success(let currentLocation):
-                self?.searchCurrentLocation(coordinates: currentLocation) { result in
+                print("✅ Координаты получены: \(currentLocation)")
+                self.searchCurrentLocation(coordinates: currentLocation) { result in
                     switch result {
                     case .success(let searchResults):
-                        // Проверяем, есть ли результаты
-                        guard
-                            !searchResults.isEmpty,
-                            let currentLocation = searchResults.first
-                        else {
+                        guard !searchResults.isEmpty, let currentLocation = searchResults.first else {
+                            print("❌ Ошибка: пустые результаты поиска")
                             completion(.failure(LocationError.locationNotAvailable))
                             return
                         }
                         
-                        self?.getWeatherInCurrentLocation(locationId: String(currentLocation.id)) { [weak self] result in
-                            guard let self else { return }
+                        self.getWeatherInCurrentLocation(locationId: String(currentLocation.id)) { result in
                             switch result {
                             case .success(let currentLocationWeather):
-                                let viewModel = viewModelFactory.makeCurrentLocationViewModel(
+                                let viewModel = self.viewModelFactory.makeCurrentLocationViewModel(
                                     model: currentLocationWeather
                                 )
+                                print("✅ Погода успешно загружена")
                                 completion(.success(viewModel))
                             case .failure(let error):
+                                print("❌ Ошибка загрузки погоды: \(error)")
                                 completion(.failure(error))
                             }
                         }
                     case .failure(let error):
+                        print("❌ Ошибка поиска локации: \(error)")
                         completion(.failure(error))
                     }
                 }
             case .failure(let error):
+                print("❌ Ошибка получения координат: \(error)")
                 completion(.failure(error))
             }
         }
     }
+
 
     private func updateSections(completionHandler: @escaping () -> Void) {
         lifeCycleHandlingService.add(delegate: self)
@@ -199,7 +209,10 @@ class CurrentWeatherListPresenter {
         
         dispatchGroup.enter()
         fetchWeatherForCurrentLocation { [weak self] result in
-            guard let self else { return }
+            guard let self else {
+                dispatchGroup.leave()
+                return
+            }
             switch result {
             case .success(let currentLocationWeather):
                 currentLocationViewModel.append(currentLocationWeather)
