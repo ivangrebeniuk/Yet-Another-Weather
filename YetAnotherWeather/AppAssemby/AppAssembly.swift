@@ -13,13 +13,14 @@ import SnapKit
 final class AppAssembly {
     
     // Dependencies
+    private lazy var accessQueue = DispatchQueue(label: "ru.i.grebeniuk.serialAccessQueue")
     private lazy var urlRequestsFactory = URLRequestFactory()
     private lazy var networkService = NetworkService(session: URLSession.shared)
+    private lazy var coreDataService = CoreDataService()
     private lazy var networkQueue = DispatchQueue(label: "ru.i.grebeniuk.serialNetworkQueue")
     private lazy var dataBaseQueue = DispatchQueue(label: "ru.i.grebeniuk.dataBaseQueue", qos: .userInitiated)
     private lazy var dateFormatter = CustomDateFormatter()
     private lazy var beaufortScaleResolver = BeaufortScaleResolver()
-    private lazy var userDefaults = UserDefaults.standard
     
     private let lifeCycleHandlingService: ILifecycleHandlingService
     
@@ -51,7 +52,8 @@ final class AppAssembly {
             feedbackGeneratorService: feedbackGeneratorService,
             locationService: locationService,
             searchService: searchLocationsService,
-            lifecCycleService: lifeCycleHandlingService
+            lifecCycleService: lifeCycleHandlingService,
+            favouritesService: favouritesService
         )
     }
     
@@ -69,7 +71,7 @@ final class AppAssembly {
             dateFormatter: dateFormatter,
             forecastService: forecastService,
             feedbackGeneratorService: feedbackGeneratorService,
-            currentWeatherService: currentWeatherService,
+            favouritesService: favouritesService,
             lifecCycleService: lifeCycleHandlingService
         )
     }
@@ -85,8 +87,7 @@ final class AppAssembly {
             dataBaseQueue: dataBaseQueue,
             networkQueue: networkQueue,
             networkService: networkService,
-            urlRequestsFactory: urlRequestsFactory,
-            userDefaults: userDefaults
+            urlRequestsFactory: urlRequestsFactory
         )
     }
     
@@ -111,4 +112,10 @@ final class AppAssembly {
     private var locationService: ILocationService {
         LocationService()
     }
+    
+    private lazy var favouritesService = FavouritesService(
+        accessQueue: accessQueue,
+        coreDataService: coreDataService,
+        dataBaseQueue: dataBaseQueue
+    )
 }

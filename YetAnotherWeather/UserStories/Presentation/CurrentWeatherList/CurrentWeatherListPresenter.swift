@@ -8,11 +8,11 @@
 import Foundation
 
 protocol CurrentWeatherListInput: AnyObject {
-    func addToFavourites(location: String)
+    func addToFavourites(location: Location)
 }
 
 protocol CurrentWeatherListOutput: AnyObject {
-    func didSelectLocation(_ location: String, isCurrentLocation: Bool)
+    func didSelectLocation(_ locationId: String, isCurrentLocation: Bool)
 }
 
 protocol ICurrentWeatherListPresenter {
@@ -38,13 +38,16 @@ class CurrentWeatherListPresenter {
     private let locationService: ILocationService
     private let searchService: ISearchLocationsService
     private let lifeCycleHandlingService: ILifecycleHandlingService
+    private let favouritesService: IFavouritesService
+    
     weak var output: CurrentWeatherListOutput?
     weak var view: ICurrentWeatherListView?
     
     // Models
-    private var currentLocationModel = [CurrentWeatherCell.Model]()
+    private var currentLocationViewModel = [CurrentWeatherCell.Model]()
     private var currentWeatherViewModels = [CurrentWeatherCell.Model]()
     private var currentLocationId: String?
+    private var favouriteLocationsIDs = [Location]()
 
     // MARK: - Init
     
@@ -56,6 +59,7 @@ class CurrentWeatherListPresenter {
         locationService: ILocationService,
         searchService: ISearchLocationsService,
         lifeCycleHandlingService: ILifecycleHandlingService,
+        favouritesService: IFavouritesService,
         output: CurrentWeatherListOutput?
     ) {
         self.alertViewModelFactory = alertViewModelFactory
@@ -65,6 +69,7 @@ class CurrentWeatherListPresenter {
         self.locationService = locationService
         self.searchService = searchService
         self.lifeCycleHandlingService = lifeCycleHandlingService
+        self.favouritesService = favouritesService
         self.output = output
     }
     
@@ -77,7 +82,11 @@ class CurrentWeatherListPresenter {
     }
     
     private func getSortedCurrentWeatherItems(completionHandler: @escaping () -> Void) {
-        currentWeatherService.getSortedCurrentWeatherItems { result in
+        favouriteLocationsIDs = favouritesService.cachedFavourites
+        guard !favouriteLocationsIDs.isEmpty else {
+            return completionHandler()
+        }
+        currentWeatherService.getSortedCurrentWeatherItems(for: favouriteLocationsIDs) { result in
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
                 switch result {
@@ -125,10 +134,10 @@ class CurrentWeatherListPresenter {
     }
     
     private func getWeatherInCurrentLocation(
-        location: String,
+        locationId: String,
         completion: @escaping (Result<CurrentWeatherModel, Error>) -> Void
     ) {
-        currentWeatherService.getCurrentWeather(for: location) { result in
+        currentWeatherService.getCurrentWeather(for: locationId) { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let model):
@@ -158,7 +167,7 @@ class CurrentWeatherListPresenter {
                             return
                         }
                         
-                        self?.getWeatherInCurrentLocation(location: String(currentLocation.id)) { [weak self] result in
+                        self?.getWeatherInCurrentLocation(locationId: String(currentLocation.id)) { [weak self] result in
                             guard let self else { return }
                             switch result {
                             case .success(let currentLocationWeather):
@@ -182,10 +191,8 @@ class CurrentWeatherListPresenter {
 
     private func updateSections(completionHandler: @escaping () -> Void) {
         lifeCycleHandlingService.add(delegate: self)
-        
-        view?.startActivityIndicator()
-        
-        currentLocationModel.removeAll()
+                
+        currentLocationViewModel.removeAll()
         currentWeatherViewModels.removeAll()
         
         let dispatchGroup = DispatchGroup()
@@ -195,12 +202,14 @@ class CurrentWeatherListPresenter {
             guard let self else { return }
             switch result {
             case .success(let currentLocationWeather):
-                currentLocationModel.append(currentLocationWeather)
-                DispatchQueue.main.async {
-                    self.view?.updateCurrentLocationSection(with: self.currentLocationModel)
+                currentLocationViewModel.append(currentLocationWeather)
+                DispatchQueue.main.async { [weak self] in
+                    guard let self else { return }
+                    view?.updateCurrentLocationSection(with: currentLocationViewModel)
                 }
             case .failure(let error):
                 print("Ошибка при загрузке текущей локации: \(error)")
+                view?.updateCurrentLocationSection(with: [])
             }
             dispatchGroup.leave()
         }
@@ -213,9 +222,8 @@ class CurrentWeatherListPresenter {
         dispatchGroup.notify(queue: .main) { [weak self] in
             guard let self else { return }
             
-            view?.updateCurrentLocationSection(with: currentLocationModel)
+            view?.updateCurrentLocationSection(with: currentLocationViewModel)
             view?.updateMainSection(with: currentWeatherViewModels)
-            view?.stopActivityIndicator()
             completionHandler()
         }
     }
@@ -226,7 +234,10 @@ class CurrentWeatherListPresenter {
 extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
     
     func viewDidLoad() {
-        updateSections() {}
+        view?.startActivityIndicator()
+        updateSections() { [weak self] in
+            self?.view?.stopActivityIndicator()
+        }
     }
     
     func didPullToRefresh() {
@@ -241,7 +252,7 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
         currentWeatherViewModels.remove(at: index)
         // дропаем id локации из списка избранных городов
         // иначе при добавлении новой локиции появится удаленный город
-        currentWeatherService.deleteFromFavourites(index)
+        favouritesService.deleteFromFavourites(index)
         view?.updateMainSection(with: currentWeatherViewModels)
         feedbackGenerator.generateFeedback(ofType: .notification(.success))
     }
@@ -249,8 +260,9 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
     func didSelectRowAt(atIndex index: Int, section: CurrentWeatherListViewController.Section) {
         switch section {
         case .main:
+            let locationId = favouritesService.cachedFavourites[index].id
             output?.didSelectLocation(
-                currentWeatherService.cachedFavourites[index],
+                locationId,
                 isCurrentLocation: false
             )
         case .currentLocation:
@@ -262,7 +274,7 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
     }
     
     func emptyState() -> Bool {
-        return currentWeatherService.cachedFavourites.isEmpty && currentLocationModel.isEmpty
+        favouritesService.cachedFavourites.isEmpty && currentLocationViewModel.isEmpty
     }
 }
 
@@ -270,12 +282,12 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
 
 extension CurrentWeatherListPresenter: SearchResultsOutput {
     
-    func didSelectLocation(_ location: String) {
-        guard let currentLocationId, currentLocationId == location else {
-            output?.didSelectLocation(location, isCurrentLocation: false)
+    func didSelectLocation(_ locationId: String) {
+        guard let currentLocationId, currentLocationId == locationId else {
+            output?.didSelectLocation(locationId, isCurrentLocation: false)
             return
         }
-        output?.didSelectLocation(location, isCurrentLocation: true)
+        output?.didSelectLocation(locationId, isCurrentLocation: true)
     }
 }
 
@@ -283,10 +295,11 @@ extension CurrentWeatherListPresenter: SearchResultsOutput {
 
 extension CurrentWeatherListPresenter: CurrentWeatherListInput {
     
-    func addToFavourites(location: String) {
+    func addToFavourites(location: Location) {
         view?.hideSearchResults()
-        currentWeatherService.saveToFavourites(location)
-        updateSections {}
+        favouritesService.saveToFavourites(location) { [weak self] in
+            self?.updateSections {}
+        }
     }
 }
 

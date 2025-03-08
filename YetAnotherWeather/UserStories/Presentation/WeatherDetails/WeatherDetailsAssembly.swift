@@ -15,7 +15,7 @@ final class WeatherDetailsAssembly {
     private let dateFormatter: ICustomDateFormatter
     private let forecastService: IForecastService
     private let feedbackGeneratorService: IFeedbackGeneratorService
-    private let currentWeatherService: ICurrentWeatherService
+    private let favouritesService: IFavouritesService
     private let lifecCycleService: ILifecycleHandlingService
 
     // MARK: - Init
@@ -25,18 +25,18 @@ final class WeatherDetailsAssembly {
         dateFormatter: ICustomDateFormatter,
         forecastService: IForecastService,
         feedbackGeneratorService: IFeedbackGeneratorService,
-        currentWeatherService: ICurrentWeatherService,
+        favouritesService: IFavouritesService,
         lifecCycleService: ILifecycleHandlingService
     ) {
         self.beaufortScaleResolver = beaufortScaleResolver
         self.dateFormatter = dateFormatter
         self.forecastService = forecastService
         self.feedbackGeneratorService = feedbackGeneratorService
-        self.currentWeatherService = currentWeatherService
+        self.favouritesService = favouritesService
         self.lifecCycleService = lifecCycleService
     }
     
-    func assemble(location: String, isCurrentLocation: Bool, output: WeatherDetailsOutput) -> UIViewController {
+    func assemble(locationId: String, isCurrentLocation: Bool, output: WeatherDetailsOutput) -> UIViewController {
         
         let viewModelFactory = WeatherDetailsViewModelFactory(
             beaufortScaleResolver: beaufortScaleResolver,
@@ -49,9 +49,9 @@ final class WeatherDetailsAssembly {
             forecastService: forecastService,
             viewModelFactory: viewModelFactory,
             feedbackGenerator: feedbackGeneratorService,
-            currentWeatherService: currentWeatherService,
+            favouritesService: favouritesService,
             lifeCycleHandlingService: lifecCycleService,
-            location: location,
+            identifier: locationId,
             isCurrentLocation: isCurrentLocation,
             output: output
         )

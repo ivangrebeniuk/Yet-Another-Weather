@@ -8,7 +8,7 @@
 import Foundation
 
 protocol WeatherDetailsOutput: AnyObject {
-    func didAddLocationToFavourites(location: String?)
+    func didAddLocationToFavourites(location: Location?)
     func didRequestToDismiss()
 }
 
@@ -26,17 +26,16 @@ final class WeatherDetailsPresenter {
     private let forecastService: IForecastService
     private let viewModelFactory: IWeatherDetailsViewModelFactory
     private let feedbackGenerator: IFeedbackGeneratorService
-    private let currentWeatherService: ICurrentWeatherService
-    private let location: String
+    private let favouritesService: IFavouritesService
+    private let identifier: String
     private let isCurrentLocation: Bool
     private let lifeCycleHandlingService: ILifecycleHandlingService
     private weak var output: WeatherDetailsOutput?
-
     weak var view: IWeatherDetailsView?
     
     // Models
-    var forecastData: ForecastModel?
-    
+    private var weatherDetailsViewModel: WeatherDetailsViewModel?
+
     // MARK: - Init
     
     init(
@@ -44,9 +43,9 @@ final class WeatherDetailsPresenter {
         forecastService: IForecastService,
         viewModelFactory: IWeatherDetailsViewModelFactory,
         feedbackGenerator: IFeedbackGeneratorService,
-        currentWeatherService: ICurrentWeatherService,
+        favouritesService: IFavouritesService,
         lifeCycleHandlingService: ILifecycleHandlingService,
-        location: String,
+        identifier: String,
         isCurrentLocation: Bool,
         output: WeatherDetailsOutput
     ) {
@@ -54,17 +53,18 @@ final class WeatherDetailsPresenter {
         self.forecastService = forecastService
         self.viewModelFactory = viewModelFactory
         self.feedbackGenerator = feedbackGenerator
-        self.currentWeatherService = currentWeatherService
+        self.favouritesService = favouritesService
         self.lifeCycleHandlingService = lifeCycleHandlingService
-        self.location = location
+        self.identifier = identifier
         self.isCurrentLocation = isCurrentLocation
         self.output = output
     }
     
     // MARK: - Private
+    
     func getWeatherForecast() {
         view?.startLoader()
-        forecastService.getWeatherForecast(for: location) { result in
+        forecastService.getWeatherForecast(for: identifier) { result in
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
                 switch result {
@@ -72,6 +72,7 @@ final class WeatherDetailsPresenter {
                     let viewModel = viewModelFactory.makeCurrentWeatherViewModel(
                         model: forecastModel
                     )
+                    weatherDetailsViewModel = viewModel
                     view?.updateView(with: viewModel)
                 case .failure(let error):
                     let alertModel = alertViewModelFactory.makeSingleButtonErrorAlert { [weak self] in
@@ -92,16 +93,25 @@ final class WeatherDetailsPresenter {
 extension WeatherDetailsPresenter: IWeatherDetailsPresenter {
     
     var isAddedToFavourites: Bool {
-        currentWeatherService.cachedFavourites.contains(location) || isCurrentLocation
+        favouritesService.cachedFavourites.forEach { print($0.name) }
+        return favouritesService.cachedFavourites.contains { $0.id == identifier } || isCurrentLocation
     }
     
     func viewDidLoad() {
         lifeCycleHandlingService.add(delegate: self)
-        
         getWeatherForecast()
     }
 
     func didTapAddButton() {
+        guard let locationName = weatherDetailsViewModel?.currentWeatherViewModel.location else {
+            return feedbackGenerator.generateFeedback(ofType: .notification(.error))
+        }
+        let timeStamp = Date.now.timeIntervalSince1970
+        let location = Location(
+            id: identifier,
+            name: locationName,
+            timeStamp: timeStamp
+        )
         feedbackGenerator.generateFeedback(ofType: .notification(.success))
         output?.didAddLocationToFavourites(location: location)
     }
