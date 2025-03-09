@@ -1,5 +1,5 @@
 PODS:
-  - Kingfisher (7.10.2)
+  - Kingfisher (7.12.0)
   - SnapKit (5.6.0)
   - SwiftyJSON (5.0.0)
 
@@ -15,10 +15,10 @@ SPEC REPOS:
     - SwiftyJSON
 
 SPEC CHECKSUMS:
-  Kingfisher: 99edc495d3b7607e6425f0d6f6847b2abd6d716d
+  Kingfisher: 53a10ea35051a436b5fb626ca2dd8f3144d755e9
   SnapKit: e01d52ebb8ddbc333eefe2132acf85c8227d9c25
   SwiftyJSON: 36413e04c44ee145039d332b4f4e2d3e8d6c4db7
 
-PODFILE CHECKSUM: 8e6ea8d83e8df959e1ad6985c9a4a1e643a161eb
+PODFILE CHECKSUM: 52c88408501c34b2d60aaa47e13eb12083bf7dd3
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.11.3
