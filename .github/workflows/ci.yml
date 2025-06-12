@@ -31,7 +31,7 @@ jobs:
             -workspace YetAnotherWeather.xcworkspace \
             -scheme YetAnotherWeather \
             -sdk iphonesimulator \
-            -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation), OS=17.1' \
+            -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=17.1' \
             -only-testing:YetAnotherWeatherTests \
             clean test \
           | xcbeautify
