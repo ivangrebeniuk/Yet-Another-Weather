@@ -81,7 +81,6 @@ final class WeatherDetailsViewController: UIViewController {
     // MARK: - Private
     
     private func setUpUI() {
-        
         view.addSubview(backgroundImageView)
         view.addSubview(scrollView)
         view.addSubview(loader)
@@ -99,6 +98,7 @@ final class WeatherDetailsViewController: UIViewController {
         blurredHourlyForecastView.layer.cornerRadius = 16
         blurredForecastContainer.layer.cornerRadius = 16
         blurredWindContainerView.layer.cornerRadius = 16
+        scrollView.showsVerticalScrollIndicator = false
     }
     
     private func setUpConstraints() {
