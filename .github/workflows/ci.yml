@@ -1,0 +1,37 @@
+name: iOS Unit Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  unit-tests:
+    name: Run Unit Tests
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install CocoaPods
+        run: |
+          sudo gem install cocoapods || true
+          pod install
+
+      - name: Install xcbeautify
+        run: |
+          brew install xcbeautify || true
+
+      - name: Run Unit Tests
+        run: |
+          xcodebuild \
+            -workspace YetAnotherWeather.xcworkspace \
+            -scheme YetAnotherWeather \
+            -sdk iphonesimulator \
+            -destination 'platform=iOS Simulator,name=iPhone 14' \
+            -only-testing:YetAnotherWeatherTests
+            clean test \
+          | xcbeautify
