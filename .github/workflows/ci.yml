@@ -10,7 +10,7 @@ on:
 jobs:
   unit-tests:
     name: Run Unit Tests
-    runs-on: self-hosted
+    runs-on: macos-latest
 
     steps:
       - name: Checkout repository
@@ -32,6 +32,6 @@ jobs:
             -scheme YetAnotherWeather \
             -sdk iphonesimulator \
             -destination 'platform=iOS Simulator,name=iPhone 14' \
-            -only-testing:YetAnotherWeatherTests
+            -only-testing:YetAnotherWeatherTests \
             clean test \
           | xcbeautify
