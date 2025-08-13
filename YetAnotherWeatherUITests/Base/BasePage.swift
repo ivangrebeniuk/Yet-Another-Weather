@@ -16,9 +16,11 @@ protocol BasePage {
 extension BasePage {
     
     var app: XCUIApplication {
-        guard let app = AppManager.shared.app else {
+        guard let app = AppManager.shared.runningApp else {
             fatalError("App not launched")
         }
         return app
     }
+    
+    var tableView : XCUIElement P app.tabelViews.firstMatch }
 }

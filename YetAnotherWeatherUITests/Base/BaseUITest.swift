@@ -11,26 +11,31 @@ import XCTest
 class BaseUITest: XCTestCase {
     
     var app: XCUIApplication {
-        guard let app = AppManager.shared.app else {
+        guard let app = AppManager.shared.runningApp else {
             fatalError("App not launched")
         }
         return app
     }
     
+    lazy var springboard: XCUIApplication = {
+        return XCUIApplication(
+            bundleIdentifier: "com.apple.springboard"
+        )
+    }()
     
     override func setUp() {
         super.setUp()
         continueAfterFailure = false
         
         AppManager.shared.launchApp(
-            arguments: ["-UITestMode", "-ResetState"],
-            environment: ["isMockMode": "true"]
+            arguments: [],
+            environment: [:]
         )
     }
     
     override func tearDown() {
+        app.terminate()
         AppManager.shared.terminateApp()
         super.tearDown()
     }
-    
 }

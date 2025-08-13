@@ -9,7 +9,7 @@ import XCTest
 
 final class AppManager {
     static let shared = AppManager()
-    private(set) var app: XCUIApplication?
+    private(set) var runningApp: XCUIApplication?
 
     private init() {}
 
@@ -17,15 +17,15 @@ final class AppManager {
         arguments: [String] = [],
         environment: [String: String] = [:]
     ) {
-        let newApp = XCUIApplication()
-        newApp.launchArguments = arguments
-        newApp.launchEnvironment = environment
-        newApp.launch()
-        app = newApp
+        let app = XCUIApplication()
+        app.launchArguments = arguments
+        app.launchEnvironment = environment
+        app.launch()
+        runningApp = app
     }
 
     func terminateApp() {
-        app?.terminate()
-        app = nil
+        runningApp?.terminate()
+        runningApp = nil
     }
 }
