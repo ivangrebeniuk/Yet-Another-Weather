@@ -20,6 +20,9 @@ final class AppManager {
         let app = XCUIApplication()
         app.launchArguments = arguments
         app.launchEnvironment = environment
+        
+        print("🔍 Launching app with arguments: \(arguments). And environment: \(environment)")
+        
         app.launch()
         runningApp = app
     }

@@ -23,6 +23,7 @@ final class AppAssembly {
     private lazy var beaufortScaleResolver = BeaufortScaleResolver()
     
     private let lifeCycleHandlingService: ILifecycleHandlingService
+    private let arguments = ProcessInfo.processInfo.arguments
     
     // MARK: - Init
     
@@ -30,6 +31,13 @@ final class AppAssembly {
         let lifeCycleHandlingService = LifecycleHandlingService()
         appDelegate.delegate = lifeCycleHandlingService
         self.lifeCycleHandlingService = lifeCycleHandlingService
+        
+        #if DEBUG
+        if arguments.contains("isUITesting") {
+            print("### УДАЛЯЕМ ВСЕ ИЗ КОР ДАТЫ")
+            coreDataService.reset()
+        }
+        #endif
     }
     
     // MARK: - FlowCoordinators

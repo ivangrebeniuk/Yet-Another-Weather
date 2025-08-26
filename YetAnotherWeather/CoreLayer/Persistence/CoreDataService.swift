@@ -18,6 +18,8 @@ protocol ICoreDataService: AnyObject {
     )
 
     func delete(with id: String, completion: @escaping () -> Void)
+    
+    func reset()
 }
 
 final class CoreDataService {
@@ -73,6 +75,20 @@ extension CoreDataService: ICoreDataService {
                 print("!!! Error while deleting location from coreData")
             }
             completion()
+        }
+    }
+    
+    func reset() {
+        let backgroundContext = persistentContainer.newBackgroundContext()
+        backgroundContext.perform {
+            let fetchRequest = LocationDB.fetchRequest()
+            do {
+                let locations = try backgroundContext.fetch(fetchRequest)
+                locations.forEach { backgroundContext.delete($0) }
+                try backgroundContext.save()
+            } catch {
+                print("Error while resetting coreData storage")
+            }
         }
     }
 }
