@@ -20,18 +20,35 @@ final class URLRequestFactory {
     private struct Endpoint {
         let path: String
         let querryItems: [URLQueryItem]
+        let arguments = ProcessInfo.processInfo.arguments
+        let environment = ProcessInfo.processInfo.environment
         
         var url: URL? {
             var components = URLComponents()
-            components.scheme = APIConstants.scheme
-            components.host = APIConstants.host
             components.path = path
             components.queryItems = [
                 URLQueryItem(name: "key", value: URLRequestFactory.apiKey),
                 URLQueryItem(name: "lang", value: "eng")
             ] + querryItems
             
-            return components.url
+            
+            if
+                arguments.contains("isUITesting"),
+                let portString = environment["MOCK_SERVER_PORT"],
+                let port = UInt16(portString) {
+                print("✅ UI tests launched at port \(port)")
+                components.scheme = "http"
+                components.host = "localhost"
+                components.port = Int(port)
+                
+            } else {
+                components.scheme = APIConstants.scheme
+                components.host = APIConstants.host
+            }
+            
+            let finalURL = components.url
+            
+            return finalURL
         }
     }
 }

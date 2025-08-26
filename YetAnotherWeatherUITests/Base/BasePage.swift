@@ -17,10 +17,8 @@ extension BasePage {
     
     var app: XCUIApplication {
         guard let app = AppManager.shared.runningApp else {
-            fatalError("App not launched")
+            fatalError("XCUIApplication was not launched. Run AppManager.shared.launchApp() first⚠️")
         }
         return app
     }
-    
-    var tableView : XCUIElement P app.tabelViews.firstMatch }
 }
