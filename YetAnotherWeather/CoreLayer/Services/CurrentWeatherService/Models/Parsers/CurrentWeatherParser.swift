@@ -13,7 +13,6 @@ final class CurrentWeatherParser: IJSONParser {
     // MARK: - IJSONParser
     
     func parse(_ json: JSON) throws -> CurrentWeatherModel {
-        
         let windParser = WindParser()
         let locationParser = LocationParser()
         

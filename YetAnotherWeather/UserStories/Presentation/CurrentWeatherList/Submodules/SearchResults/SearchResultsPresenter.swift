@@ -12,15 +12,17 @@ protocol SearchResultsOutput: AnyObject {
     func didSelectLocation(_ locationId: String)
 }
 
+@MainActor
 protocol ISearchResultsPresenter: AnyObject {
     
     var searchResultViewModels: [SearchResultCellView.Model] { get }
         
-    func viewDidLoad()
+    func performSearch()
     
     func didTapCell(atIndex index: IndexPath)
 }
 
+@MainActor
 final class SearchResultsPresenter {
     
     // Dependencies
@@ -29,11 +31,12 @@ final class SearchResultsPresenter {
     private weak var output: SearchResultsOutput?
     weak var view: ISearchResultsView?
         
-    // ISearchResultsPresenter
-    private(set) var searchResultViewModels = [SearchResultCellView.Model]()
-    
     // Models
+    private(set) var searchResultViewModels = [SearchResultCellView.Model]()
     private var searchResults = [SearchResultModel]()
+    
+    // Task management
+    private var currentTask: Task<Void, Never>?
     
     // MARK: - Init
     
@@ -49,63 +52,74 @@ final class SearchResultsPresenter {
     
     // MARK: - Private
     
-    private func searchLocations(text: String) {
-        searchLocationsService.getSearchResults(for: text) { result in
-            DispatchQueue.main.async { [weak self] in
-                guard let self else { return }
-                switch result {
-                case .success(let results):
-                    searchResults = results
-                    searchResultViewModels = makeViewModels(from: results)
-                case .failure(let error):
-                    feedbackGeneratorService.generateFeedback(ofType: .notification(.error))
-                    print(error.localizedDescription)
-                    searchResultViewModels = []
-                }
-                view?.updateTableView()
-            }
+    private func searchLocations(text: String) async {
+        do {
+            let locations = try await searchLocationsService.getSearchResults(for: text)
+            searchResults = locations
+            searchResultViewModels = makeViewModels(from: locations)
+            view?.updateTableView()
+        } catch {
+            feedbackGeneratorService.generateFeedback(ofType: .notification(.error))
+            clearState()
         }
     }
-    
+
     private func makeViewModels(from models: [SearchResultModel]) -> [SearchResultCellView.Model] {
+        guard !models.isEmpty else {
+            return [SearchResultCellView.Model(title: .noResultsFoundText)]
+        }
         return models.map { result in
             let text = "\(result.name), \(result.country)"
             return SearchResultCellView.Model(title: text)
         }
     }
     
-    private func updateSearchResults(for searchQuerry: String?) {
+    private func updateSearchResults(for searchQuery: String?) async {
         guard
-            let searchQuerry = searchQuerry,
-            searchQuerry.count > 2
+            let searchQuery = searchQuery,
+            !searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+            searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).count > 2
         else {
-            searchResultViewModels = []
-            searchResults = []
-            view?.updateTableView()
+            clearState()
             return
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-            self?.searchLocations(text: searchQuerry)
-        }
+        try? await Task.sleep(for: .seconds(0.3))
+        guard !Task.isCancelled else { return }
+        
+        await searchLocations(
+            text: searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+        )
+    }
+    
+    private func clearState() {
+        searchResultViewModels = []
+        searchResults = []
+        view?.updateTableView()
     }
 }
 
-// MARK: - ICurrentWeatherListPresenter
+// MARK: - ISearchResultsPresenter
 
 extension SearchResultsPresenter: ISearchResultsPresenter {
     
-    func viewDidLoad() {
-        updateSearchResults(for: view?.searchQuerry)
+    func performSearch() {
+        currentTask?.cancel()
+        currentTask = Task { @MainActor in
+            await updateSearchResults(for: view?.searchQuery)
+        }
     }
     
     func didTapCell(atIndex index: IndexPath) {
         feedbackGeneratorService.generateFeedback(ofType: .impact(.medium))
-        guard index.row < searchResults.count else {
-            print("!!! Index out of range")
-            return
-            }
+        guard index.row < searchResults.count else { return }
+        
         let locationId = String(searchResults[index.row].id)
         output?.didSelectLocation(locationId)
     }
+}
+
+private extension String {
+    
+    static let noResultsFoundText = "No locations found"
 }

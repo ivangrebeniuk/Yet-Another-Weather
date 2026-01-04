@@ -14,6 +14,12 @@ protocol ISearchLocationsService {
         for location: String,
         completion: @escaping (Result<[SearchResultModel], Error>) -> Void
     )
+    
+    /// Search available locations for `location`
+    /// Returns array of `[SearchResultModel]`
+    func getSearchResults(
+        for location: String
+    ) async throws -> [SearchResultModel]
 }
 
 final class SearchLocationsService {
@@ -43,8 +49,10 @@ extension SearchLocationsService: ISearchLocationsService {
     ) {
         do {
             let request = try urlRequestsFactory.makeSearchRequest(for: location)
-            networkService.loadModels(
-                request: request
+            let parser = SearchResultParser()
+            networkService.load(
+                request: request,
+                parser: parser
             ) { (result: Result<([SearchResultModel]), Error>) in
                 switch result {
                 case.success(let models):
@@ -56,5 +64,12 @@ extension SearchLocationsService: ISearchLocationsService {
         } catch {
             completion(.failure(NetworkRequestError.invalidURL))
         }
+    }
+    
+    func getSearchResults(for location: String) async throws -> [SearchResultModel] {
+        let request = try urlRequestsFactory.makeSearchRequest(for: location)
+        let parser = SearchResultParser()
+        let models = try await networkService.load(request: request, parser: parser)
+        return models
     }
 }

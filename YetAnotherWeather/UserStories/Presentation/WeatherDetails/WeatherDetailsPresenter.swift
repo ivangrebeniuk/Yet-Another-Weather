@@ -62,29 +62,25 @@ final class WeatherDetailsPresenter {
     
     // MARK: - Private
     
-    func getWeatherForecast() {
-        view?.startLoader()
-        forecastService.getWeatherForecast(for: identifier) { result in
-            DispatchQueue.main.async { [weak self] in
-                guard let self else { return }
-                switch result {
-                case .success(let forecastModel):
-                    let viewModel = viewModelFactory.makeCurrentWeatherViewModel(
-                        model: forecastModel
-                    )
-                    weatherDetailsViewModel = viewModel
-                    view?.updateView(with: viewModel)
-                case .failure(let error):
-                    let alertModel = alertViewModelFactory.makeSingleButtonErrorAlert { [weak self] in
-                        self?.didRequestToDismiss()
-                    }
-                    feedbackGenerator.generateFeedback(ofType: .notification(.error))
-                    view?.showAlert(withModel: alertModel)
-                    print("Ошибочка: \(error.localizedDescription)")
-                }
-                view?.stopLoader()
+    @MainActor
+    func getWeatherForecast() async {
+        do {
+            view?.startLoader()
+            let forecastModel = try await forecastService.getWeatherForecast(for: identifier)
+            let viewModel = viewModelFactory.makeCurrentWeatherViewModel(
+                model: forecastModel
+            )
+            weatherDetailsViewModel = viewModel
+            view?.updateView(with: viewModel)
+        } catch {
+            let alertModel = alertViewModelFactory.makeSingleButtonErrorAlert { [weak self] in
+                self?.didRequestToDismiss()
             }
+            feedbackGenerator.generateFeedback(ofType: .notification(.error))
+            view?.showAlert(withModel: alertModel)
         }
+        
+        view?.stopLoader()
     }
 }
 
@@ -99,7 +95,9 @@ extension WeatherDetailsPresenter: IWeatherDetailsPresenter {
     
     func viewDidLoad() {
         lifeCycleHandlingService.add(delegate: self)
-        getWeatherForecast()
+        Task {
+            await getWeatherForecast()
+        }
     }
 
     func didTapAddButton() {
@@ -126,6 +124,8 @@ extension WeatherDetailsPresenter: IWeatherDetailsPresenter {
 extension WeatherDetailsPresenter: ILifeCycleServiceDelegate {
     
     func didEnterForeground() {
-        getWeatherForecast()
+        Task {
+            await getWeatherForecast()
+        }
     }
 }

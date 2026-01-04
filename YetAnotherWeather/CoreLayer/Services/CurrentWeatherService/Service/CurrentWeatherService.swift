@@ -29,7 +29,6 @@ protocol ICurrentWeatherService {
 final class CurrentWeatherService {
     
     // Dependencies
-    let dataBaseQueue: DispatchQueue
     let networkQueue: DispatchQueue
     let networkService: INetworkService
     let urlRequestsFactory: IURLRequestFactory
@@ -37,12 +36,10 @@ final class CurrentWeatherService {
     // MARK: - Init
     
     init(
-        dataBaseQueue: DispatchQueue,
         networkQueue: DispatchQueue,
         networkService: INetworkService,
         urlRequestsFactory: URLRequestFactory
     ) {
-        self.dataBaseQueue = dataBaseQueue
         self.networkQueue = networkQueue
         self.networkService = networkService
         self.urlRequestsFactory = urlRequestsFactory

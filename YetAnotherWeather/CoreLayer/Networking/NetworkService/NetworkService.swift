@@ -30,6 +30,11 @@ protocol INetworkService: AnyObject {
         parser: JSONParser,
         completion: @escaping (Result<Model, Error>) -> Void
     ) where JSONParser.Model == Model
+    
+    func load<JSONParser: IJSONParser, Model>(
+        request: URLRequest,
+        parser: JSONParser
+    ) async throws -> Model where JSONParser.Model == Model
 }
 
 
@@ -165,5 +170,25 @@ final class NetworkService: INetworkService {
                 return
             }
         }.resume()
+    }
+    
+    // MARK: - Modern Concurrency
+    
+    func load<JSONParser, Model>(
+        request: URLRequest,
+        parser: JSONParser
+    ) async throws -> Model where JSONParser : IJSONParser, Model == JSONParser.Model {
+        let (data, response) = try await session.data(for: request)
+        
+        guard
+            let response = response as? HTTPURLResponse,
+            (200...300).contains(response.statusCode)
+        else {
+            throw NetworkRequestError.serverError
+        }
+        
+        let parsedModel = try parser.parse(JSON(data))
+        
+        return parsedModel
     }
 }
