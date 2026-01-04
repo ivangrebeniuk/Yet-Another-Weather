@@ -25,6 +25,7 @@ final class SearchResultsAssembly {
         self.feedbackGeneratorService = feedbackGeneratorService
     }
     
+    @MainActor
     func assemble(output: SearchResultsOutput?) -> UIViewController {
         
         let presenter = SearchResultsPresenter(

@@ -92,7 +92,6 @@ final class AppAssembly {
     
     private var currentWeatherService: ICurrentWeatherService {
         CurrentWeatherService(
-            dataBaseQueue: dataBaseQueue,
             networkQueue: networkQueue,
             networkService: networkService,
             urlRequestsFactory: urlRequestsFactory

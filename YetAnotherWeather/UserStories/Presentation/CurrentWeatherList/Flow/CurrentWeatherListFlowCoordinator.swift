@@ -30,6 +30,7 @@ final class CurrentWeatherListFlowCoordinator {
         self.weatherDetailsFlowCoordinator = weatherDetailsFlowCoordinator
     }
     
+    @MainActor
     func start(with navigationController: UINavigationController) {
         let currentWeatherModule = currentWeatherListAssembly.assemble(output: self)
         

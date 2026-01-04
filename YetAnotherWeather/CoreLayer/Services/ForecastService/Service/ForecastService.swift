@@ -11,10 +11,10 @@ protocol IForecastService {
     
     /// get weather forecast for location with
     /// Parameters: `locationId`
+    /// returns `ForecastModel`
     func getWeatherForecast(
-        for locationId: String,
-        completion: @escaping (Result<ForecastModel, Error>) -> Void
-    )
+        for locationId: String
+    ) async throws -> ForecastModel
 }
 
 final class ForecastService {
@@ -39,23 +39,11 @@ final class ForecastService {
 
 extension ForecastService: IForecastService {
     
-    func getWeatherForecast(
-        for locationId: String,
-        completion: @escaping (Result<ForecastModel, Error>) -> Void
-    ) {
-        do {
-            let request = try urlRequestsFactory.makeForecastRequest(for: locationId)
-            let parser = ForecastParser()
-            networkService.load(request: request, parser: parser) { result in
-                switch result {
-                case .success(let model):
-                    completion(.success(model))
-                case .failure(let error):
-                    completion(.failure(error))
-                }
-            }
-        } catch {
-            completion(.failure(error))
-        }
+    func getWeatherForecast(for locationId: String) async throws -> ForecastModel {
+        let request = try urlRequestsFactory.makeForecastRequest(for: locationId)
+        let parser = ForecastParser()
+        let model = try await networkService.load(request: request, parser: parser)
+        
+        return model
     }
 }

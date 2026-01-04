@@ -23,7 +23,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, IAppDelegate {
     var window: UIWindow?
     private var appCoordinator: AppCoordinator?
     
-    // IAppDelegate
+    // IAppLifeCycleDelegate
     weak var delegate: IAppLifeCycleDelegate?
     
 

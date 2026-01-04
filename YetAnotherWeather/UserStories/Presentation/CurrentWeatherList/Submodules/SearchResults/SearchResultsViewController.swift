@@ -10,7 +10,7 @@ import SnapKit
 
 protocol ISearchResultsView: AnyObject {
     
-    var searchQuerry: String? { get }
+    var searchQuery: String? { get }
     func updateTableView()
 }
 
@@ -21,7 +21,7 @@ final class SearchResultsViewController: UIViewController {
     
     // Models
     private let cellIdentifier = SearchResultCellView.description()
-    private(set) var searchQuerry: String?
+    private(set) var searchQuery: String?
 
     // UI
     private lazy var tableView: UITableView = {
@@ -116,7 +116,7 @@ extension SearchResultsViewController: ISearchResultsView {
 extension SearchResultsViewController: UISearchResultsUpdating {
     
     func updateSearchResults(for searchController: UISearchController) {
-        searchQuerry = searchController.searchBar.text
-        presenter.viewDidLoad()
+        searchQuery = searchController.searchBar.text
+        presenter.performSearch()
     }
 }

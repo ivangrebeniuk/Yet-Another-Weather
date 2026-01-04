@@ -23,6 +23,7 @@ final class AppCoordinator {
         self.appAssembly = AppAssembly(appDelegate: appDelegate)
     }
     
+    @MainActor
     func start() {
         let navigationController = UINavigationController()
         

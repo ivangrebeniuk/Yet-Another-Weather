@@ -41,6 +41,7 @@ class CurrentWeatherListAssembly {
         self.favouritesService = favouritesService
     }
     
+    @MainActor
     func assemble(output: CurrentWeatherListOutput?) -> Module<CurrentWeatherListInput> {
         
         let viewModelFactory = CurrentWeatherCellViewModelFactory(dateFormatter: dateFormatter)
