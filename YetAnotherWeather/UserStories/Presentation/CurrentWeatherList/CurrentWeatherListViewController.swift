@@ -61,13 +61,28 @@ final class CurrentWeatherListViewController: UIViewController {
     private let presenter: ICurrentWeatherListPresenter
     private lazy var searchController = UISearchController(searchResultsController: resultsViewController)
 
-    
     // UI
     private lazy var activityIndicator = UIActivityIndicatorView(style: .medium)
     private lazy var tableView = UITableView()
     private lazy var dataSource = makeDataSourcre()
     private lazy var refreshControl = UIRefreshControl()
-    private lazy var emptyStateView = EmptyStateView()
+    private lazy var emptyStateView: UIView = {
+        let containerView = UIView()
+        containerView.backgroundColor = .clear
+        
+        let emptyStateView = EmptyStateView()
+        emptyStateView.layer.cornerRadius = 16
+        
+        containerView.addSubview(emptyStateView)
+        
+        emptyStateView.snp.makeConstraints {
+            $0.centerY.equalToSuperview()
+            $0.leading.trailing.equalToSuperview().inset(20)
+            $0.bottom.lessThanOrEqualToSuperview()
+        }
+        
+        return containerView
+    }()
     
     // Models
     private var currentLocationItemArray = [CurrentWeatherCellType]()
@@ -106,18 +121,11 @@ final class CurrentWeatherListViewController: UIViewController {
             $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 15, left: 0, bottom: 40, right: 20))
         }
         
-        tableView.addSubview(emptyStateView)
-        emptyStateView.snp.makeConstraints {
-            $0.top.equalToSuperview().offset(50)
-            $0.leading.trailing.equalTo(view).inset(20)
-        }
-        
         view.addSubview(activityIndicator)
         activityIndicator.snp.makeConstraints {
             $0.center.equalToSuperview()
         }
         
-        updateState()
         setUpNavigationBar()
         setUpTableView()
         setUpRefreshControl()
@@ -167,21 +175,22 @@ final class CurrentWeatherListViewController: UIViewController {
     }
     
     private func setUpRefreshControl() {
-        tableView.refreshControl = refreshControl
-        tableView.refreshControl?.addTarget(self, action: #selector(handleRefreshControl), for: .valueChanged)
+        refreshControl.addTarget(
+            self, action: #selector(handleRefreshControl),
+            for: .valueChanged
+        )
     }
     
     @objc private func handleRefreshControl() {
         presenter.didPullToRefresh()
     }
     
-    private func updateState() {
-        emptyStateView.layer.cornerRadius = 16
-        if presenter.emptyState() {
-            emptyStateView.isHidden = false
-        } else {
-            emptyStateView.isHidden = true
-        }
+    private func updateEmptyState() {
+        tableView.backgroundView = presenter.shouldShowEmptyState ? emptyStateView : nil
+    }
+    
+    private func updateRefreshControl() {
+        tableView.refreshControl = presenter.shouldShowEmptyState ? nil : refreshControl
     }
     
     private func updateMultipleSections() {
@@ -239,9 +248,6 @@ extension CurrentWeatherListViewController: ICurrentWeatherListView {
     }
     
     func updateMainSection(with items: [CurrentWeatherCell.Model]) {
-            
-        updateState()
-        
         itemsArray.removeAll()
                 
         for (index, item) in items.enumerated() {
@@ -263,11 +269,11 @@ extension CurrentWeatherListViewController: ICurrentWeatherListView {
         snapshot.appendItems(itemsArray, toSection: .main)
         
         dataSource.apply(snapshot, animatingDifferences: true)
+        updateRefreshControl()
+        updateEmptyState()
     }
     
     func updateCurrentLocationSection(with items: [CurrentWeatherCell.Model]) {
-        updateState()
-        
         currentLocationItemArray.removeAll()
                 
         for item in items {
@@ -287,6 +293,8 @@ extension CurrentWeatherListViewController: ICurrentWeatherListView {
         snapshot.appendItems(currentLocationItemArray, toSection: .currentLocation)
         
         dataSource.apply(snapshot, animatingDifferences: true)
+        updateRefreshControl()
+        updateEmptyState()
     }
 
     func endRefreshing() {

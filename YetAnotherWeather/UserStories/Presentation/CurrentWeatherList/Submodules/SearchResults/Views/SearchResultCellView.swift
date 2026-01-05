@@ -13,13 +13,11 @@ final class SearchResultCellView: UITableViewCell {
     // UI
     private let containerView: UIView = {
         let view = UIView()
-        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont.systemFont(ofSize: 16)
         return label
     }()
@@ -49,13 +47,14 @@ final class SearchResultCellView: UITableViewCell {
         containerView.snp.makeConstraints {
             $0.leading.trailing.equalToSuperview()
             $0.top.equalToSuperview().offset(2)
-            $0.bottom.equalToSuperview().offset(-2)
+            $0.bottom.equalToSuperview().inset(2)
         }
         
         titleLabel.snp.makeConstraints {
-            $0.top.bottom.equalToSuperview().offset(2)
+            $0.top.equalToSuperview().offset(2)
+            $0.bottom.equalToSuperview().inset(2)
             $0.leading.equalToSuperview().offset(20)
-            $0.trailing.equalToSuperview().offset(-20)
+            $0.trailing.equalToSuperview().inset(20)
         }
     }
 }

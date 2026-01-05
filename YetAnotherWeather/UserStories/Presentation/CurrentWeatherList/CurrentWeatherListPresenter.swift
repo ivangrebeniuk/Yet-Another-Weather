@@ -17,6 +17,8 @@ protocol CurrentWeatherListOutput: AnyObject {
 
 protocol ICurrentWeatherListPresenter {
     
+    var shouldShowEmptyState: Bool { get }
+    
     func viewDidLoad()
     
     func deleteItem(atIndex index: Int)
@@ -24,8 +26,6 @@ protocol ICurrentWeatherListPresenter {
     func didSelectRowAt(atIndex index: Int, section: CurrentWeatherListViewController.Section)
     
     func didPullToRefresh()
-    
-    func emptyState() -> Bool
 }
 
 class CurrentWeatherListPresenter {
@@ -246,6 +246,10 @@ class CurrentWeatherListPresenter {
 
 extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
     
+    var shouldShowEmptyState: Bool {
+        favouritesService.cachedFavourites.isEmpty && currentLocationViewModel.isEmpty
+    }
+    
     func viewDidLoad() {
         view?.startActivityIndicator()
         updateSections() { [weak self] in
@@ -256,7 +260,9 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
     func didPullToRefresh() {
         feedbackGenerator.generateFeedback(ofType: .impact(.medium))
         updateSections { [weak self] in
-            self?.view?.endRefreshing()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+                self?.view?.endRefreshing()
+            }
         }
     }
     
@@ -284,10 +290,6 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
         }
         
         feedbackGenerator.generateFeedback(ofType: .selectionChanged)
-    }
-    
-    func emptyState() -> Bool {
-        favouritesService.cachedFavourites.isEmpty && currentLocationViewModel.isEmpty
     }
 }
 

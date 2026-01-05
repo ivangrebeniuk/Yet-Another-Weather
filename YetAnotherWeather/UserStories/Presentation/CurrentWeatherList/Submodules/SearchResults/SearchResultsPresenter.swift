@@ -16,6 +16,8 @@ protocol SearchResultsOutput: AnyObject {
 protocol ISearchResultsPresenter: AnyObject {
     
     var searchResultViewModels: [SearchResultCellView.Model] { get }
+    
+    var shouldShowEmptyState: Bool { get }
         
     func performSearch()
     
@@ -33,6 +35,7 @@ final class SearchResultsPresenter {
         
     // Models
     private(set) var searchResultViewModels = [SearchResultCellView.Model]()
+    private(set) var shouldShowEmptyState: Bool = false
     private var searchResults = [SearchResultModel]()
     
     // Task management
@@ -57,6 +60,7 @@ final class SearchResultsPresenter {
             let locations = try await searchLocationsService.getSearchResults(for: text)
             searchResults = locations
             searchResultViewModels = makeViewModels(from: locations)
+            shouldShowEmptyState = searchResultViewModels.isEmpty
             view?.updateTableView()
         } catch {
             feedbackGeneratorService.generateFeedback(ofType: .notification(.error))
@@ -65,10 +69,7 @@ final class SearchResultsPresenter {
     }
 
     private func makeViewModels(from models: [SearchResultModel]) -> [SearchResultCellView.Model] {
-        guard !models.isEmpty else {
-            return [SearchResultCellView.Model(title: .noResultsFoundText)]
-        }
-        return models.map { result in
+        models.map { result in
             let text = "\(result.name), \(result.country)"
             return SearchResultCellView.Model(title: text)
         }
@@ -93,6 +94,7 @@ final class SearchResultsPresenter {
     }
     
     private func clearState() {
+        shouldShowEmptyState = false
         searchResultViewModels = []
         searchResults = []
         view?.updateTableView()
@@ -112,14 +114,10 @@ extension SearchResultsPresenter: ISearchResultsPresenter {
     
     func didTapCell(atIndex index: IndexPath) {
         feedbackGeneratorService.generateFeedback(ofType: .impact(.medium))
-        guard index.row < searchResults.count else { return }
         
         let locationId = String(searchResults[index.row].id)
         output?.didSelectLocation(locationId)
     }
 }
 
-private extension String {
-    
-    static let noResultsFoundText = "No locations found"
-}
+
