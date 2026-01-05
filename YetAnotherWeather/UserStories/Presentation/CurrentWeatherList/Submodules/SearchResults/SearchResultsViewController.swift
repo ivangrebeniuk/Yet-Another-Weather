@@ -32,6 +32,20 @@ final class SearchResultsViewController: UIViewController {
         return tableView
     }()
     
+    private lazy var emptyStateView: UIView = {
+        let view = UIView()
+        let label = UILabel()
+        label.text = Constant.emptyStateText
+        label.textAlignment = .center
+        label.font = UIFont.systemFont(ofSize: 28, weight: .semibold)
+        label.textColor = .secondaryLabel
+        view.addSubview(label)
+        label.snp.makeConstraints {
+            $0.center.equalToSuperview()
+        }
+        return view
+    }()
+    
     // MARK: - Init
     
     init(
@@ -61,6 +75,10 @@ final class SearchResultsViewController: UIViewController {
         tableView.snp.makeConstraints {
             $0.top.left.right.bottom.equalToSuperview()
         }
+    }
+    
+    private func updateEmptyState() {
+        tableView.backgroundView = presenter.shouldShowEmptyState ? emptyStateView : nil
     }
 }
 
@@ -108,6 +126,7 @@ extension SearchResultsViewController: ISearchResultsView {
     
     func updateTableView() {
         tableView.reloadData()
+        updateEmptyState()
     }
 }
 
@@ -119,4 +138,11 @@ extension SearchResultsViewController: UISearchResultsUpdating {
         searchQuery = searchController.searchBar.text
         presenter.performSearch()
     }
+}
+
+// MARK: - Constants
+
+private enum Constant {
+    
+    static let emptyStateText = "No locations found🤷‍♂️"
 }
