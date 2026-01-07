@@ -36,7 +36,12 @@ final class WeatherDetailsAssembly {
         self.lifecCycleService = lifecCycleService
     }
     
-    func assemble(locationId: String, isCurrentLocation: Bool, output: WeatherDetailsOutput) -> UIViewController {
+    func assemble(
+        locationId: String,
+        isCurrentLocation: Bool,
+        isAddedToFavourites: Bool,
+        output: WeatherDetailsOutput
+    ) -> UIViewController {
         
         let viewModelFactory = WeatherDetailsViewModelFactory(
             beaufortScaleResolver: beaufortScaleResolver,
@@ -53,6 +58,7 @@ final class WeatherDetailsAssembly {
             lifeCycleHandlingService: lifecCycleService,
             identifier: locationId,
             isCurrentLocation: isCurrentLocation,
+            isAddedToFavourites: isAddedToFavourites,
             output: output
         )
         

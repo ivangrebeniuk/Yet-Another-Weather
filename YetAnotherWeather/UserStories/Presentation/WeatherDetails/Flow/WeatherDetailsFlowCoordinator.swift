@@ -32,6 +32,7 @@ final class WeatherDetailsFlowCoordinator {
         from transitionHandler: UIViewController?,
         locationId: String,
         isCurrentLocation: Bool,
+        isAddedToFavourites: Bool,
         moduleOutput: WeatherDetailsModuleOutput
     ) {
         self.transitionHandler = transitionHandler
@@ -40,6 +41,7 @@ final class WeatherDetailsFlowCoordinator {
         let viewController = weatherDetailsAssembly.assemble(
             locationId: locationId,
             isCurrentLocation: isCurrentLocation,
+            isAddedToFavourites: isAddedToFavourites,
             output: self
         )
         

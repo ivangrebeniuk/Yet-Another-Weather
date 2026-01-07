@@ -12,9 +12,7 @@ protocol IForecastService {
     /// get weather forecast for location with
     /// Parameters: `locationId`
     /// returns `ForecastModel`
-    func getWeatherForecast(
-        for locationId: String
-    ) async throws -> ForecastModel
+    func getWeatherForecast(for locationId: String) async throws -> ForecastModel
 }
 
 final class ForecastService {

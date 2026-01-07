@@ -32,6 +32,7 @@ final class WeatherDetailsPresenter {
     private let lifeCycleHandlingService: ILifecycleHandlingService
     private weak var output: WeatherDetailsOutput?
     weak var view: IWeatherDetailsView?
+    private(set) var isAddedToFavourites: Bool
     
     // Models
     private var weatherDetailsViewModel: WeatherDetailsViewModel?
@@ -47,6 +48,7 @@ final class WeatherDetailsPresenter {
         lifeCycleHandlingService: ILifecycleHandlingService,
         identifier: String,
         isCurrentLocation: Bool,
+        isAddedToFavourites: Bool,
         output: WeatherDetailsOutput
     ) {
         self.alertViewModelFactory = alertViewModelFactory
@@ -57,6 +59,7 @@ final class WeatherDetailsPresenter {
         self.lifeCycleHandlingService = lifeCycleHandlingService
         self.identifier = identifier
         self.isCurrentLocation = isCurrentLocation
+        self.isAddedToFavourites = isAddedToFavourites
         self.output = output
     }
     
@@ -87,11 +90,6 @@ final class WeatherDetailsPresenter {
 // MARK: - IWeatherDetailsPresenter
 
 extension WeatherDetailsPresenter: IWeatherDetailsPresenter {
-    
-    var isAddedToFavourites: Bool {
-        favouritesService.cachedFavourites.forEach { print($0.name) }
-        return favouritesService.cachedFavourites.contains { $0.id == identifier } || isCurrentLocation
-    }
     
     func viewDidLoad() {
         lifeCycleHandlingService.add(delegate: self)

@@ -6,23 +6,22 @@
 //
 
 import Foundation
-import CoreData
+@preconcurrency import CoreData
 
-protocol ICoreDataService: AnyObject {
+protocol ICoreDataService: Sendable {
+   
+    func fetch<T: NSManagedObject>(fetchRequest: NSFetchRequest<T>) async throws -> [T]
+        
+    func save(_ block: @escaping (NSManagedObjectContext) throws -> Void) async throws
     
-    func fetch<T: NSManagedObject>(fetchRequest: NSFetchRequest<T>) throws -> [T]
+    func delete(with id: String) async throws
     
-    func save(
-        _ block: @escaping (NSManagedObjectContext) throws -> Void,
-        completion: @escaping (() -> Void)
-    )
-
-    func delete(with id: String, completion: @escaping () -> Void)
-    
+    #if DEBUG
     func reset()
+    #endif
 }
 
-final class CoreDataService {
+final class CoreDataService: @unchecked Sendable {
     
     private let persistentContainer: NSPersistentContainer = {
         let persistentContainer = NSPersistentContainer(name: "Location")
@@ -30,6 +29,8 @@ final class CoreDataService {
             guard let error = error else { return }
             print(error.localizedDescription)
         }
+        persistentContainer.viewContext.automaticallyMergesChangesFromParent = true
+        persistentContainer.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
         return persistentContainer
     }()
     
@@ -40,44 +41,34 @@ final class CoreDataService {
 
 extension CoreDataService: ICoreDataService {
     
-    func fetch<T>(fetchRequest: NSFetchRequest<T>) throws -> [T] where T : NSManagedObject {
-        try viewContext.fetch(fetchRequest)
-    }
-    
-    func save(
-        _ block: @escaping (NSManagedObjectContext) throws -> Void,
-        completion: @escaping (() -> Void)
-    ) {
-        let backgroundContext = persistentContainer.newBackgroundContext()
-        backgroundContext.perform {
-            do {
-                try block(backgroundContext)
-                if backgroundContext.hasChanges {
-                    try backgroundContext.save()
-                }
-            } catch {
-                print("!!! Error while saving location to coreData")
-            }
-            completion()
+    func fetch<T>(fetchRequest: NSFetchRequest<T>) async throws -> [T] where T : NSManagedObject {
+        try await viewContext.perform {
+            try self.viewContext.fetch(fetchRequest)
         }
     }
     
-    func delete(with id: String, completion: @escaping () -> Void) {
+    func save(_ block: @escaping (NSManagedObjectContext) throws -> Void) async throws {
         let backgroundContext = persistentContainer.newBackgroundContext()
-        backgroundContext.perform {
+        try await backgroundContext.perform {
+            try block(backgroundContext)
+            if backgroundContext.hasChanges {
+                try backgroundContext.save()
+            }
+        }
+    }
+    
+    func delete(with id: String) async throws {
+        let backgroundContext = persistentContainer.newBackgroundContext()
+        try await backgroundContext.perform {
             let fetchRequest = LocationDB.fetchRequest()
             fetchRequest.predicate = NSPredicate(format: "id == %@", id)
-            do {
-                let locations = try backgroundContext.fetch(fetchRequest)
-                locations.forEach { backgroundContext.delete($0) }
-                try backgroundContext.save()
-            } catch {
-                print("!!! Error while deleting location from coreData")
-            }
-            completion()
+            let locations = try backgroundContext.fetch(fetchRequest)
+            locations.forEach { backgroundContext.delete($0) }
+            try backgroundContext.save()
         }
     }
     
+    #if DEBUG
     func reset() {
         let backgroundContext = persistentContainer.newBackgroundContext()
         backgroundContext.perform {
@@ -91,4 +82,5 @@ extension CoreDataService: ICoreDataService {
             }
         }
     }
+    #endif
 }

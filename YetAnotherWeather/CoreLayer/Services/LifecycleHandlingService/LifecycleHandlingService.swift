@@ -28,9 +28,9 @@ final class LifecycleHandlingService: ILifecycleHandlingService {
     }
     
     // MARK: - Private
-
-    private func handleEventWillEneterForeground() {
-        DispatchQueue.main.async {
+    
+    private func handleEventWillEnterForeground() {
+        Task { @MainActor in
             Self.delegatesList.forEach {
                 $0.didEnterForeground()
             }
@@ -43,6 +43,6 @@ final class LifecycleHandlingService: ILifecycleHandlingService {
 extension LifecycleHandlingService: IAppLifeCycleDelegate {
     
     func appWillEnterForeground() {
-        handleEventWillEneterForeground()
+        handleEventWillEnterForeground()
     }
 }
