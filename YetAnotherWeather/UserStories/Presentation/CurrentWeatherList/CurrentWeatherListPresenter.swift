@@ -12,7 +12,11 @@ protocol CurrentWeatherListInput: AnyObject {
 }
 
 protocol CurrentWeatherListOutput: AnyObject {
-    func didSelectLocation(_ locationId: String, isCurrentLocation: Bool)
+    func didSelectLocation(
+        _ locationId: String,
+        isCurrentLocation: Bool,
+        isAddedToFavourites: Bool
+    )
 }
 
 protocol ICurrentWeatherListPresenter {
@@ -21,7 +25,8 @@ protocol ICurrentWeatherListPresenter {
     
     func viewDidLoad()
     
-    func deleteItem(atIndex index: Int)
+    @MainActor
+    func deleteItem(atIndex index: Int) async
     
     func didSelectRowAt(atIndex index: Int, section: CurrentWeatherListViewController.Section)
     
@@ -48,6 +53,8 @@ class CurrentWeatherListPresenter {
     private var currentWeatherViewModels = [CurrentWeatherCell.Model]()
     private var currentLocationId: String?
     private var favouriteLocationsIDs = [Location]()
+    
+    private var cachedFavourites: [Location] = []
 
     // MARK: - Init
     
@@ -81,8 +88,12 @@ class CurrentWeatherListPresenter {
         }
     }
     
+    private func updateCachedFavourites() async {
+        cachedFavourites = await favouritesService.cachedFavourites()
+    }
+    
     private func getSortedCurrentWeatherItems(completionHandler: @escaping () -> Void) {
-        favouriteLocationsIDs = favouritesService.cachedFavourites
+        favouriteLocationsIDs = cachedFavourites
         guard !favouriteLocationsIDs.isEmpty else {
             return completionHandler()
         }
@@ -246,14 +257,17 @@ class CurrentWeatherListPresenter {
 
 extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
     
+    @MainActor
     var shouldShowEmptyState: Bool {
-        favouritesService.cachedFavourites.isEmpty && currentLocationViewModel.isEmpty
+        cachedFavourites.isEmpty && currentLocationViewModel.isEmpty
     }
     
     func viewDidLoad() {
         view?.startActivityIndicator()
-        updateSections() { [weak self] in
-            self?.view?.stopActivityIndicator()
+        Task { @MainActor in
+            await updateCachedFavourites()
+            updateSections() {}
+            view?.stopActivityIndicator()
         }
     }
     
@@ -265,28 +279,35 @@ extension CurrentWeatherListPresenter: ICurrentWeatherListPresenter {
             }
         }
     }
-    
-    func deleteItem(atIndex index: Int) {
+    @MainActor
+    func deleteItem(atIndex index: Int) async {
         // дропаем из списка вью модель чтобы перерисовать таблицу
-        currentWeatherViewModels.remove(at: index)
         // дропаем id локации из списка избранных городов
         // иначе при добавлении новой локиции появится удаленный город
-        favouritesService.deleteFromFavourites(index)
-        view?.updateMainSection(with: currentWeatherViewModels)
-        feedbackGenerator.generateFeedback(ofType: .notification(.success))
+        do {
+            try await favouritesService.deleteFromFavourites(index)
+            await updateCachedFavourites()
+            currentWeatherViewModels.remove(at: index)
+            view?.updateMainSection(with: currentWeatherViewModels)
+            feedbackGenerator.generateFeedback(ofType: .notification(.success))
+        } catch {
+            let alert = alertViewModelFactory.makeSingleButtonErrorAlert {}
+            view?.showAlert(with: alert)
+        }
     }
     
     func didSelectRowAt(atIndex index: Int, section: CurrentWeatherListViewController.Section) {
         switch section {
         case .main:
-            let locationId = favouritesService.cachedFavourites[index].id
+            let locationId = cachedFavourites[index].id
             output?.didSelectLocation(
                 locationId,
-                isCurrentLocation: false
+                isCurrentLocation: false,
+                isAddedToFavourites: true
             )
         case .currentLocation:
             guard let currentLocationId else { return }
-            output?.didSelectLocation(currentLocationId, isCurrentLocation: true)
+            output?.didSelectLocation(currentLocationId, isCurrentLocation: true, isAddedToFavourites: true)
         }
         
         feedbackGenerator.generateFeedback(ofType: .selectionChanged)
@@ -299,10 +320,16 @@ extension CurrentWeatherListPresenter: SearchResultsOutput {
     
     func didSelectLocation(_ locationId: String) {
         guard let currentLocationId, currentLocationId == locationId else {
-            output?.didSelectLocation(locationId, isCurrentLocation: false)
+            let isAddedToFavorites = cachedFavourites.contains(where: { $0.id == locationId })
+                
+            output?.didSelectLocation(
+                locationId,
+                isCurrentLocation: false,
+                isAddedToFavourites: isAddedToFavorites
+            )
             return
         }
-        output?.didSelectLocation(locationId, isCurrentLocation: true)
+        output?.didSelectLocation(locationId, isCurrentLocation: true, isAddedToFavourites: false)
     }
 }
 
@@ -312,8 +339,16 @@ extension CurrentWeatherListPresenter: CurrentWeatherListInput {
     
     func addToFavourites(location: Location) {
         view?.hideSearchResults()
-        favouritesService.saveToFavourites(location) { [weak self] in
-            self?.updateSections {}
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            do {
+                try await favouritesService.saveToFavourites(location)
+                await updateCachedFavourites()
+                updateSections() {}
+            } catch {
+                let alert = alertViewModelFactory.makeSingleButtonErrorAlert {}
+                view?.showAlert(with: alert)
+            }
         }
     }
 }

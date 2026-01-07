@@ -13,12 +13,10 @@ import SnapKit
 final class AppAssembly {
     
     // Dependencies
-    private lazy var accessQueue = DispatchQueue(label: "ru.i.grebeniuk.serialAccessQueue")
     private lazy var urlRequestsFactory = URLRequestFactory()
     private lazy var networkService = NetworkService(session: URLSession.shared)
     private lazy var coreDataService = CoreDataService()
     private lazy var networkQueue = DispatchQueue(label: "ru.i.grebeniuk.serialNetworkQueue")
-    private lazy var dataBaseQueue = DispatchQueue(label: "ru.i.grebeniuk.dataBaseQueue", qos: .userInitiated)
     private lazy var dateFormatter = CustomDateFormatter()
     private lazy var beaufortScaleResolver = BeaufortScaleResolver()
     
@@ -121,8 +119,6 @@ final class AppAssembly {
     }
     
     private lazy var favouritesService = FavouritesService(
-        accessQueue: accessQueue,
-        coreDataService: coreDataService,
-        dataBaseQueue: dataBaseQueue
+        coreDataService: coreDataService
     )
 }

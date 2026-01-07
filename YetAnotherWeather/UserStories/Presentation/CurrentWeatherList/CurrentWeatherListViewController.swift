@@ -222,8 +222,10 @@ extension CurrentWeatherListViewController: UITableViewDelegate {
             
         guard indexPath.row % 2 == 0 else { return nil }
         let deleteAction = UIContextualAction(style: .destructive, title: "") { [weak self] (_, _, completionHandler) in
-            self?.presenter.deleteItem(atIndex: indexPath.row / 2)
-            completionHandler(true)
+            Task { @MainActor in
+                await self?.presenter.deleteItem(atIndex: indexPath.row / 2)
+                completionHandler(true)
+            }
         }
         
         deleteAction.image = UIImage.init(systemName: "trash")
