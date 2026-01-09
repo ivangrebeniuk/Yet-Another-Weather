@@ -8,39 +8,25 @@
 import Foundation
 import SwiftyJSON
 
-protocol ICurrentWeatherService {
+protocol ICurrentWeatherService: AnyObject {
     
-    func getCurrentWeather(
-        for locationId: String,
-        completion: @escaping (Result<CurrentWeatherModel, Error>) -> Void
-    )
+    func getCurrentWeather(for locationId: String) async throws -> CurrentWeatherModel
     
-    func getSortedCurrentWeatherItems(
-        for locations: [Location],
-        completion: @escaping (Result<[CurrentWeatherModel], Error>) -> Void
-    )
-    
-    func getOrderedCurrentWeatherItems(
-        for locations: [Location],
-        completion: @escaping (Result<[CurrentWeatherModel], Error>) -> Void
-    )
+    func getSortedCurrentWeatherItems(for locations: [Location]) async throws -> [CurrentWeatherModel]
 }
 
 final class CurrentWeatherService {
     
     // Dependencies
-    let networkQueue: DispatchQueue
     let networkService: INetworkService
     let urlRequestsFactory: IURLRequestFactory
     
     // MARK: - Init
     
     init(
-        networkQueue: DispatchQueue,
         networkService: INetworkService,
         urlRequestsFactory: URLRequestFactory
     ) {
-        self.networkQueue = networkQueue
         self.networkService = networkService
         self.urlRequestsFactory = urlRequestsFactory
     }
@@ -63,101 +49,33 @@ final class CurrentWeatherService {
 
 extension CurrentWeatherService: ICurrentWeatherService {
     
-    func getCurrentWeather(
-        for locationId: String,
-        completion: @escaping (Result<CurrentWeatherModel, Error>) -> Void
-    ) {
-        do {
-            let request = try urlRequestsFactory.makeCurrentWeatherRequest(for: locationId)
-            let parser = CurrentWeatherParser()
-            networkService.load(request: request, parser: parser) { (result: Result<CurrentWeatherModel, Error>) in
-                switch result {
-                case .success(let model):
-                    completion(.success(model))
-                case .failure(let error):
-                    completion(.failure(error))
-                }
-            }
-        } catch {
-            completion(.failure(error))
-        }
+    func getCurrentWeather(for locationId: String) async throws -> CurrentWeatherModel {
+        let request = try urlRequestsFactory.makeCurrentWeatherRequest(for: locationId)
+        let parser = CurrentWeatherParser()
+        return try await networkService.load(request: request, parser: parser)
     }
     
-    func getSortedCurrentWeatherItems(
-        for locations: [Location],
-        completion: @escaping (Result<[CurrentWeatherModel], Error>) -> Void
-    ) {
-        var locationsWeather = [Int: CurrentWeatherModel]()
-        var errors = [Error]()
-        let group = DispatchGroup()
-
-        guard !locations.isEmpty else { return completion(.success([]))}
+    func getSortedCurrentWeatherItems(for locations: [Location]) async throws -> [CurrentWeatherModel] {
         
-        locations.enumerated().forEach { [weak self] (index, location) in
-            group.enter()
-            self?.networkQueue.async {
-                self?.getCurrentWeather(for: location.id) { result in
-                    switch result {
-                    case .success(let currentWeather):
-                        locationsWeather[index] = currentWeather
-                    case .failure(let error):
-                        errors.append(error)
-                    }
-                    group.leave()
-                }
-            }
-        }
-        group.notify(queue: .main) { [weak self] in
-            guard let self else { return }
-            guard
-                locations.count != errors.count || locations.count == 0
-            else {
-                if let error = errors.first {
-                    completion(.failure(error))
-                }
-                return
-            }
-            let sortedLocations = makeResultsArray(from: locationsWeather)
-            completion(.success(sortedLocations))
-        }
-    }
-    
-    func getOrderedCurrentWeatherItems(
-        for locations: [Location],
-        completion: @escaping (Result<[CurrentWeatherModel], Error>) -> Void
-    ) {
-        var locationsWeather = [CurrentWeatherModel]()
-        var errors = [Error]()
-        let group = DispatchGroup()
-        let semaphore = DispatchSemaphore(value: 1)
+        guard !locations.isEmpty else { throw URLError(.badURL) }
         
-        guard !locations.isEmpty else { return completion(.success([]))}
-
-        for location in locations {
-            group.enter()
-            networkQueue.async { [weak self] in
-                semaphore.wait()
-                self?.getCurrentWeather(for: location.id) { result in
-                    switch result {
-                    case .success(let currentWeather):
-                        locationsWeather.append(currentWeather)
-                    case .failure(let error):
-                        errors.append(error)
-                    }
-                    semaphore.signal()
-                    group.leave()
+        return try await withThrowingTaskGroup(of: (Int, CurrentWeatherModel?).self) { group in
+            var locationsWeather = [Int: CurrentWeatherModel]()
+            
+            for (index, location) in locations.enumerated() {
+                group.addTask {
+                    let weather = try? await self.getCurrentWeather(for: location.id)
+                    return (index, weather)
                 }
             }
-        }
-
-        group.notify(queue: .main) {
-            guard locations.count != errors.count else {
-                if let error = errors.first {
-                    completion(.failure(error))
-                }
-                return
+            
+            for try await (index, weather) in group {
+                locationsWeather[index] = weather
             }
-            completion(.success(locationsWeather))
+            
+            if locationsWeather.isEmpty { throw URLError(.badServerResponse) }
+            
+            return makeResultsArray(from: locationsWeather)
         }
     }
 }

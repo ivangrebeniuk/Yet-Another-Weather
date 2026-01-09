@@ -186,11 +186,15 @@ final class CurrentWeatherListViewController: UIViewController {
     }
     
     private func updateEmptyState() {
-        tableView.backgroundView = presenter.shouldShowEmptyState ? emptyStateView : nil
+        Task { @MainActor in
+            tableView.backgroundView = await presenter.shouldShowEmptyState() ? emptyStateView : nil
+        }
     }
     
     private func updateRefreshControl() {
-        tableView.refreshControl = presenter.shouldShowEmptyState ? nil : refreshControl
+        Task { @MainActor in
+            tableView.refreshControl = await presenter.shouldShowEmptyState() ? nil : refreshControl
+        }
     }
     
     private func updateMultipleSections() {

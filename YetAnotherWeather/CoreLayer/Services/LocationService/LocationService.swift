@@ -15,7 +15,7 @@ enum LocationError: Error {
 }
 
 protocol ILocationService: AnyObject {
-    func getLocation(completion: @escaping (Result<String, Error>) -> Void)
+    func getLocation() async throws -> String
 }
 
 final class LocationService: NSObject {
@@ -63,16 +63,36 @@ final class LocationService: NSObject {
         currentLocationCompletion?(.failure(error))
         currentLocationCompletion = nil
     }
+    
+    private func getLocation(completion: @escaping (Result<String, Error>) -> Void) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+
+            guard currentLocationCompletion == nil else {
+                completion(.failure(LocationError.locationNotAvailable))
+                return
+            }
+
+            currentLocationCompletion = completion
+            checkAuthorizationStatus()
+        }
+    }
 }
 
 // MARK: - ILocationService
 
 extension LocationService: ILocationService {
     
-    func getLocation(completion: @escaping (Result<String, Error>) -> Void) {
-        DispatchQueue.global().async { [weak self] in
-            self?.currentLocationCompletion = completion
-            self?.checkAuthorizationStatus()
+    func getLocation() async throws -> String {
+        return try await withCheckedThrowingContinuation { continuation in
+            getLocation { completion in
+                switch completion {
+                case .success(let locationString):
+                    continuation.resume(returning: locationString)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
         }
     }
 }

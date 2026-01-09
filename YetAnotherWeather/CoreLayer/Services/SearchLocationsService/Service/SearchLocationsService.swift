@@ -10,12 +10,6 @@ import Foundation
 protocol ISearchLocationsService {
     
     /// Search available locations for `location`
-    func getSearchResults(
-        for location: String,
-        completion: @escaping (Result<[SearchResultModel], Error>) -> Void
-    )
-    
-    /// Search available locations for `location`
     /// Returns array of `[SearchResultModel]`
     func getSearchResults(
         for location: String
@@ -42,29 +36,6 @@ final class SearchLocationsService {
 // MARK: - IWeatherNetworkService
 
 extension SearchLocationsService: ISearchLocationsService {
-    
-    func getSearchResults(
-        for location: String,
-        completion: @escaping (Result<[SearchResultModel], Error>) -> Void
-    ) {
-        do {
-            let request = try urlRequestsFactory.makeSearchRequest(for: location)
-            let parser = SearchResultParser()
-            networkService.load(
-                request: request,
-                parser: parser
-            ) { (result: Result<([SearchResultModel]), Error>) in
-                switch result {
-                case.success(let models):
-                    completion(.success(models))
-                case .failure(let error):
-                    completion(.failure(error))
-                }
-            }
-        } catch {
-            completion(.failure(NetworkRequestError.invalidURL))
-        }
-    }
     
     func getSearchResults(for location: String) async throws -> [SearchResultModel] {
         let request = try urlRequestsFactory.makeSearchRequest(for: location)

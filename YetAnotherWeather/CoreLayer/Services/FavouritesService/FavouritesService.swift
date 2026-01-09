@@ -9,6 +9,7 @@ import Foundation
 
 protocol IFavouritesService: AnyObject {
     func cachedFavourites() async -> [Location]
+    func isFavourite(_ locationId: String) async -> Bool
     func saveToFavourites(_ location: Location) async throws
     func deleteFromFavourites(_ index: Int) async throws
 }
@@ -57,6 +58,14 @@ extension FavouritesService: IFavouritesService {
             locations = await fetchLocations()
         }
         return locations
+    }
+    
+    func isFavourite(_ locationId: String) async -> Bool {
+        if locations.isEmpty {
+            locations = await fetchLocations()
+        }
+        
+        return locations.contains { $0.id == locationId }
     }
     
     func saveToFavourites(_ location: Location) async throws {
