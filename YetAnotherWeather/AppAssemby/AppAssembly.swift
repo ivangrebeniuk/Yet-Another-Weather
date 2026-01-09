@@ -16,7 +16,6 @@ final class AppAssembly {
     private lazy var urlRequestsFactory = URLRequestFactory()
     private lazy var networkService = NetworkService(session: URLSession.shared)
     private lazy var coreDataService = CoreDataService()
-    private lazy var networkQueue = DispatchQueue(label: "ru.i.grebeniuk.serialNetworkQueue")
     private lazy var dateFormatter = CustomDateFormatter()
     private lazy var beaufortScaleResolver = BeaufortScaleResolver()
     
@@ -90,7 +89,6 @@ final class AppAssembly {
     
     private var currentWeatherService: ICurrentWeatherService {
         CurrentWeatherService(
-            networkQueue: networkQueue,
             networkService: networkService,
             urlRequestsFactory: urlRequestsFactory
         )

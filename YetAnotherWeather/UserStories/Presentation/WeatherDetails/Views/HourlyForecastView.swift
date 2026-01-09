@@ -20,7 +20,7 @@ final class HourlyForecastView: UIView {
         let stackView = UIStackView()
         stackView.axis = .horizontal
         stackView.alignment = .center
-        stackView.spacing = 30
+        stackView.spacing = 22
         return stackView
     }()
     
